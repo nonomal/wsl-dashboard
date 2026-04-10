@@ -143,6 +143,14 @@ pub async fn get_distro_information(executor: &WslCommandExecutor, distro_name: 
         } else {
             information.actual_used = "Error".to_string();
         }
+
+        // Get IP
+        let distro_name_for_ip = distro_name_owned.clone();
+        if let Ok(Ok(ip)) = task::spawn_blocking(move || {
+            crate::network::tracker::get_distro_ip(&distro_name_for_ip)
+        }).await {
+            information.ip = ip;
+        }
     } else {
         information.actual_used = "Unknown (Stopped)".to_string();
     }

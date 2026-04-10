@@ -1,0 +1,278 @@
+import {
+    Theme,
+    AppI18n,
+    SettingsStrings,
+    LayoutConstants,
+} from "../../theme.slint";
+import {
+    CustomLineEdit,
+    CustomComboBox,
+    CustomCheckBox,
+    CustomButton,
+} from "../../components/form_widgets.slint";
+
+export component GeneralSettingsSection inherits VerticalLayout {
+    in property <SettingsStrings> strings;
+    in-out property <int> selected_language_index;
+    in-out property <int> selected_check_update_index;
+    in-out property <int> selected_log_level_index;
+    in-out property <int> selected_log_days_index;
+    in property <[string]> language_options;
+    in property <[string]> check_update_options;
+    in property <[string]> log_level_options;
+    in property <[string]> log_days_options;
+    spacing: 16px;
+
+    // 1. Software language and Update check
+    Rectangle {
+        z: 50;
+        height: lang-grid.preferred-height;
+        lang-grid := GridLayout {
+            spacing: 12px;
+            Row {
+                VerticalLayout {
+                    horizontal-stretch: 1;
+                    preferred-width: 0;
+                    min-width: 0;
+                    spacing: 10px;
+                    Text {
+                        text: root.strings.language;
+                        font-size: 13px * LayoutConstants.font-scale;
+                        font-family: Theme.default_font;
+                        color: Theme.text_secondary;
+                        horizontal-alignment: AppI18n.is-rtl ? right : left;
+                    }
+
+                    CustomComboBox {
+                        model: root.language_options;
+                        current-index <=> root.selected_language_index;
+                        height: 32px;
+                    }
+                }
+
+                VerticalLayout {
+                    horizontal-stretch: 1;
+                    preferred-width: 0;
+                    min-width: 0;
+                    spacing: 10px;
+                    Text {
+                        text: root.strings.auto_update;
+                        font-size: 13px * LayoutConstants.font-scale;
+                        font-family: Theme.default_font;
+                        color: Theme.text_secondary;
+                        horizontal-alignment: AppI18n.is-rtl ? right : left;
+                    }
+
+                    CustomComboBox {
+                        model: root.check_update_options;
+                        current-index <=> root.selected_check_update_index;
+                        height: 32px;
+                        dropdown-height: 100px;
+                    }
+                }
+            }
+        }
+    }
+
+    Rectangle {
+        height: 1px;
+        background: Theme.border_color;
+    }
+
+    // 2. Log level and Retention
+    Rectangle {
+        z: 40;
+        height: log-grid.preferred-height;
+        log-grid := GridLayout {
+            spacing: 12px;
+            Row {
+                VerticalLayout {
+                    horizontal-stretch: 1;
+                    preferred-width: 0;
+                    min-width: 0;
+                    spacing: 10px;
+                    Text {
+                        text: root.strings.log_level;
+                        font-size: 13px * LayoutConstants.font-scale;
+                        font-family: Theme.default_font;
+                        color: Theme.text_secondary;
+                        horizontal-alignment: AppI18n.is-rtl ? right : left;
+                    }
+
+                    CustomComboBox {
+                        model: root.log_level_options;
+                        current-index <=> root.selected_log_level_index;
+                        height: 32px;
+                        dropdown-height: 130px;
+                    }
+                }
+
+                VerticalLayout {
+                    horizontal-stretch: 1;
+                    preferred-width: 0;
+                    min-width: 0;
+                    spacing: 10px;
+                    Text {
+                        text: root.strings.log_retention;
+                        font-size: 13px * LayoutConstants.font-scale;
+                        font-family: Theme.default_font;
+                        color: Theme.text_secondary;
+                        horizontal-alignment: AppI18n.is-rtl ? right : left;
+                    }
+
+                    CustomComboBox {
+                        model: root.log_days_options;
+                        current-index <=> root.selected_log_days_index;
+                        height: 32px;
+                        dropdown-height: 100px;
+                    }
+                }
+            }
+        }
+    }
+}
+
+export component PathSettingsSection inherits VerticalLayout {
+    in property <SettingsStrings> strings;
+    in-out property <string> distro_location;
+    in-out property <string> logs_location;
+    callback select_distro_folder();
+    callback select_logs_folder();
+    spacing: 16px;
+    Text {
+        text: root.strings.log_path;
+        font-size: 13px * LayoutConstants.font-scale;
+        font-family: Theme.default_font;
+        color: Theme.text_secondary;
+        horizontal-alignment: AppI18n.is-rtl ? right : left;
+    }
+
+    HorizontalLayout {
+        spacing: 6px;
+        if (AppI18n.is-rtl): CustomButton {
+            text: root.strings.select_folder;
+            height: 32px;
+            clicked => {
+                root.select_logs_folder();
+            }
+        }
+        CustomLineEdit {
+            text: root.logs_location;
+            enabled: false;
+            horizontal-stretch: 1;
+        }
+
+        if (!AppI18n.is-rtl): CustomButton {
+            text: root.strings.select_folder;
+            height: 32px;
+            clicked => {
+                root.select_logs_folder();
+            }
+        }
+    }
+
+    Rectangle {
+        height: 1px;
+        background: Theme.border_color;
+    }
+
+    Text {
+        text: root.strings.install_dir;
+        font-size: 13px * LayoutConstants.font-scale;
+        font-family: Theme.default_font;
+        color: Theme.text_secondary;
+        horizontal-alignment: AppI18n.is-rtl ? right : left;
+    }
+
+    HorizontalLayout {
+        spacing: 8px;
+        if (AppI18n.is-rtl): CustomButton {
+            text: root.strings.select_folder;
+            height: 32px;
+            clicked => {
+                root.select_distro_folder();
+            }
+        }
+        CustomLineEdit {
+            text: root.distro_location;
+            enabled: false;
+            horizontal-stretch: 1;
+        }
+
+        if (!AppI18n.is-rtl): CustomButton {
+            text: root.strings.select_folder;
+            height: 32px;
+            clicked => {
+                root.select_distro_folder();
+            }
+        }
+    }
+}
+
+export component SidebarSettingsSection inherits Rectangle {
+    in property <SettingsStrings> strings;
+    in-out property <bool> sidebar_add: true;
+    in-out property <bool> sidebar_usb: true;
+    in-out property <bool> sidebar_network: true;
+    in-out property <bool> sidebar_about: true;
+    background: Theme.card_bg;
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: Theme.border_color;
+    VerticalLayout {
+        padding: 12px;
+        spacing: 12px;
+        Text {
+            text: root.strings.sidebar_features;
+            font-size: 13px * LayoutConstants.font-scale;
+            font-family: Theme.default_font;
+            color: Theme.text_secondary;
+            horizontal-alignment: AppI18n.is-rtl ? right : left;
+        }
+
+        GridLayout {
+            spacing: 12px;
+            Row {
+                CustomCheckBox {
+                    text: AppI18n.t("sidebar.home", [AppI18n.version]);
+                    checked: true;
+                    enabled: false;
+                    horizontal-stretch: 1;
+                }
+
+                CustomCheckBox {
+                    text: AppI18n.t("sidebar.add", [AppI18n.version]);
+                    checked <=> root.sidebar_add;
+                    horizontal-stretch: 1;
+                }
+
+                CustomCheckBox {
+                    text: AppI18n.t("sidebar.usb", [AppI18n.version]);
+                    checked <=> root.sidebar_usb;
+                    horizontal-stretch: 1;
+                }
+            }
+
+            Row {
+                CustomCheckBox {
+                    text: AppI18n.t("sidebar.network", [AppI18n.version]);
+                    checked <=> root.sidebar_network;
+                    horizontal-stretch: 1;
+                }
+
+                CustomCheckBox {
+                    text: AppI18n.t("sidebar.settings", [AppI18n.version]);
+                    checked: true;
+                    enabled: false;
+                    horizontal-stretch: 1;
+                }
+
+                CustomCheckBox {
+                    text: AppI18n.t("sidebar.about", [AppI18n.version]);
+                    checked <=> root.sidebar_about;
+                    horizontal-stretch: 1;
+                }
+            }
+        }
+    }
+}

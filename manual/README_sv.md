@@ -29,6 +29,7 @@ I18N :  [English](../README.md) | [简体中文](./README_zh_CN.md) | [繁體中
 - [💻 Systemkrav](#-systemkrav)
 - [📦 Installationsguide](#-installationsguide)
 - [🛠️ Plattform & Prestanda](#️-plattform--prestanda)
+- [⭐️ Ett kärleksprojekt](#️-ett-kärleksprojekt)
 - [📄 Licens](#-licens)
 
 ---
@@ -81,6 +82,8 @@ Engelska, Kinesiska (Förenklad), Kinesiska (Traditionell), Hindi, Spanska, Fran
 - **Smart installation**: Installera från Microsoft Store, GitHub eller lokala filer (RootFS/VHDX). Inkluderar en inbyggd RootFS-nedladdningsassistent.
 - **Säkerhet**: Mutex-lås för säkra samtidiga migrerings-/backup-operationer och automatisk Appx-rensning vid borttagning.
 - **Minimalt minnesavtryck**: Högt optimerad för effektivitet. Tyst start (systemfältet) använder endast **~10 MB** RAM. Användning i fönsterläge varierar beroende på tecknens komplexitet: **~18 MB** för standardspråk och **~38 MB** för språk med stora teckenuppsättningar (kinesiska, japanska, koreanska).
+- **Avancerat nätverk**: Sömlös hantering av portvidarebefordran (med automatiskt skapande av brandväggsregler) och global HTTP-proxykonfiguration för enhetlig anslutning.
+- **Hantering av USB-enheter**: Fullständig integrering med `usbipd-win` för att smidigt binda, ansluta och hantera lokala USB-enheter över dina WSL-instanser direkt från kontrollpanelen.
 
 
 ## ⚙️ Konfiguration & Loggar
@@ -95,6 +98,7 @@ All konfiguration hanteras via inställningsvyn:
 - Aktivera automatisk start vid systemstart (med automatisk reparation av sökvägar).
 - Ställ in appen att minimera till systemfältet vid start.
 - Konfigurera stängningsknappen att minimera till systemfältet istället för att avsluta.
+- Anpassa sidofältet genom att växla synligheten för specifika funktionsflikar.
 
 Loggfiler skrivs till den konfigurerade loggkatalogen och kan bifogas vid felrapportering.
 
@@ -112,9 +116,16 @@ Loggfiler skrivs till den konfigurerade loggkatalogen och kan bifogas vid felrap
   <img src="../assets/screenshot/home-configs.png" width="48%" />
 </p>
 
-### USB
+### USB & Komprimera menyn
 <p align="center">
   <img src="../assets/screenshot/usb.png" width="48%" />
+  <img src="../assets/screenshot/collapsed.png" width="48%" />
+</p>
+
+### nätverk
+<p align="center">
+  <img src="../assets/screenshot/port-forwarding.png" width="48%" />
+  <img src="../assets/screenshot/http-proxy.png" width="48%" />
 </p>
 
 ### Lägg till instans & Inställningar
@@ -123,10 +134,9 @@ Loggfiler skrivs till den konfigurerade loggkatalogen och kan bifogas vid felrap
   <img src="../assets/screenshot/settings.png" width="48%" />
 </p>
 
-### Om & Menyminimering
+### Om
 <p align="center">
   <img src="../assets/screenshot/about.png" width="48%" />
-  <img src="../assets/screenshot/collapsed.png" width="48%" />
 </p>
 
 ## 🎬 Demonstration
@@ -193,6 +203,10 @@ Se till att du har Rust-verktygskedjan (Rust 1.92+ eller nyare) installerad.
   - **Portabilitet**: Optimerad release-build skapar en enda kompakt körbar fil.
 
 
+
+## ⭐️ Ett kärleksprojekt
+
+Om du har tyckt att det här projektet är användbart skulle jag vara tacksam om du kunde lämna en stjärna på GitHub. Ditt stöd hjälper det att nå en bredare publik och uppskattas djupt. Det är denna uppmuntran som motiverar mig att fortsätta bygga.
 
 ## 📄 Licens
 

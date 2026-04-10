@@ -29,6 +29,7 @@ I18N :  [English](../README.md) | 简体中文 | [繁體中文](./README_zh_TW.m
 - [💻 系统要求](#-系统要求)
 - [📦 安装指南](#-安装指南)
 - [🛠️ 技术栈与性能](#️-技术栈与性能)
+- [⭐️ 为爱发电](#️-为爱发电)
 - [📄 开源协议](#-开源协议)
 
 ---
@@ -81,6 +82,8 @@ I18N :  [English](../README.md) | 简体中文 | [繁體中文](./README_zh_TW.m
 - **智能安装**：支持从 Microsoft Store、GitHub 或本地文件（RootFS/VHDX）安装。内置 RootFS 下载助手。
 - **全局安全**：使用互斥锁确保并发迁移/备份操作的安全，并在移除时自动清理 Appx 包。
 - **极低内存占用**：高度优化的资源效率。静默启动（系统托盘）仅约 **10MB** 内存。窗口模式下根据字体复杂度占用约 **18MB**（标准语言如英语、德语等）到 **38MB**（大字符集如中日韩语）。
+- **高级网络管理**: 无缝管理端口转发（自动创建防火墙规则）以及全局 HTTP 代理配置，实现统一的连接体验。
+- **USB 设备管理**: 与 `usbipd-win` 深度集成，可在仪表板 UI 中直接对所有 WSL 实例的本地 USB 设备进行轻松的绑定、附加和管理操作。
 
 
 ## ⚙️ 配置与日志
@@ -95,6 +98,7 @@ I18N :  [English](../README.md) | 简体中文 | [繁體中文](./README_zh_TW.m
 - 启动开机自启（带路径自动修复功能）。
 - 设置启动时最小化到托盘。
 - 配置关闭按钮的行为（最小化到托盘而非退出程序）。
+- 通过切换特定功能选项卡的可见性来自定义侧边栏。
 
 日志文件将写入配置的日志目录，在报告问题时可以附带日志。
 
@@ -112,9 +116,16 @@ I18N :  [English](../README.md) | 简体中文 | [繁體中文](./README_zh_TW.m
   <img src="../assets/screenshot/home-configs.png" width="48%" />
 </p>
 
-### USB
+### USB & 菜单折叠
 <p align="center">
   <img src="../assets/screenshot/usb.png" width="48%" />
+  <img src="../assets/screenshot/collapsed.png" width="48%" />
+</p>
+
+### 网络管理
+<p align="center">
+  <img src="../assets/screenshot/port-forwarding.png" width="48%" />
+  <img src="../assets/screenshot/http-proxy.png" width="48%" />
 </p>
 
 ### 添加实例 & 设置
@@ -123,10 +134,9 @@ I18N :  [English](../README.md) | 简体中文 | [繁體中文](./README_zh_TW.m
   <img src="../assets/screenshot/settings.png" width="48%" />
 </p>
 
-### 关于 & 菜单折叠
+### 关于
 <p align="center">
   <img src="../assets/screenshot/about.png" width="48%" />
-  <img src="../assets/screenshot/collapsed.png" width="48%" />
 </p>
 
 ## 🎬 操作演示
@@ -193,6 +203,10 @@ I18N :  [English](../README.md) | 简体中文 | [繁體中文](./README_zh_TW.m
   - **便携性**：优化后的发布版本生成单个精简的可执行文件。
 
 
+
+## ⭐️ 为爱发电
+
+如果您觉得这个项目对您有所帮助，我将不胜感激您能在 GitHub 上点亮一颗星。您的认可将帮助项目触及更广泛的用户群体，我也深表谢意。正是这种鼓励激励着我不断前行。
 
 ## 📄 开源协议
 

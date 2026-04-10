@@ -29,6 +29,7 @@ I18N :  [English](../README.md) | [简体中文](./README_zh_CN.md) | [繁體中
 - [💻 システム要件](#-システム要件)
 - [📦 インストール指南](#-インストール指南)
 - [🛠️ 技術スタックとパフォーマンス](#️-技术スタックとパフォーマンス)
+- [⭐️ 愛の結晶](#️-愛の結晶)
 - [📄 ライセンス](#-ライセンス)
 
 ---
@@ -81,6 +82,8 @@ I18N :  [English](../README.md) | [简体中文](./README_zh_CN.md) | [繁體中
 - **スマートインストール**：Microsoft Store、GitHub、またはローカルファイル（RootFS/VHDX）からのインストール。RootFS ダウンロードヘルパーを内蔵。
 - **グローバルな安全性**：ミューテックスロックによる移行/バックアップの同時実行制御、削除時の Appx 自動クリーンアップ。
 - **超低メモリフットプリント**：効率を極限まで最適化。トレイ待機時は約 **10MB**、ウィンドウモードでも言語に応じ **18MB**（標準）〜 **38MB**（中日韓などの複雑なフォント）で動作。
+- **高度なネットワーク**: シームレスなポート転送管理（ファイアウォールルールの自動作成機能付き）および統合接続のためのグローバルHTTPプロキシ設定。
+- **USBデバイス管理**: `usbipd-win`との完全な統合により、ダッシュボードから直接、すべてのWSLインスタンスにわたってローカルUSBデバイスを簡単にバインド、アタッチ、および管理できます。
 
 
 ## ⚙️ 設定とログ
@@ -95,6 +98,7 @@ I18N :  [English](../README.md) | [简体中文](./README_zh_CN.md) | [繁體中
 - Windows 起動時の自動開始（パス自動修復機能付き）。
 - 起動時にシステムトレイへ最小化する設定。
 - 閉じるボタンで終了せずトレイに最小化する設定。
+- 特定の機能タブの表示/非表示を切り替えてサイドバーをカスタマイズします。
 
 ログファイルは指定されたディレクトリに書き込まれ、問題報告時に添付できます。
 
@@ -112,9 +116,16 @@ I18N :  [English](../README.md) | [简体中文](./README_zh_CN.md) | [繁體中
   <img src="../assets/screenshot/home-configs.png" width="48%" />
 </p>
 
-### USB
+### USB ＆ メニューの折りたたみ
 <p align="center">
   <img src="../assets/screenshot/usb.png" width="48%" />
+  <img src="../assets/screenshot/collapsed.png" width="48%" />
+</p>
+
+### ネットワーク
+<p align="center">
+  <img src="../assets/screenshot/port-forwarding.png" width="48%" />
+  <img src="../assets/screenshot/http-proxy.png" width="48%" />
 </p>
 
 ### インスタンス追加 ＆ 設定
@@ -123,10 +134,9 @@ I18N :  [English](../README.md) | [简体中文](./README_zh_CN.md) | [繁體中
   <img src="../assets/screenshot/settings.png" width="48%" />
 </p>
 
-### バージョン情報 ＆ メニューの折りたたみ
+### バージョン情報
 <p align="center">
   <img src="../assets/screenshot/about.png" width="48%" />
-  <img src="../assets/screenshot/collapsed.png" width="48%" />
 </p>
 
 ## 🎬 操作デモ
@@ -193,6 +203,10 @@ Rust ツールチェーン (Rust 1.92+ 以降) がインストールされてい
   - **ポータビリティ**: 単一のコンパクトな実行ファイルを生成。
 
 
+
+## ⭐️ 愛の結晶
+
+このプロジェクトが役に立ったと感じられたなら、GitHub でスターを付けていただければ幸いです。皆様の応援がより多くの人に届く助けとなり、心から感謝しております。この励ましこそが、開発を続ける原動力です。
 
 ## 📄 ライセンス
 

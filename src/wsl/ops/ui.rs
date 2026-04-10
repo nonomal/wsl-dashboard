@@ -73,12 +73,33 @@ pub async fn check_vscode_extension(_executor: &WslCommandExecutor) -> WslComman
     }).await.unwrap()
 }
 
-pub async fn open_distro_terminal(_executor: &WslCommandExecutor, distro_name: &str, working_dir: &str) -> WslCommandResult<String> {
+pub async fn open_distro_terminal(_executor: &WslCommandExecutor, distro_name: &str, working_dir: &str, proxy_exports: Option<Vec<(String, String)>>) -> WslCommandResult<String> {
     let name = distro_name.to_string();
     let cd_path = working_dir.to_string();
+    let proxy_exports = proxy_exports.clone();
+
     task::spawn_blocking(move || {
         let mut command = std::process::Command::new("cmd");
-        command.args(&["/c", "start", "wsl", "-d", &name, "--cd", &cd_path]);
+        
+        if let Some(exports) = proxy_exports {
+            let mut cmd_str = format!("title wsl.exe & ");
+            let mut wslenv = String::new();
+            
+            for (k, v) in exports {
+                cmd_str.push_str(&format!("echo export {}={}& ", k, v));
+                cmd_str.push_str(&format!("set {}={}& ", k, v));
+                wslenv.push_str(&format!("{}/u:", k));
+            }
+            if !wslenv.is_empty() {
+                wslenv.pop(); // remove trailing colon
+                cmd_str.push_str(&format!("set WSLENV={} & ", wslenv));
+            }
+            cmd_str.push_str(&format!("wsl -d {} --cd {}", name, cd_path));
+            
+            command.args(&["/c", "start", "cmd", "/c", &cmd_str]);
+        } else {
+            command.args(&["/c", "start", "wsl", "-d", &name, "--cd", &cd_path]);
+        }
         
         #[cfg(windows)]
         {

@@ -53,3 +53,108 @@ pub fn copy_to_clipboard(text: &str) -> Result<(), String> {
         Err(format!("clip.exe exited with status: {}", status))
     }
 }
+
+/// Execute a command with UAC elevation using ShellExecuteExW
+pub fn run_command_with_elevation(program_name: &str, args: Vec<String>) -> Result<(), String> {
+    use windows::core::{HSTRING, PCWSTR};
+    use windows::Win32::UI::Shell::{ShellExecuteExW, SHELLEXECUTEINFOW, SEE_MASK_NOCLOSEPROCESS, SEE_MASK_NOASYNC};
+    use windows::Win32::UI::WindowsAndMessaging::SW_HIDE;
+    use windows::Win32::Foundation::CloseHandle;
+    use windows::Win32::System::Threading::{WaitForSingleObject, INFINITE};
+    use tracing::debug;
+
+    let args_str = args.join(" ");
+    let program = HSTRING::from(program_name);
+    let parameters = HSTRING::from(&args_str);
+    let verb = HSTRING::from("runas");
+    
+    debug!("Executing elevated command: {} {}", program_name, args_str);
+
+    let sys_dir = HSTRING::from("C:\\Windows\\System32");
+    
+    let mut sei = SHELLEXECUTEINFOW {
+        cbSize: std::mem::size_of::<SHELLEXECUTEINFOW>() as u32,
+        fMask: SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NOASYNC,
+        lpVerb: PCWSTR(verb.as_ptr()),
+        lpFile: PCWSTR(program.as_ptr()),
+        lpParameters: PCWSTR(parameters.as_ptr()),
+        lpDirectory: PCWSTR(sys_dir.as_ptr()),
+        nShow: SW_HIDE.0 as i32,
+        ..Default::default()
+    };
+
+    unsafe {
+        match ShellExecuteExW(&mut sei) {
+            Ok(()) => {
+                // Wait for the elevated process to finish
+                if !sei.hProcess.is_invalid() {
+                    WaitForSingleObject(sei.hProcess, INFINITE);
+                    let _ = CloseHandle(sei.hProcess);
+                }
+                Ok(())
+            }
+            Err(e) => {
+                Err(format!("UAC elevation failed or was denied: {}", e))
+            }
+        }
+    }
+}
+
+/// Execute a command completely invisibly with elevation.
+pub fn run_invisible_elevated_commands(commands: Vec<String>) -> Result<(), String> {
+    use tracing::info;
+    
+    if commands.is_empty() { return Ok(()); }
+    
+    // Join commands with ' & '
+    let combined = commands.join(" & ");
+    
+    info!("Requesting invisible elevated execution for {} commands via cmd.exe", commands.len());
+    
+    run_command_with_elevation("cmd.exe", vec!["/c".to_string(), format!("\"{}\"", combined)])
+}
+
+pub fn run_invisible_elevated_command(command: &str) -> Result<(), String> {
+    run_invisible_elevated_commands(vec![command.to_string()])
+}
+
+/// Asynchronously clean up legacy VBS startup script (shell:startup)
+pub fn cleanup_legacy_vbs_startup() {
+    std::thread::spawn(|| {
+        use tracing::{info, warn, error};
+
+        // Get the current user's AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup
+        let home_dir = match dirs::home_dir() {
+            Some(path) => path,
+            None => return,
+        };
+        
+        let vbs_path = home_dir.join("AppData")
+            .join("Roaming")
+            .join("Microsoft")
+            .join("Windows")
+            .join("Start Menu")
+            .join("Programs")
+            .join("Startup")
+            .join("wsl-dashboard.vbs");
+
+        if vbs_path.exists() {
+            info!("Legacy startup VBS found: {:?}. Attempting cleanup...", vbs_path);
+            
+            // Attempt to delete the file with a 3-second timeout constraint (prevents permanent blockage by antivirus)
+            let path_to_del = vbs_path.clone();
+            let (tx, rx) = std::sync::mpsc::channel();
+            
+            std::thread::spawn(move || {
+                let res = std::fs::remove_file(&path_to_del);
+                let _ = tx.send(res);
+            });
+
+            match rx.recv_timeout(std::time::Duration::from_secs(3)) {
+                Ok(Ok(_)) => info!("Successfully removed legacy VBS startup script."),
+                Ok(Err(e)) => error!("Failed to remove legacy VBS script: {}", e),
+                Err(_) => warn!("Cleanup of legacy VBS script timed out (possible antivirus interference)."),
+            }
+        }
+    });
+}

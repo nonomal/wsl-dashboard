@@ -11,8 +11,11 @@ import {
     RootFSHelpDialog,
     VSCodeStartupDialog,
     WslConfigDialog,
+    NetworkAddRuleDialog,
 } from "dialogs.slint";
-import { AppInfo, Information, RootFSHelpItem, AppI18n } from "../theme.slint";
+import { ProxyHelpDialog } from "./dialogs/proxy_help_dialog.slint";
+import { CheckProxyDialog } from "./dialogs/check_proxy_dialog.slint";
+import { AppInfo, Information, RootFSHelpItem, AppI18n, Theme } from "../theme.slint";
 
 export component ModalManager inherits Rectangle {
     // Controls
@@ -30,12 +33,16 @@ export component ModalManager inherits Rectangle {
     in property <bool> show_rootfs_help: false;
     in property <bool> show_vscode_startup: false;
     in-out property <bool> show_wsl_config: false;
+    in-out property <bool> show_add_network_rule: false;
+    in-out property <bool> show_check_proxy: false;
+    in-out property <bool> show_network_proxy_help: false;
     in property <bool> is_installing: false;
 
     // Data
     in property <string> delete_target_name: "";
     in property <string> export_target_name: "";
     in-out property <string> export_path;
+    in-out property <bool> export_compress: true;
     in property <string> export_error: "";
     in property <string> clone_source_name: "";
     in-out property <string> clone_target_name;
@@ -56,12 +63,24 @@ export component ModalManager inherits Rectangle {
     in-out property <bool> settings_lock_default: false;
     in-out property <bool> settings_autostart: false;
     in-out property <string> settings_startup_script: "";
+    in property <string> settings_startup_script_url: "";
     in property <string> settings_terminal_dir_error: "";
     in property <string> settings_vscode_dir_error: "";
     in property <string> settings_startup_script_error: "";
     in property <string> settings_default_error: "";
+    in property <bool> settings_is_task_exists: true;
     in property <Information> information;
     in property <[RootFSHelpItem]> rootfs_help_list;
+    
+    // Network properties
+    in property <[string]> network_distro_names: [];
+    in property <[string]> network_local_ips: [];
+    in-out property <int> network_add_distro_idx: 0;
+    in-out property <int> network_add_ip_idx: 0;
+    in-out property <string> network_add_listen_port: "";
+    in-out property <string> network_add_target_port: "";
+    in-out property <bool> network_add_enable_fw: true;
+    in property <string> network_add_error: "";
 
     // WSL Config Dialog properties
     in property <string> wsl_config_distro_name: "";
@@ -122,6 +141,8 @@ export component ModalManager inherits Rectangle {
     callback close_wsl_config();
     callback request_wsl_config_preview();
     callback open_url(string);
+    callback add_network_rule(string, string, string, string, bool);
+    callback check_proxy_connection(string);
     if (show_delete): ConfirmationDialog {
         width: 100%;
         height: 100%;
@@ -151,6 +172,7 @@ export component ModalManager inherits Rectangle {
         confirm(path) => {
             root.confirm_export(path);
         }
+        compress <=> root.export_compress;
     }
     if (show_clone): CloneDialog {
         width: 100%;
@@ -281,10 +303,15 @@ export component ModalManager inherits Rectangle {
         lock_default: settings_lock_default;
         autostart <=> settings_autostart;
         startup_script <=> settings_startup_script;
+        startup_script_url: settings_startup_script_url;
         terminal_dir_error: settings_terminal_dir_error;
         vscode_dir_error: settings_vscode_dir_error;
         startup_script_error: settings_startup_script_error;
         default_error: settings_default_error;
+        is_task_exists: settings_is_task_exists;
+        open-url(url) => {
+            root.open_url(url);
+        }
         save => {
             root.confirm_settings(root.settings_target_name, root.settings_terminal_dir, root.settings_vscode_dir, root.settings_is_default, root.settings_autostart, root.settings_startup_script);
         }
@@ -348,6 +375,52 @@ export component ModalManager inherits Rectangle {
         }
         request_preview => {
             root.request_wsl_config_preview();
+        }
+    }
+    if (show_add_network_rule): NetworkAddRuleDialog {
+        width: 100%;
+        height: 100%;
+        distro_names: root.network_distro_names;
+        local_ips: root.network_local_ips;
+        distro_idx <=> root.network_add_distro_idx;
+        ip_idx <=> root.network_add_ip_idx;
+        listen_port <=> root.network_add_listen_port;
+        target_port <=> root.network_add_target_port;
+        enable_fw <=> root.network_add_enable_fw;
+        error_msg: root.network_add_error;
+        close => {
+            root.show_add_network_rule = false;
+        }
+        add(distro, ip, lp, tp, fw) => {
+            root.add_network_rule(distro, ip, lp, tp, fw);
+        }
+    }
+
+    if (show_check_proxy): Rectangle {
+        background: Theme.dark_mode ? #00000088 : #00000044;
+        z: 11;
+        TouchArea {
+            clicked => { root.show_check_proxy = false; }
+        }
+        CheckProxyDialog {
+            check_connection(url) => {
+                root.check_proxy_connection(url);
+                root.show_check_proxy = false;
+            }
+            close => {
+                root.show_check_proxy = false;
+            }
+        }
+    }
+
+
+    if (show_network_proxy_help): Rectangle {
+        background: Theme.dark_mode ? #00000088 : #00000044;
+        z: 12;
+        TouchArea {
+            clicked => { root.show_network_proxy_help = false; }
+        }
+        ProxyHelpDialog {
         }
     }
 }

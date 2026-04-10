@@ -29,6 +29,7 @@ I18N :  [English](../README.md) | [简体中文](./README_zh_CN.md) | [繁體中
 - [💻 Sistem Gereksinimleri](#-sistem-gereksinimleri)
 - [📦 Kurulum Kılavuzu](#-kurulum-kılavuzu)
 - [🛠️ Teknoloji Yığını ve Performans](#️-teknoloji-yığını-ve-performans)
+- [⭐️ Emek ve sevgi işi](#️-emek-ve-sevgi-işi)
   - [📄 Lisans](#-lisans)
 
 ---
@@ -81,6 +82,8 @@ I18N :  [English](../README.md) | [简体中文](./README_zh_CN.md) | [繁體中
 - **Akıllı Kurulum**: Microsoft Store, GitHub veya yerel dosyalardan (RootFS/VHDX) yükleyin. Yerleşik RootFS indirme yardımcısı dahildir.
 - **Küresel Güvenlik**: Güvenli eşzamanlı taşıma/yedekleme işlemleri için mutex kilitleri ve kaldırma sırasında otomatik Appx temizliği.
 - **Süper Düşük Bellek Kullanımı**: Verimlilik için yüksek düzeyde optimize edilmiştir. Sessiz başlangıç (tepsi) yalnızca **~10MB** RAM kullanır. Pencere modu kullanımı yazı tipi karmaşıklığına göre değişir: Standart diller için **~18MB** ve büyük karakter setli diller (Çince, Japonca, Korece) için **~38MB**.
+- **Gelişmiş Ağ**: Kesintisiz bağlantı noktası yönlendirme yönetimi (otomatik güvenlik duvarı kuralı oluşturma ile) ve birleşik bağlantı için küresel HTTP proxy yapılandırması.
+- **USB Cihaz Yönetimi**: Tüm WSL örneklerinizde yerel USB cihazlarını doğrudan kontrol panelinden zahmetsizce bağlamak, eklemek ve yönetmek için `usbipd-win` ile tam entegrasyon.
 
 
 ## ⚙️ Yapılandırma ve Günlükler
@@ -95,6 +98,7 @@ Tüm yapılandırmalar Ayarlar görünümü üzerinden yönetilir:
 - Sistem başlangıcında otomatik başlamayı etkinleştirin (otomatik yol onarımı ile).
 - Uygulamayı başlangıçta sistem tepsisine küçülecek şekilde ayarlayın.
 - Kapat düğmesini uygulamadan çıkmak yerine tepsiye küçülecek şekilde yapılandırın.
+- Belirli özellik sekmelerinin görünürlüğünü değiştirerek kenar çubuğunu özelleştirin.
 
 Günlük dosyaları yapılandırılan günlük dizinine yazılır ve sorunları bildirirken eklenebilir.
 
@@ -112,9 +116,16 @@ Günlük dosyaları yapılandırılan günlük dizinine yazılır ve sorunları 
   <img src="../assets/screenshot/home-configs.png" width="48%" />
 </p>
 
-### USB
+### USB ve Menü daraltma
 <p align="center">
   <img src="../assets/screenshot/usb.png" width="48%" />
+  <img src="../assets/screenshot/collapsed.png" width="48%" />
+</p>
+
+### ağ
+<p align="center">
+  <img src="../assets/screenshot/port-forwarding.png" width="48%" />
+  <img src="../assets/screenshot/http-proxy.png" width="48%" />
 </p>
 
 ### Örnek Ekle ve Ayarlar
@@ -123,10 +134,9 @@ Günlük dosyaları yapılandırılan günlük dizinine yazılır ve sorunları 
   <img src="../assets/screenshot/settings.png" width="48%" />
 </p>
 
-### Hakkında ve Menü daraltma
+### Hakkında 
 <p align="center">
   <img src="../assets/screenshot/about.png" width="48%" />
-  <img src="../assets/screenshot/collapsed.png" width="48%" />
 </p>
 
 ## 🎬 Çalışma Gösterimi
@@ -193,6 +203,10 @@ Rust araç zincirinin (Rust 1.92+ veya daha yeni) kurulu olduğundan emin olun.
   - **Taşınabilirlik**: Optimize edilmiş yayın derlemesi tek bir kompakt yürütülebilir dosya üretir.
 
 
+
+## ⭐️ Emek ve sevgi işi
+
+Eğer bu projeyi faydalı bulduysanız, GitHub'da bir yıldız bırakırsanız minnettar olurum. Desteğiniz projenin daha geniş bir kitleye ulaşmasına yardımcı olur ve derinden takdir edilir. Beni yeni özellikler eklemeye motive eden şey bu teşviktir.
 
 ## 📄 Lisans
 

@@ -29,6 +29,7 @@ I18N :  [English](../README.md) | [简体中文](./README_zh_CN.md) | [繁體中
 - [💻 Requisitos del Sistema](#-requisitos-del-sistema)
 - [📦 Guía de Instalación](#-guía-de-instalación)
 - [🛠️ Tecnologías y Rendimiento](#️-tecnologías-y-rendimiento)
+- [⭐️ Obra de amor](#️-obra-de-amor)
 - [📄 Licencia](#-licencia)
 
 ---
@@ -81,6 +82,8 @@ Inglés, Chino, Chino, Hindi, Español, Francés, Arabic, Bengalí, Portugués, 
 - **Instalación Inteligente**: Instale desde Microsoft Store, GitHub o archivos locales (RootFS/VHDX). Incluye asistente de descarga RootFS integrado.
 - **Seguridad Global**: Bloqueos mutex para operaciones concurrentes seguras de migración/respaldo y limpieza automática de Appx al eliminar.
 - **Huella de Memoria Ultra Baja**: Altamente optimizado para la eficiencia. El inicio silencioso (bandeja) usa solo **~10MB** de RAM. El uso en modo ventana varía según la complejidad de la fuente: **~18MB** para idiomas estándar y **~38MB** para idiomas con grandes conjuntos de caracteres (chino, japonés, coreano).
+- **Redes avanzadas**: Gestión fluida del reenvío de puertos (con creación automática de reglas de firewall) y configuración global de proxy HTTP para una conectividad unificada.
+- **Gestión de dispositivos USB**: Integración completa con `usbipd-win` para vincular, adjuntar y administrar dispositivos USB locales sin esfuerzo en sus instancias WSL directamente desde la interfaz del panel.
 
 
 ## ⚙️ Configuración y Registros
@@ -95,6 +98,7 @@ Toda la configuración se gestiona a través de la vista Configuración:
 - Habilite el inicio automático al arrancar el sistema (con reparación automática de rutas).
 - Configure la aplicación para que se minimice en la bandeja al iniciar.
 - Configure el botón de cierre para que minimice en la bandeja en lugar de salir del programa.
+- Personalice la barra lateral alternando la visibilidad de pestañas de funciones específicas.
 
 Los archivos de registro se escriben en el directorio configurado y pueden adjuntarse al informar de problemas.
 
@@ -112,9 +116,16 @@ Los archivos de registro se escriben en el directorio configurado y pueden adjun
   <img src="../assets/screenshot/home-configs.png" width="48%" />
 </p>
 
-### USB
+### USB y menú colapsado
 <p align="center">
   <img src="../assets/screenshot/usb.png" width="48%" />
+  <img src="../assets/screenshot/collapsed.png" width="48%" />
+</p>
+
+### Gestión de redes
+<p align="center">
+  <img src="../assets/screenshot/port-forwarding.png" width="48%" />
+  <img src="../assets/screenshot/http-proxy.png" width="48%" />
 </p>
 
 ### Añadir Instancia y Configuración
@@ -123,10 +134,9 @@ Los archivos de registro se escriben en el directorio configurado y pueden adjun
   <img src="../assets/screenshot/settings.png" width="48%" />
 </p>
 
-### Acerca de y menú colapsado
+### Acerca de
 <p align="center">
   <img src="../assets/screenshot/about.png" width="48%" />
-  <img src="../assets/screenshot/collapsed.png" width="48%" />
 </p>
 
 ## 🎬 Demostración
@@ -193,6 +203,10 @@ Asegúrese de tener instalado el conjunto de herramientas de Rust (Rust 1.92+ o 
   - **Portabilidad**: El build optimizado produce un único ejecutable compacto.
 
 
+
+## ⭐️ Obra de amor
+
+Si ha encontrado útil este proyecto, le agradecería que dejara una estrella en GitHub. Su apoyo ayuda a llegar a más personas y es profundamente apreciado. Es este aliento lo que me motiva a seguir construyendo.
 
 ## 📄 Licencia
 

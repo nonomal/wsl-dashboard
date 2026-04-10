@@ -1,0 +1,159 @@
+import { Theme, AppI18n, LayoutConstants } from "../../theme.slint";
+import { CustomButton, CustomLineEdit } from "../form_widgets.slint";
+
+export component CheckProxyDialog inherits Rectangle {
+    in property <string> title: AppI18n.t("dialog.check_proxy_title", [AppI18n.version]);
+    in-out property <string> test_url: "https://www.facebook.com";
+
+    callback check_connection(string);
+    callback close();
+
+    width: 450px;
+    height: content.preferred-height;
+    background: Theme.content_bg;
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: Theme.border_color;
+    drop-shadow-blur: 16px;
+    drop-shadow-color: Theme.dark_mode ? #00000088 : #00000044;
+
+    content := VerticalLayout {
+        padding: 20px;
+        spacing: 16px;
+        alignment: start;
+
+        // Title
+        HorizontalLayout {
+            spacing: 8px;
+            Text {
+                text: root.title;
+                font-size: 18px * LayoutConstants.font-scale;
+                font-family: Theme.default_font;
+                font-weight: 600;
+                color: Theme.text_primary;
+                horizontal-alignment: AppI18n.is-rtl ? right : left;
+                vertical-alignment: center;
+            }
+        }
+
+        // Divider
+        Rectangle {
+            height: 1px;
+            background: Theme.border_color;
+        }
+
+        // Warning and instruction
+        HorizontalLayout {
+            spacing: 12px;
+            alignment: AppI18n.is-rtl ? end : start;
+
+            // RTL: Text then Icon
+            if (AppI18n.is-rtl): VerticalLayout {
+                alignment: start;
+                spacing: 4px;
+                Text {
+                    text: AppI18n.t("dialog.check_proxy_desc1", [AppI18n.version]);
+                    font-size: 14px * LayoutConstants.font-scale;
+                    font-family: Theme.default_font;
+                    color: Theme.text_primary;
+                    wrap: word-wrap;
+                    horizontal-alignment: right;
+                }
+
+                Text {
+                    text: AppI18n.t("dialog.check_proxy_desc2", [AppI18n.version]);
+                    font-size: 14px * LayoutConstants.font-scale;
+                    font-family: Theme.default_font;
+                    color: Theme.text_primary;
+                    wrap: word-wrap;
+                    horizontal-alignment: right;
+                }
+            }
+
+            Rectangle {
+                width: 32px;
+                height: 32px;
+                border-radius: 16px;
+                background: #4285f4;
+                Text {
+                    text: "?";
+                    color: white;
+                    font-size: 20px;
+                    font-weight: 700;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+
+            // LTR: Icon then Text
+            if (!AppI18n.is-rtl): VerticalLayout {
+                alignment: start;
+                spacing: 4px;
+                Text {
+                    text: AppI18n.t("dialog.check_proxy_desc1", [AppI18n.version]);
+                    font-size: 14px * LayoutConstants.font-scale;
+                    font-family: Theme.default_font;
+                    color: Theme.text_primary;
+                    wrap: word-wrap;
+                    horizontal-alignment: left;
+                }
+
+                Text {
+                    text: AppI18n.t("dialog.check_proxy_desc2", [AppI18n.version]);
+                    font-size: 14px * LayoutConstants.font-scale;
+                    font-family: Theme.default_font;
+                    color: Theme.text_primary;
+                    wrap: word-wrap;
+                    horizontal-alignment: left;
+                }
+            }
+        }
+
+        // URL Input
+        CustomLineEdit {
+            text: root.test_url;
+            edited(t) => {
+                root.test_url = t;
+            }
+        }
+
+        // Spacer
+        Rectangle {
+            height: 12px;
+        }
+
+        // Buttons
+        HorizontalLayout {
+            spacing: 12px;
+            alignment: AppI18n.is-rtl ? start : end;
+
+            if (AppI18n.is-rtl): CustomButton {
+                text: AppI18n.t("dialog.cancel", [AppI18n.version]);
+                width: 100px;
+                height: 32px;
+                clicked => {
+                    root.close();
+                }
+            }
+
+            CustomButton {
+                text: AppI18n.t("dialog.confirm", [AppI18n.version]);
+                primary: true;
+                width: 100px;
+                height: 32px;
+                clicked => {
+                    root.check_connection(root.test_url);
+                }
+            }
+
+            if (!AppI18n.is-rtl): CustomButton {
+                text: AppI18n.t("dialog.cancel", [AppI18n.version]);
+                width: 100px;
+                height: 32px;
+                clicked => {
+                    root.close();
+                }
+            }
+        }
+    }
+}

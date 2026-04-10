@@ -29,6 +29,7 @@ I18N :  [English](../README.md) | [简体中文](./README_zh_CN.md) | [繁體中
 - [💻 Systémové požadavky](#-systémové-požadavky)
 - [📦 Instalační příručka](#-instalační-příručka)
 - [🛠️ Technologický zásobník a výkon](#️-technologický-zásobník-a-výkon)
+- [⭐️ Dílo z lásky](#️-dílo-z-lásky)
 - [📄 Licence](#-licence)
 
 ---
@@ -81,6 +82,8 @@ Angličtina, zjednodušená čínština, tradiční čínština, hindština, šp
 - **Chytrá instalace**: Instalace z Microsoft Store, GitHubu nebo lokálních souborů (RootFS/VHDX). Obsahuje vestavěného pomocníka pro stahování RootFS.
 - **Bezpečnost**: Zámky mutex pro bezpečné souběžné migrační a zálohovací operace a automatické čištění Appx při odebírání.
 - **Extrémně nízké nároky na paměť**: Vysoce optimalizováno pro efektivitu. Tichý start (v liště) využívá pouze **~10 MB** RAM. Využití v režimu okna se liší podle složitosti písma: **~18 MB** pro standardní jazyky a **~38 MB** pro jazyky s rozsáhlými znakovými sadami (čínština, japonština, korejština).
+- **Pokročilé sítě**: Bezproblémová správa přesměrování portů (s automatickým vytvářením pravidel brány firewall) a globální konfigurace HTTP proxy pro sjednocené připojení.
+- **Správa zařízení USB**: Plná integrace s `usbipd-win` pro snadné vázání, připojování a správu místních zařízení USB napříč instancemi WSL přímo z uživatelského rozhraní řídicího panelu.
 
 
 ## ⚙️ Konfigurace a protokoly
@@ -95,6 +98,7 @@ Veškerá konfigurace se spravuje prostřednictvím zobrazení Nastavení:
 - Povolení automatického spouštění při startu systému (s automatickou opravou cesty).
 - Nastavení minimalizace do lišty při spuštění.
 - Nastavení tlačítka zavřít pro minimalizaci do lišty namísto ukončení programu.
+- Přizpůsobte si postranní panel přepínáním viditelnosti konkrétních karet funkcí.
 
 Soubory protokolů se zapisují do nakonfigurovaného adresáře a lze je přiložit při hlášení problémů.
 
@@ -112,9 +116,16 @@ Soubory protokolů se zapisují do nakonfigurovaného adresáře a lze je přilo
   <img src="../assets/screenshot/home-configs.png" width="48%" />
 </p>
 
-### USB
+### USB & sbalené menu
 <p align="center">
   <img src="../assets/screenshot/usb.png" width="48%" />
+  <img src="../assets/screenshot/collapsed.png" width="48%" />
+</p>
+
+### sieť
+<p align="center">
+  <img src="../assets/screenshot/port-forwarding.png" width="48%" />
+  <img src="../assets/screenshot/http-proxy.png" width="48%" />
 </p>
 
 ### Přidat instanci a Nastavení
@@ -123,10 +134,9 @@ Soubory protokolů se zapisují do nakonfigurovaného adresáře a lze je přilo
   <img src="../assets/screenshot/settings.png" width="48%" />
 </p>
 
-### O aplikaci a sbalené menu
+### O aplikaci
 <p align="center">
   <img src="../assets/screenshot/about.png" width="48%" />
-  <img src="../assets/screenshot/collapsed.png" width="48%" />
 </p>
 
 ## 🎬 Ukázka provozu
@@ -192,6 +202,10 @@ Ujistěte se, že máte nainstalovanou sadu nástrojů Rust (Rust 1.92+ nebo nov
   - **Přenositelnost**: Optimalizované sestavení produkuje jediný kompaktní spustitelný soubor.
 
 
+
+## ⭐️ Dílo z lásky
+
+Pokud vám tento projekt připadá užitečný, byl bych vděčný, kdybyste mu mohli nechat hvězdičku na GitHubu. Vaše podpora mu pomáhá oslovit širší publikum a hluboce si jí vážím. Právě toto povzbuzení mě motivuje k dalšímu budování.
 
 ## 📄 Licence
 

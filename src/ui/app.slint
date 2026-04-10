@@ -6,6 +6,7 @@ import {
     Information,
     RootFSHelpItem,
     UsbDevice,
+    PortProxyRuleUI,
     AppI18n,
     SettingsStrings,
     AboutStrings,
@@ -16,12 +17,13 @@ import { ModalManager } from "components/modal_manager.slint";
 import { MainView } from "views/main_view.slint";
 import { AddInstanceView } from "views/add_view.slint";
 import { UsbView } from "views/usb_view.slint";
-import { SettingsView } from "views/settings_view.slint";
+import { NetworkView } from "views/network/mod.slint";
+import { SettingsView } from "views/settings/mod.slint";
 import { AboutView } from "views/about_view.slint";
 import { TaskStatusToast } from "components/task_status_toast.slint";
 
 
-export { Theme, Distro, InstallableDistro, AppInfo, RootFSHelpItem, UsbDevice, AppI18n }
+export { Theme, Distro, InstallableDistro, AppInfo, RootFSHelpItem, UsbDevice, PortProxyRuleUI, AppI18n }
 
 export component AppWindow inherits Window {
     title: "WSL_DASHBOARD_WINDOW_UI";
@@ -64,6 +66,7 @@ export component AppWindow inherits Window {
     in-out property <bool> show_delete_confirmation: false;
     in-out property <string> distro_to_delete: "";
     in-out property <bool> show_export_dialog: false;
+    in-out property <bool> export_compress: true;
     in-out property <string> export_distro_name: "";
     in-out property <string> export_target_path: "";
     in property <string> export_error: "";
@@ -72,6 +75,7 @@ export component AppWindow inherits Window {
     in-out property <string> clone_target_name: "";
     in-out property <string> clone_target_path: "";
     in property <string> clone_error: "";
+    in-out property <string> clone_base_path: "";
     in-out property <bool> show_move_dialog: false;
     in-out property <string> move_source_name: "";
     in-out property <string> move_target_name: "";
@@ -98,6 +102,10 @@ export component AppWindow inherits Window {
     in-out property <int> log_level: 4;
     in-out property <int> log_days: 7;
     in-out property <int> check_update_interval: 7;
+    in-out property <bool> sidebar_add: true;
+    in-out property <bool> sidebar_usb: true;
+    in-out property <bool> sidebar_network: true;
+    in-out property <bool> sidebar_about: true;
     in property <string> task_status_text: "";
     in property <bool> task_status_visible: false;
     in property <Information> information;
@@ -113,10 +121,12 @@ export component AppWindow inherits Window {
     in-out property <bool> settings_lock_default: false;
     in-out property <bool> settings_autostart: false;
     in-out property <string> settings_startup_script: "";
+    in-out property <string> settings_startup_script_url: "";
     in-out property <string> settings_terminal_dir_error: "";
     in-out property <string> settings_vscode_dir_error: "";
     in-out property <string> settings_startup_script_error: "";
     in-out property <string> settings_default_error: "";
+    in-out property <bool> settings_is_task_exists: true;
 
     // WSL Config properties
     in-out property <bool> show_wsl_config: false;
@@ -145,6 +155,33 @@ export component AppWindow inherits Window {
     in property <string> wsl_config_command_error: "";
     in property <string> wsl_config_preview_content: "";
 
+    // --- Network Management Properties ---
+    in-out property <bool> network_is_admin: false;
+    in-out property <bool> network_is_helper_installed: false;
+    in-out property <string> network_networking_mode: "NAT";
+    in-out property <[string]> network_distro_names: [];
+    in-out property <[string]> network_local_ips: [];
+    in-out property <[PortProxyRuleUI]> network_rules: [];
+    in-out property <bool> network_proxy_is_enabled: false;
+    in-out property <string> network_proxy_host: "";
+    in-out property <string> network_proxy_port: "";
+    in-out property <bool> network_proxy_auth_enabled: false;
+    in-out property <string> network_proxy_username: "";
+    in-out property <string> network_proxy_password: "";
+    in-out property <string> network_proxy_no_proxy: "";
+    in property <string> network_proxy_default_host: "";
+    in property <string> network_proxy_default_port: "";
+    in property <string> network_proxy_default_no_proxy: "";
+    in-out property <bool> show_check_proxy: false;
+    in-out property <bool> show_network_proxy_help: false;
+    in-out property <bool> network_show_add_dialog: false;
+    in-out property <int> network_add_distro_idx: 0;
+    in-out property <int> network_add_ip_idx: 0;
+    in-out property <string> network_add_listen_port: "";
+    in-out property <string> network_add_target_port: "";
+    in-out property <bool> network_add_enable_fw: true;
+    in property <string> network_add_error: "";
+    
     // --- USB Properties ---
     in property <[UsbDevice]> usb_devices: [];
     in property <bool> usb_loading: false;
@@ -212,6 +249,18 @@ export component AppWindow inherits Window {
     callback save_wsl_config_and_restart();
     callback request_wsl_config_preview();
     callback home_clicked();
+    callback check_network_task_status();
+    callback initialize_task_clicked();
+    callback open_add_rule_dialog();
+    callback add_network_rule(string, string, string, string, bool);
+    callback delete_network_rule(string);
+    callback process_network_rule(string);
+    callback cancel_network_rule(string);
+    callback apply_all_network_rules();
+    callback cancel_all_network_rules();
+    callback load_proxy_settings();
+    callback save_proxy_settings(bool, string, string, string, bool, string, string);
+    callback check_proxy_connection(string);
     // USB callbacks
     callback refresh_usb(bool);
     callback usb_bind(string);
@@ -300,9 +349,14 @@ export component AppWindow inherits Window {
                     selected_tab: root.selected_tab;
                     home_text: AppI18n.t("sidebar.home", [AppI18n.version]);
                     add_text: AppI18n.t("sidebar.add", [AppI18n.version]);
-                    usb_text: AppI18n.t("usb.title", [AppI18n.version]);
+                    usb_text: AppI18n.t("sidebar.usb", [AppI18n.version]);
+                    network_text: AppI18n.t("sidebar.network", [AppI18n.version]);
                     settings_text: AppI18n.t("sidebar.settings", [AppI18n.version]);
                     about_text: AppI18n.t("sidebar.about", [AppI18n.version]);
+                    show_add: root.sidebar_add;
+                    show_usb: root.sidebar_usb;
+                    show_network: root.sidebar_network;
+                    show_about: root.sidebar_about;
                     tab_selected(idx) => {
                         root.select_tab(idx);
                     }
@@ -435,6 +489,7 @@ export component AppWindow inherits Window {
                                 usb_error: root.usb_error;
                                 usbipd_version: root.usbipd_version;
                                 is_usbipd_outdated: root.is_usbipd_outdated;
+                                is_task_exists: root.network_is_helper_installed;
                                 refresh_usb(m) => {
                                     root.refresh_usb(m);
                                 }
@@ -461,6 +516,62 @@ export component AppWindow inherits Window {
                                 }
                             }
 
+                            NetworkView {
+                                visible: true;
+                                opacity: selected_tab == 3 ? 1 : 0;
+                                z: 8;
+                                x: selected_tab == 3 ? 0px : 10000px;
+                                is_admin: root.network_is_admin;
+                                is_helper_installed: root.network_is_helper_installed;
+                                networking_mode: root.network_networking_mode;
+                                distro_names: root.network_distro_names;
+                                local_ips: root.network_local_ips;
+                                rules: root.network_rules;
+                                proxy_is_enabled <=> root.network_proxy_is_enabled;
+                                proxy_host <=> root.network_proxy_host;
+                                proxy_port <=> root.network_proxy_port;
+                                proxy_auth_enabled <=> root.network_proxy_auth_enabled;
+                                proxy_username <=> root.network_proxy_username;
+                                proxy_password <=> root.network_proxy_password;
+                                proxy_no_proxy <=> root.network_proxy_no_proxy;
+                                proxy_default_host: root.network_proxy_default_host;
+                                proxy_default_port: root.network_proxy_default_port;
+                                proxy_default_no_proxy: root.network_proxy_default_no_proxy;
+                                initialize_task_clicked => {
+                                    root.initialize_task_clicked();
+                                }
+                                open_add_rule_dialog => {
+                                    root.open_add_rule_dialog();
+                                }
+                                add_rule(distro, ip, lport, tport, fw) => {
+                                    root.add_network_rule(distro, ip, lport, tport, fw);
+                                }
+                                delete_rule(id) => {
+                                    root.delete_network_rule(id);
+                                }
+                                process_rule(id) => {
+                                    root.process_network_rule(id);
+                                }
+                                cancel_rule(id) => {
+                                    root.cancel_network_rule(id);
+                                }
+                                apply_all_rules => {
+                                    root.apply_all_network_rules();
+                                }
+                                cancel_all_rules => {
+                                    root.cancel_all_network_rules();
+                                }
+                                save_proxy_settings(enabled, host, port, no, auth, u, p) => {
+                                    root.save_proxy_settings(enabled, host, port, no, auth, u, p);
+                                }
+                                open_check_proxy_dialog => {
+                                    root.show_check_proxy = true;
+                                }
+                                show_proxy_help => {
+                                    root.show_network_proxy_help = true;
+                                }
+                            }
+
                             SettingsView {
                                 visible: true;
                                 opacity: selected_tab == 5 ? 1 : 0;
@@ -477,6 +588,10 @@ export component AppWindow inherits Window {
                                 tray_autostart <=> root.tray_autostart;
                                 tray_start_minimized <=> root.tray_start_minimized;
                                 tray_close_to_tray <=> root.tray_close_to_tray;
+                                sidebar_add <=> root.sidebar_add;
+                                sidebar_usb <=> root.sidebar_usb;
+                                sidebar_network <=> root.sidebar_network;
+                                sidebar_about <=> root.sidebar_about;
                                 save-settings => {
                                     root.save_settings();
                                 }
@@ -539,6 +654,7 @@ export component AppWindow inherits Window {
         show_export: root.show_export_dialog;
         export_target_name: root.export_distro_name;
         export_path <=> root.export_target_path;
+        export_compress <=> root.export_compress;
         export_error: root.export_error;
         cancel_export => {
             root.show_export_dialog = false;
@@ -638,10 +754,12 @@ export component AppWindow inherits Window {
         settings_lock_default <=> root.settings_lock_default;
         settings_autostart <=> root.settings_autostart;
         settings_startup_script <=> root.settings_startup_script;
+        settings_startup_script_url: root.settings_startup_script_url;
         settings_terminal_dir_error: root.settings_terminal_dir_error;
         settings_vscode_dir_error: root.settings_vscode_dir_error;
         settings_startup_script_error: root.settings_startup_script_error;
         settings_default_error: root.settings_default_error;
+        settings_is_task_exists: root.settings_is_task_exists;
         confirm_settings(n, td, vd, id, as, ss) => {
             root.confirm_distro_settings(n, td, vd, id, as, ss);
         }
@@ -697,6 +815,23 @@ export component AppWindow inherits Window {
         }
         request_wsl_config_preview => {
             root.request_wsl_config_preview();
+        }
+        show_add_network_rule <=> root.network_show_add_dialog;
+        network_distro_names: root.network_distro_names;
+        network_local_ips: root.network_local_ips;
+        network_add_distro_idx <=> root.network_add_distro_idx;
+        network_add_ip_idx <=> root.network_add_ip_idx;
+        network_add_listen_port <=> root.network_add_listen_port;
+        network_add_target_port <=> root.network_add_target_port;
+        network_add_enable_fw <=> root.network_add_enable_fw;
+        network_add_error: root.network_add_error;
+        add_network_rule(distro, ip, lp, tp, fw) => {
+            root.add_network_rule(distro, ip, lp, tp, fw);
+        }
+        show_check_proxy <=> root.show_check_proxy;
+        show_network_proxy_help <=> root.show_network_proxy_help;
+        check_proxy_connection(url) => {
+            root.check_proxy_connection(url);
         }
     }
 }

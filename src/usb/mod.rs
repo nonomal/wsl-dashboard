@@ -1,11 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::process::Command;
 use tracing::{info, debug};
-use windows::core::{HSTRING, PCWSTR};
-use windows::Win32::UI::Shell::{ShellExecuteExW, SHELLEXECUTEINFOW, SEE_MASK_NOCLOSEPROCESS, SEE_MASK_NOASYNC};
-use windows::Win32::UI::WindowsAndMessaging::SW_HIDE;
-use windows::Win32::Foundation::CloseHandle;
-use windows::Win32::System::Threading::{WaitForSingleObject, INFINITE};
 
 #[cfg(windows)]
 use std::os::windows::process::CommandExt;
@@ -128,13 +123,13 @@ impl UsbManager {
     /// Perform the bind operation (directly with elevation as it always requires it)
     pub async fn bind(bus_id: &str) -> Result<(), String> {
         info!("Binding device with elevation: {}", bus_id);
-        Self::run_command_with_elevation("usbipd", vec!["bind".to_string(), "--busid".to_string(), bus_id.to_string()])
+        crate::utils::system::run_command_with_elevation("usbipd", vec!["bind".to_string(), "--busid".to_string(), bus_id.to_string()])
     }
 
     /// Perform the unbind operation (directly with elevation as it always requires it)
     pub async fn unbind(bus_id: &str) -> Result<(), String> {
         info!("Unbinding device with elevation: {}", bus_id);
-        Self::run_command_with_elevation("usbipd", vec!["unbind".to_string(), "--busid".to_string(), bus_id.to_string()])
+        crate::utils::system::run_command_with_elevation("usbipd", vec!["unbind".to_string(), "--busid".to_string(), bus_id.to_string()])
     }
 
     /// Perform the attach operation (directly with elevation)
@@ -181,7 +176,7 @@ impl UsbManager {
             format!("usbipd bind --busid {0} & usbipd attach --wsl \"{1}\" --busid {0}", bus_id, distro)
         };
 
-        Self::run_command_with_elevation("cmd", vec!["/c".to_string(), cmd_args])
+        crate::utils::system::run_command_with_elevation("cmd", vec!["/c".to_string(), cmd_args])
     }
 
     /// Perform the detach operation
@@ -204,41 +199,5 @@ impl UsbManager {
         }
 
         Ok(())
-    }
-
-    /// Execute a command with UAC elevation
-    pub fn run_command_with_elevation(program_name: &str, args: Vec<String>) -> Result<(), String> {
-        let args_str = args.join(" ");
-        let program = HSTRING::from(program_name);
-        let parameters = HSTRING::from(&args_str);
-        let verb = HSTRING::from("runas");
-        
-        debug!("Executing elevated command: {} {}", program_name, args_str);
-
-        let mut sei = SHELLEXECUTEINFOW {
-            cbSize: std::mem::size_of::<SHELLEXECUTEINFOW>() as u32,
-            fMask: SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NOASYNC,
-            lpVerb: PCWSTR(verb.as_ptr()),
-            lpFile: PCWSTR(program.as_ptr()),
-            lpParameters: PCWSTR(parameters.as_ptr()),
-            nShow: SW_HIDE.0 as i32,
-            ..Default::default()
-        };
-
-        unsafe {
-            match ShellExecuteExW(&mut sei) {
-                Ok(()) => {
-                    // Wait for the elevated process to finish
-                    if !sei.hProcess.is_invalid() {
-                        WaitForSingleObject(sei.hProcess, INFINITE);
-                        let _ = CloseHandle(sei.hProcess);
-                    }
-                    Ok(())
-                }
-                Err(e) => {
-                    Err(format!("UAC elevation failed or was denied: {}", e))
-                }
-            }
-        }
     }
 }

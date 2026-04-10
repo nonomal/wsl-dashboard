@@ -4,6 +4,7 @@ use tracing::info;
 use crate::{AppWindow, AppState, i18n};
 use slint::Model;
 use crate::ui::data::refresh_distros_ui;
+use crate::ui::handlers::instance;
 
 pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, app_state: Arc<Mutex<AppState>>) {
     // Handle message link click (to open startup folder or generic URL)
@@ -44,8 +45,32 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, app_state: Arc
                 if let Ok(app_state) = tokio::time::timeout(lock_timeout, as_ptr.lock()).await {
                     let executor = app_state.wsl_dashboard.executor().clone();
                     let working_dir = app_state.config_manager.get_instance_config(&name).terminal_dir;
+                    let proxy_config = app_state.config_manager.get_network_config().proxy.clone();
                     drop(app_state);
-                    let _ = executor.open_distro_terminal(&name, &working_dir).await;
+                    
+                    let mut proxy_exports: Option<Vec<(String, String)>> = None;
+                    if proxy_config.is_enabled && !proxy_config.host.is_empty() && !proxy_config.port.is_empty() {
+                        let auth = if proxy_config.auth_enabled && !proxy_config.username.is_empty() && !proxy_config.password.is_empty() {
+                            format!("{}:{}@", proxy_config.username, proxy_config.password)
+                        } else {
+                            "".to_string()
+                        };
+                        let proxy_url = format!("http://{}{}:{}", auth, proxy_config.host, proxy_config.port);
+                        
+                        let mut exports = Vec::new();
+                        exports.push(("HTTP_PROXY".to_string(), proxy_url.clone()));
+                        exports.push(("HTTPS_PROXY".to_string(), proxy_url.clone()));
+                        
+                        // User specifically wants HTTP_PROXY optionally lowercase? The example is uppercase.
+                        // I will add both just to be perfectly compliant with standard linux, but let's stick to user example.
+                        
+                        if !proxy_config.no_proxy.is_empty() {
+                            exports.push(("NO_PROXY".to_string(), proxy_config.no_proxy.clone()));
+                        }
+                        proxy_exports = Some(exports);
+                    }
+                    
+                    let _ = executor.open_distro_terminal(&name, &working_dir, proxy_exports).await;
                 }
             }
             // Refresh status immediately after opening terminal
@@ -188,6 +213,7 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, app_state: Arc
                         slint_data.vhdx_path = data.vhdx_path.into();
                         slint_data.vhdx_size = data.vhdx_size.into();
                         slint_data.actual_used = data.actual_used.into();
+                        slint_data.ip = data.ip.into();
                         app.set_information(slint_data);
                         app.set_show_information(true);
                     }
@@ -235,13 +261,21 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, app_state: Arc
                 app.set_settings_terminal_dir(instance_config.terminal_dir.into());
                 app.set_settings_vscode_dir(instance_config.vscode_dir.into());
                 app.set_settings_startup_script(instance_config.startup_script.into());
-                let is_vbs_enabled = crate::app::autostart::is_autostart_enabled(&name);
-                app.set_settings_autostart(instance_config.auto_startup && is_vbs_enabled);
+                let is_task_exists = crate::network::scheduler::check_task_exists();
+                app.set_settings_autostart(instance_config.auto_startup && is_task_exists);
+                app.set_settings_is_task_exists(is_task_exists);
                 app.set_settings_terminal_dir_error("".into());
                 app.set_settings_vscode_dir_error("".into());
                 app.set_settings_startup_script_error("".into());
                 app.set_settings_default_error("".into());
                 app.set_show_settings(true);
+
+                // Fetch latest data for startup script help link
+                let ah_fetch = ah.clone();
+                let as_fetch = as_ptr.clone();
+                tokio::spawn(async move {
+                    instance::fetch_latest_instance_data(ah_fetch, as_fetch).await;
+                });
             }
         });
     });

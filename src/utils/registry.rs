@@ -142,7 +142,7 @@ pub fn get_system_timezone() -> String {
     format!("UTC{}{:02}:{:02}", sign, hours, mins)
 }
 
-pub fn write_reg_string(root: HKEY, subkey: &str, value_name: &str, value: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub fn write_reg_string(root: HKEY, subkey: &str, value_name: &str, value: &str) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let subkey_wide = encode_wide(subkey);
     let value_name_wide = encode_wide(value_name);
     let value_wide = encode_wide(value);
@@ -166,7 +166,7 @@ pub fn write_reg_string(root: HKEY, subkey: &str, value_name: &str, value: &str)
     Ok(())
 }
 
-pub fn delete_reg_value(root: HKEY, subkey: &str, value_name: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub fn delete_reg_value(root: HKEY, subkey: &str, value_name: &str) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let subkey_wide = encode_wide(subkey);
     let value_name_wide = encode_wide(value_name);
     

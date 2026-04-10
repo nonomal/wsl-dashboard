@@ -35,9 +35,19 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, app_state: Arc
                 }).unwrap();
             }
 
-            // Tab 2 is "USB devices" — auto-refresh on entry
+            // Tab 2 is "USB Devices"
             if tab == 2 {
                 app.invoke_refresh_usb(true);
+            }
+
+            // Tab 3 is "Network"
+            if tab == 3 {
+                app.invoke_check_network_task_status();
+                let ah = ah.clone();
+                let as_ptr = as_ptr.clone();
+                tokio::spawn(async move {
+                    crate::ui::handlers::network::refresh_network_view_data(ah, as_ptr).await;
+                });
             }
         }
     });

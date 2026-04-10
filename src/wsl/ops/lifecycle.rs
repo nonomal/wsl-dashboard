@@ -5,7 +5,8 @@ use std::time::Duration;
 use crate::wsl::executor::WslCommandExecutor;
 use crate::wsl::models::WslCommandResult;
 use crate::config::ConfigManager;
-use crate::app::autostart::update_windows_autostart;
+
+
 
 pub async fn start_distro(executor: &WslCommandExecutor, distro_name: &str) -> WslCommandResult<String> {
     // Option 1: First try to start and verify by executing a simple command
@@ -89,7 +90,6 @@ pub async fn delete_distro(executor: &WslCommandExecutor, config_manager: &Confi
     
     let cm = config_manager.clone();
     let dn1 = distro_name.to_string();
-    let dn2 = distro_name.to_string();
 
     debug!("Starting parallel cleanup tasks for '{}' with 15s timeout...", distro_name);
     let cleanup_future = async {
@@ -103,13 +103,8 @@ pub async fn delete_distro(executor: &WslCommandExecutor, config_manager: &Confi
                 debug!("Instance config removal for '{}' complete", distro_name);
                 res
             },
-            // b. Remove from wsl-dashboard.vbs
-            async {
-                debug!("Updating VBS autostart for '{}' (Removing entries)...", distro_name);
-                let res = update_windows_autostart(&dn2, false).await;
-                debug!("VBS autostart update for '{}' complete", distro_name);
-                res
-            }
+
+
         )
     };
 
@@ -120,23 +115,13 @@ pub async fn delete_distro(executor: &WslCommandExecutor, config_manager: &Confi
     }
     
     debug!("Finished parallel cleanup tasks attempt for '{}'", distro_name);
-    {
-        use tokio::task::JoinError;
-        let (config_res, autostart_res): (Result<Result<(), String>, JoinError>, Result<(), Box<dyn std::error::Error + Send + Sync>>) = cleanup_result.unwrap_or((
-            Ok(Ok(())), // Mock success to continue
-            Ok(())
-        ));
+        let (config_res,) = cleanup_result.unwrap_or((Ok(Ok(())),));
 
         match config_res {
             Ok(Err(e)) => warn!("Failed to remove instance config for '{}': {}", distro_name, e),
             Err(e) => warn!("Task join error during instance config removal: {}", e),
             _ => {}
         }
-
-        if let Err(e) = autostart_res {
-            warn!("Failed to remove autostart line for '{}' from VBS: {}", distro_name, e);
-        }
-    }
 
     // 3. WSL Operations (Skip if not in registry to avoid unnecessary errors/hangs)
     if !exists_in_reg {

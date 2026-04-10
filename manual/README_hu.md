@@ -29,6 +29,7 @@ I18N :  [English](../README.md) | [简体中文](./README_zh_CN.md) | [繁體中
 - [💻 Rendszerkövetelmények](#-rendszerkövetelmények)
 - [📦 Telepítési útmutató](#-telepítési-útmutató)
 - [🛠️ Technológiai háttér és teljesítmény](#️-technológiai-háttér-és-teljesítmény)
+- [⭐️ Szerelemprojekt](#️-szerelemprojekt)
 - [📄 Licenc](#-licenc)
 
 ---
@@ -81,6 +82,8 @@ Angol, egyszerűsített kínai, hagyományos kínai, hindi, spanyol, francia, ar
 - **Okos telepítés**: Telepítés Microsoft Store-ból, GitHub-ról vagy helyi fájlokból (RootFS/VHDX). Beépített RootFS letöltési segéd.
 - **Biztonság**: Mutex zárolás a biztonságos egyidejű migrálási/mentési műveletekhez, és automatikus Appx tisztítás eltávolításkor.
 - **Rendkívül alacsony memóriaigény**: Hatékonyságra optimalizálva. A tálcán futó (csendes) mód csupán **~10 MB** RAM-ot használ. Az ablakos mód használata a betűtípusok összetettségétől függően változik: **~18 MB** a standard nyelveknél és **~38 MB** a nagy karakterkészletű nyelveknél (kínai, japán, koreai).
+- **Fejlett hálózatkezelés**: A porttovábbítás zökkenőmentes kezelése (automatikus tűzfalszabály-létrehozással) és globális HTTP-proxy konfiguráció az egységes kapcsolat érdekében.
+- **USB eszközök kezelése**: Teljes integráció az `usbipd-win` rendszerrel a helyi USB-eszközök egyszerű összekapcsolásához, csatlakoztatásához és kezeléséhez a WSL-példányokon a műszerfal UI-ján keresztül.
 
 
 ## ⚙️ Beállítások és naplók
@@ -95,6 +98,7 @@ Minden konfiguráció a Beállítások nézetben kezelhető:
 - Engedélyezze az automatikus indítást a rendszer indításakor (automatikus elérési út javítással).
 - Állítsa be az alkalmazást, hogy indításkor a rendszertálcára kicsinyítsen.
 - Konfigurálja a bezárás gombot, hogy a tálcára kicsinyítsen a programból való kilépés helyett.
+- Szabja testre az oldalsávot az egyes funkciók lapja láthatóságának váltásával.
 
 A naplófájlok a konfigurált könyvtárba íródnak, és csatolhatók hiba jelentésekor.
 
@@ -112,9 +116,16 @@ A naplófájlok a konfigurált könyvtárba íródnak, és csatolhatók hiba jel
   <img src="../assets/screenshot/home-configs.png" width="48%" />
 </p>
 
-### USB
+### USB és összecsukott menü
 <p align="center">
   <img src="../assets/screenshot/usb.png" width="48%" />
+  <img src="../assets/screenshot/collapsed.png" width="48%" />
+</p>
+
+### hálózat
+<p align="center">
+  <img src="../assets/screenshot/port-forwarding.png" width="48%" />
+  <img src="../assets/screenshot/http-proxy.png" width="48%" />
 </p>
 
 ### Példány hozzáadása és Beállítások
@@ -123,10 +134,9 @@ A naplófájlok a konfigurált könyvtárba íródnak, és csatolhatók hiba jel
   <img src="../assets/screenshot/settings.png" width="48%" />
 </p>
 
-### Névjegy és összecsukott menü
+### Névjegy
 <p align="center">
   <img src="../assets/screenshot/about.png" width="48%" />
-  <img src="../assets/screenshot/collapsed.png" width="48%" />
 </p>
 
 ## 🎬 Működési bemutató
@@ -193,6 +203,10 @@ Győződjön meg arról, hogy a Rust eszközkészlet (Rust 1.92+ vagy újabb) te
   - **Hordozhatóság**: Az optimalizált kiadási verzió egyetlen kompakt futtatható fájlt eredményez.
 
 
+
+## ⭐️ Szerelemprojekt
+
+Ha hasznosnak találta ezt a projektet, hálás lennék, ha csillagot adna rá GitHubon. Az Ön támogatása segít abban, hogy a projekt szélesebb közönséghez eljusson, és ezt mélyen értékelem. Ez a bátorítás motivál arra, hogy folytassam az építkezést.
 
 ## 📄 Licenc
 

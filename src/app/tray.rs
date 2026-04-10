@@ -73,7 +73,7 @@ impl SystemTray {
                                     crate::app::window::set_skip_taskbar(&app, true);
                                 } else {
                                     info!("Tray double-clicked: showing window");
-                                    crate::app::window::show_and_center(&app);
+                                    crate::app::window::show_and_center(&app, false);
                                 }
                             }
                         }
@@ -87,7 +87,7 @@ impl SystemTray {
                         "show" => {
                             if let Some(app) = app_weak_clone.upgrade() {
                                 info!("Tray menu 'show' clicked");
-                                crate::app::window::show_and_center(&app);
+                                crate::app::window::show_and_center(&app, false);
                             }
                         }
                         "exit" => {

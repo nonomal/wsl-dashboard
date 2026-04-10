@@ -29,6 +29,7 @@ I18N :  [English](../README.md) | [简体中文](./README_zh_CN.md) | [繁體中
 - [💻 Sistemske zahteve](#-sistemske-zahteve)
 - [📦 Vodnik za namestitev](#-vodnik-za-namestitev)
 - [🛠️ Tehnologije in zmogljivost](#️-tehnologije-in-zmogljivost)
+- [⭐️ Delo iz ljubezni](#️-delo-iz-ljubezni)
   - [📄 Licenca](#-licenca)
 
 ---
@@ -81,6 +82,8 @@ Angleščina, poenostavljena kitajščina, tradicionalna kitajščina, hindijš�
 - **Pametna namestitev**: Namestitev iz Microsoft Store, GitHub ali lokalnih datotek (RootFS/VHDX). Vključuje vgrajenega pomočnika za prenos RootFS.
 - **Globalna varnost**: Zaklepanje Mutex za varne sočasne migracije/varnostne kopije in samodejno čiščenje Appx ob odstranitvi.
 - **Izjemno nizka poraba pomnilnika**: Visoko optimizirano za učinkovitost. Tihi zagon (v sistemski vrstici) porabi le okoli **10 MB** RAM-a. Poraba v okenskem načinu se razlikuje glede na kompleksnost pisav: **~18 MB** za standardne jezike in **~38 MB** za jezike z velikimi nabori znakov (kitajščina, japonščina, korejščina).
+- **Napredna omrežja**: Brezhibno upravljanje posredovanja vrat (s samodejnim ustvarjanjem pravil požarnega zidu) in globalna konfiguracija proxyja HTTP za poenoteno povezljivost.
+- **Upravljanje naprav USB**: Popolna integracija z orodjem `usbipd-win` za enostavno vezavo, pripenjanje in upravljanje lokalnih naprav USB v vseh primerih WSL neposredno z nadzorne plošče.
 
 
 ## ⚙️ Konfiguracija in dnevniki
@@ -95,6 +98,7 @@ Vse nastavitve se upravljajo prek pogleda Nastavitve:
 - Omogočite samodejni zagon ob zagonu sistema (s samodejnim popravilom poti).
 - Nastavite aplikacijo, da se ob zagonu zmanjša v sistemsko vrstico.
 - Konfigurirajte gumb za zapiranje, da se aplikacija zmanjša v sistemsko vrstico namesto izhoda.
+- Prilagodite stransko vrstico s preklopom vidnosti določenih zavihkov funkcij.
 
 Dnevniške datoteke se zapisujejo v konfiguriran imenik in jih je mogoče priložiti ob prijavi težav.
 
@@ -112,9 +116,16 @@ Dnevniške datoteke se zapisujejo v konfiguriran imenik in jih je mogoče prilo�
   <img src="../assets/screenshot/home-configs.png" width="48%" />
 </p>
 
-### USB
+### USB in strnjeni meni
 <p align="center">
   <img src="../assets/screenshot/usb.png" width="48%" />
+  <img src="../assets/screenshot/collapsed.png" width="48%" />
+</p>
+
+### omrežje
+<p align="center">
+  <img src="../assets/screenshot/port-forwarding.png" width="48%" />
+  <img src="../assets/screenshot/http-proxy.png" width="48%" />
 </p>
 
 ### Dodajanje instance in Nastavitve
@@ -123,10 +134,9 @@ Dnevniške datoteke se zapisujejo v konfiguriran imenik in jih je mogoče prilo�
   <img src="../assets/screenshot/settings.png" width="48%" />
 </p>
 
-### O aplikaciji in strnjeni meni
+### O aplikaciji 
 <p align="center">
   <img src="../assets/screenshot/about.png" width="48%" />
-  <img src="../assets/screenshot/collapsed.png" width="48%" />
 </p>
 
 ## 🎬 Prikaz delovanja
@@ -193,6 +203,10 @@ Prepričajte se, da imate nameščena orodja Rust (Rust 1.92+ ali novejša).
   - **Prenosljivost**: Optimizirana izdaja ustvari eno samo kompaktno izvršljivo datoteko.
 
 
+
+## ⭐️ Delo iz ljubezni
+
+Če se vam zdi ta projekt uporaben, bi vam bil hvaležen, če bi pustili zvezdico na GitHubu. Vaša podpora mu pomaga doseči širše občinstvo in jo zelo cenim. Prav ta spodbuda me motivira, da nadaljujem z gradnjo.
 
 ## 📄 Licenca
 

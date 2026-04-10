@@ -29,6 +29,7 @@ I18N :  [English](../README.md) | [简体中文](./README_zh_CN.md) | [繁體中
 - [💻 Systemkrav](#-systemkrav)
 - [📦 Installationsvejledning](#-installationsvejledning)
 - [🛠️ Teknologistak og ydeevne](#️-teknologistak-og-ydeevne)
+- [⭐️ Arbejde udført med kærlighed](#️-arbejde-udført-med-kærlighed)
 - [📄 Licens](#-licens)
 
 ---
@@ -81,6 +82,8 @@ Engelsk, forenklet kinesisk, traditionelt kinesisk, hindi, spansk, fransk, arabi
 - **Smart installation**: Installer fra Microsoft Store, GitHub eller lokale filer (RootFS/VHDX). Inkluderer en indbygget RootFS-downloadhjælper.
 - **Global sikkerhed**: Mutex-låse til sikre samtidige migrerings-/backupoperationer og automatisk Appx-oprydning ved fjernelse.
 - **Ultra-lavt hukommelsesaftryk**: Højt optimeret for effektivitet. Lydløs opstart (systembakke) bruger kun **~10 MB** RAM. Brug i vinduestilstand varierer efter skrifttypekompleksitet: **~18 MB** for standardsprog og **~38 MB** for sprog med store tegnsæt (kinesisk, japansk, koreansk).
+- **Avanceret netværk**: Problemfri styring af portvideresendelse (med automatisk oprettelse af firewallregler) og global HTTP-proxykonfiguration for samlet forbindelse.
+- **Håndtering af USB-enheder**: Fuld integration med `usbipd-win` for ubesværet binding, vedhæftning og administration af lokale USB-enheder på tværs af dine WSL-instanser direkte fra dashboardet.
 
 
 ## ⚙️ Konfiguration og logfiler
@@ -95,6 +98,7 @@ Al konfiguration administreres via visningen Indstillinger:
 - Aktiver automatisk start ved systemstart (med automatisk reparation af sti).
 - Indstil appen til at minimere til systembakken ved opstart.
 - Konfigurer lukkeknappen til at minimere til systembakken i stedet for at afslutte.
+- Tilpas sidepanelet ved at slå synligheden af specifikke funktionfaner til eller fra.
 
 Logfiler skrives til den konfigurerede logmappe og kan vedlægges ved rapportering af problemer.
 
@@ -112,9 +116,16 @@ Logfiler skrives til den konfigurerede logmappe og kan vedlægges ved rapporteri
   <img src="../assets/screenshot/home-configs.png" width="48%" />
 </p>
 
-### USB
+### USB og minimeret menu
 <p align="center">
   <img src="../assets/screenshot/usb.png" width="48%" />
+  <img src="../assets/screenshot/collapsed.png" width="48%" />
+</p>
+
+### Nettverk
+<p align="center">
+  <img src="../assets/screenshot/port-forwarding.png" width="48%" />
+  <img src="../assets/screenshot/http-proxy.png" width="48%" />
 </p>
 
 ### Tilføj instans og indstillinger
@@ -123,10 +134,9 @@ Logfiler skrives til den konfigurerede logmappe og kan vedlægges ved rapporteri
   <img src="../assets/screenshot/settings.png" width="48%" />
 </p>
 
-### Om og minimeret menu
+### Om 
 <p align="center">
   <img src="../assets/screenshot/about.png" width="48%" />
-  <img src="../assets/screenshot/collapsed.png" width="48%" />
 </p>
 
 ## 🎬 Demonstration
@@ -193,6 +203,10 @@ Sørg for, at du har Rust-værktøjskæden (Rust 1.92+ eller nyere) installeret.
   - **Portabilitet**: Optimeret udgivelsesbyg producerer en enkelt kompakt eksekverbar fil.
 
 
+
+## ⭐️ Arbejde udført med kærlighed
+
+Hvis du har fundet dette projekt nyttigt, ville jeg være taknemmelig, hvis du ville efterlade en stjerne på GitHub. Din støtte hjælper det med at nå ud til et bredere publikum og værdsættes dybt. Det er denne opmuntring, der motiverer mig til at fortsætte med at bygge.
 
 ## 📄 Licens
 

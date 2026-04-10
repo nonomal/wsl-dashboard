@@ -171,6 +171,21 @@ pub async fn perform_install(
             let mut terminal_buffer = format!("{}\n", i18n::tr("install.step_1", &[real_id.clone()]));
             info!("Starting store installation for distribution ID: {}", real_id);
             
+            // Check if real_id already exists in WSL to prevent accidental data loss
+            if distro_snapshot.iter().any(|d| d.name == real_id) {
+                let ah_err = ah.clone();
+                let real_id_err = real_id.clone();
+                let _ = slint::invoke_from_event_loop(move || {
+                    if let Some(app) = ah_err.upgrade() {
+                        let app_typed: AppWindow = app;
+                        app_typed.set_name_error(i18n::tr("install.real_id_conflict", &[real_id_err]).into());
+                        app_typed.set_is_installing(false);
+                        app_typed.set_install_status(i18n::t("install.conflict_error").into());
+                    }
+                });
+                return;
+            }
+
             // Cleanup existing if any
             let _ = executor.delete_distro(&config_manager, &real_id).await;
             

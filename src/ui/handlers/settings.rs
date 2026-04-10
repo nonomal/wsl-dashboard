@@ -23,7 +23,23 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, app_state: Arc
                 let log_days = app.get_log_days() as u8;
                 let check_update = app.get_check_update_interval() as u8;
                 
+                let sidebar_add = app.get_sidebar_add();
+                let sidebar_usb = app.get_sidebar_usb();
+                let sidebar_network = app.get_sidebar_network();
+                let sidebar_about = app.get_sidebar_about();
+
                 let mut state = as_ptr.lock().await;
+
+                // Update sidebar settings
+                let sidebar_config = config::SidebarConfig {
+                    add: sidebar_add,
+                    usb: sidebar_usb,
+                    network: sidebar_network,
+                    about: sidebar_about,
+                };
+                if let Err(e) = state.config_manager.update_sidebar_settings(sidebar_config) {
+                    error!("Failed to save sidebar settings: {}", e);
+                }
 
                 // Apply Dashboard autostart setting to Windows
                 if let Err(e) = crate::app::autostart::set_dashboard_autostart(tray_autostart, tray_start_minimized).await {
@@ -75,16 +91,15 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, app_state: Arc
 
                 // Re-initialize tray if language changed to update menu text
                 if old_lang != ui_language {
-                    info!("Language changed, triggering system tray re-initialization...");
-                    let _ = slint::invoke_from_event_loop({
-                        let ah = ah.clone();
-                        move || {
-                            if let Some(app) = ah.upgrade() {
-                                app.invoke_reinit_tray();
-                            }
+                    info!("Language changed from '{}' to '{}', triggering system tray re-initialization...", old_lang, ui_language);
+                    let ah_tray = ah.clone();
+                    let _ = slint::invoke_from_event_loop(move || {
+                        if let Some(app) = ah_tray.upgrade() {
+                            app.invoke_reinit_tray();
                         }
                     });
                 }
+
 
                 let user_settings = config::UserSettings {
                     modify_time: chrono::Utc::now().timestamp_millis().to_string(),

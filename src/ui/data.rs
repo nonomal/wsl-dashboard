@@ -73,6 +73,7 @@ pub fn refresh_localized_strings(app: &AppWindow) {
         close_to_tray: i18n::tr("settings.tray_close_to_tray", &[]).into(),
         save: i18n::tr("settings.save", &[]).into(),
         wsl_settings: i18n::tr("settings.wsl_settings", &[]).into(),
+        sidebar_features: i18n::tr("settings.sidebar_features", &[]).into(),
     });
 
     app.set_about_strings(crate::AboutStrings {
@@ -83,6 +84,8 @@ pub fn refresh_localized_strings(app: &AppWindow) {
         website: i18n::tr("about.homepage", &[]).into(),
         issues: i18n::tr("about.issues", &[]).into(),
         discussions: i18n::tr("about.discussions", &[]).into(),
+        star: i18n::tr("about.star", &[]).into(),
+        love: i18n::tr("about.love", &[]).into(),
         github: "".into(), // Not used in UI currently
         license: "".into(),
         copyright: "".into(),
@@ -150,6 +153,7 @@ pub async fn refresh_distros_ui(app_handle: slint::Weak<AppWindow>, app_state: A
         match tokio::time::timeout(lock_timeout, app_state.lock()).await {
             Ok(app_state_lock) => {
                 let mut distros = app_state_lock.wsl_dashboard.get_distros().await;
+                debug!("refresh_distros_ui: Found {} installed distributions", distros.len());
                 // Sort by: 1. Default first, 2. Name A-Z
                 distros.sort_by(|a, b| {
                     if a.is_default != b.is_default {
@@ -435,6 +439,12 @@ pub async fn load_settings_to_ui(app: &AppWindow, app_state: &Arc<Mutex<AppState
     app.set_tray_start_minimized(tray.start_minimized);
     app.set_tray_close_to_tray(tray.close_to_tray);
     app.set_log_level(settings.log_level as i32);
+
+    let sidebar = app_state.lock().await.config_manager.get_config().sidebar.clone();
+    app.set_sidebar_add(sidebar.add);
+    app.set_sidebar_usb(sidebar.usb);
+    app.set_sidebar_network(sidebar.network);
+    app.set_sidebar_about(sidebar.about);
 
     // Set RTL mode based on current resolved language
     let current_lang = i18n::current_lang();

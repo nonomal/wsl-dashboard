@@ -182,6 +182,43 @@ export component AboutView inherits VerticalLayout {
                     }
                 }
             }
+
+            Rectangle {
+                height: 1px;
+                background: Theme.border_color;
+            }
+
+            VerticalLayout {
+                spacing: 6px;
+
+                HorizontalLayout {
+                    alignment: AppI18n.is-rtl ? end : start;
+                    spacing: 4px;
+                    Text {
+                        text: root.strings.love;
+                        font-size: 14px * LayoutConstants.font-scale;
+                        font-family: Theme.default_font;
+                        font-weight: 500;
+                        color: Theme.text_primary;
+                    }
+                    Text {
+                        text: "\u{e735}";
+                        font-size: 14px * LayoutConstants.font-scale;
+                        font-family: Theme.icon_font;
+                        color: #eac54f;
+                        y: 1.5px;
+                    }
+                }
+
+                Text {
+                    text: root.strings.star;
+                    font-size: 13px * LayoutConstants.font-scale;
+                    font-family: Theme.default_font;
+                    color: Theme.text_secondary ;
+                    wrap: word-wrap;
+                    horizontal-alignment: AppI18n.is-rtl ? right : left;
+                }
+            }
         }
     }
 }

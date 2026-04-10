@@ -29,6 +29,7 @@ I18N :  [English](../README.md) | [简体中文](./README_zh_CN.md) | [繁體中
 - [💻 Persyaratan Sistem](#-persyaratan-sistem)
 - [📦 Panduan Instalasi](#-panduan-instalasi)
 - [🛠️ Stack Teknologi & Performa](#️-stack-teknologi--performa)
+- [⭐️ Karya penuh cinta](#️-karya-penuh-cinta)
 - [📄 Lisensi](#-lisensi)
 
 ---
@@ -81,6 +82,8 @@ Inggris, Mandarin, Mandarin, Hindi, Spanyol, Prancis, Arabic, Bengali, Portugis,
 - **Instalasi Cerdas**: Instal dari Microsoft Store, GitHub, atau file lokal (RootFS/VHDX). Termasuk asisten unduhan RootFS bawaan.
 - **Keamanan Global**: Kunci mutex untuk operasi migrasi/cadangan bersamaan yang aman, dan pembersihan Appx otomatis saat penghapusan.
 - **Jejak Memori Ultra Rendah**: Sangat dioptimalkan untuk efisiensi. Startup senyap (system tray) hanya menggunakan **~10MB** RAM. Penggunaan mode jendela bervariasi menurut kompleksitas font: **~18MB** untuk bahasa standar dan **~38MB** untuk bahasa dengan set karakter besar (Mandarin, Jepang, Korea).
+- **Jaringan Lanjutan**: Manajemen port forwarding yang mulus (dengan pembuatan aturan firewall otomatis) dan konfigurasi proxy HTTP global untuk konektivitas terpadu.
+- **Manajemen Perangkat USB**: Integrasi penuh dengan `usbipd-win` untuk penyatuan, pelekatan, dan manajemen perangkat USB lokal tanpa kesulitan di seluruh instance WSL Anda melalui antarmuka dasbor.
 
 
 ## ⚙️ Konfigurasi & Log
@@ -95,6 +98,7 @@ Semua konfigurasi dikelola melalui tampilan Pengaturan:
 - Aktifkan startup otomatis saat boot sistem (dengan perbaikan jalur otomatis).
 - Atur aplikasi untuk meminimalkan ke tray saat startup.
 - Konfigurasikan tombol tutup untuk meminimalkan ke tray alih-alih keluar dari program.
+- Sesuaikan bilah samping dengan mengatur visibilitas tab fitur tertentu.
 
 File log ditulis ke direktori log yang dikonfigurasi dan dapat dilampirkan saat melaporkan masalah.
 
@@ -112,9 +116,16 @@ File log ditulis ke direktori log yang dikonfigurasi dan dapat dilampirkan saat 
   <img src="../assets/screenshot/home-configs.png" width="48%" />
 </p>
 
-### USB
+### USB & Menu ciutkan
 <p align="center">
   <img src="../assets/screenshot/usb.png" width="48%" />
+  <img src="../assets/screenshot/collapsed.png" width="48%" />
+</p>
+
+### jaringan
+<p align="center">
+  <img src="../assets/screenshot/port-forwarding.png" width="48%" />
+  <img src="../assets/screenshot/http-proxy.png" width="48%" />
 </p>
 
 ### Tambah Instance & Pengaturan
@@ -123,10 +134,9 @@ File log ditulis ke direktori log yang dikonfigurasi dan dapat dilampirkan saat 
   <img src="../assets/screenshot/settings.png" width="48%" />
 </p>
 
-### Tentang & Menu ciutkan
+### Tentang
 <p align="center">
   <img src="../assets/screenshot/about.png" width="48%" />
-  <img src="../assets/screenshot/collapsed.png" width="48%" />
 </p>
 
 ## 🎬 Demo Operasi
@@ -193,6 +203,10 @@ Pastikan Anda telah memasang alat bantu Rust (Rust 1.92+ atau yang lebih baru).
   - **Portabilitas**: Rakitan rilis yang dioptimalkan menghasilkan executable tunggal yang ringkas.
 
 
+
+## ⭐️ Karya penuh cinta
+
+Jika Anda merasa proyek ini bermanfaat, saya akan sangat berterima kasih jika Anda dapat memberikan bintang di GitHub. Dukungan Anda membantu proyek ini menjangkau khalayak yang lebih luas dan sangat dihargai. Dorongan inilah yang memotivasi saya untuk terus berkarya.
 
 ## 📄 Lisensi
 

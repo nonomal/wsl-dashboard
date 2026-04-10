@@ -29,6 +29,7 @@ I18N :  [English](../README.md) | [简体中文](./README_zh_CN.md) | [繁體中
 - [💻 Systemvoraussetzungen](#-systemvoraussetzungen)
 - [📦 Installationsanleitung](#-installationsanleitung)
 - [🛠️ Tech Stack & Leistung](#️-tech-stack--leistung)
+- [⭐️ Herzensprojekt](#️-herzensprojekt)
 - [📄 Lizenz](#-lizenz)
 
 ---
@@ -81,6 +82,8 @@ Englisch, Chinesisch (Vereinfacht), Chinesisch (Traditionell), Hindi, Spanisch, 
 - **Smarte Installation**: Installation aus dem Microsoft Store, von GitHub oder lokalen Dateien (RootFS/VHDX). Integrierter RootFS-Download-Assistent.
 - **Globale Sicherheit**: Mutex-Sperren für sichere gleichzeitige Migrations-/Backup-Vorgänge und automatische Appx-Bereinigung beim Entfernen.
 - **Ultra-niedriger Speicherverbrauch**: Hochgradig auf Effizienz optimiert. Silent-Start (System Tray) verbraucht nur **~10MB** RAM. Der Verbrauch im Fenstermodus variiert nach Schriftkomplexität: **~18MB** für Standardsprachen (Englisch, Deutsch, Spanisch usw.) und **~38MB** für Sprachen mit großen Zeichensätzen (Chinesisch, Japanisch, Koreanisch).
+- **Erweiterte Netzwerke**: Nahtlose Verwaltung der Portweiterleitung (mit automatischer Erstellung von Firewall-Regeln) und globale HTTP-Proxy-Konfiguration für einheitliche Konnektivität.
+- **USB-Geräteverwaltung**: Vollständige Integration mit `usbipd-win` zur mühelosen Bindung, Ausführung und Verwaltung lokaler USB-Geräte über Ihre WSL-Instanzen hinweg direkt über die Dashboard-Benutzeroberfläche.
 
 
 ## ⚙️ Konfiguration & Protokolle
@@ -95,6 +98,7 @@ Die gesamte Konfiguration wird über die Einstellungsansicht verwaltet:
 - Aktivieren Sie den automatischen Start beim Systemboot (mit automatischer Pfadreparatur).
 - Stellen Sie die App so ein, dass sie beim Start in den System-Tray minimiert wird.
 - Konfigurieren Sie die Schließen-Schaltfläche so, dass sie in den Tray minimiert wird, anstatt das Programm zu beenden.
+- Passen Sie die Seitenleiste an, indem Sie die Sichtbarkeit bestimmter Funktionsregisterkarten umschalten.
 
 Protokolldateien werden in das konfigurierte Protokollverzeichnis geschrieben und können bei der Meldung von Problemen angehängt werden.
 
@@ -112,9 +116,16 @@ Protokolldateien werden in das konfigurierte Protokollverzeichnis geschrieben un
   <img src="../assets/screenshot/home-configs.png" width="48%" />
 </p>
 
-### USB
+### USB & Menü einklappen
 <p align="center">
   <img src="../assets/screenshot/usb.png" width="48%" />
+  <img src="../assets/screenshot/collapsed.png" width="48%" />
+</p>
+
+### Netzwerk
+<p align="center">
+  <img src="../assets/screenshot/port-forwarding.png" width="48%" />
+  <img src="../assets/screenshot/http-proxy.png" width="48%" />
 </p>
 
 ### Instanz hinzufügen & Einstellungen
@@ -123,10 +134,9 @@ Protokolldateien werden in das konfigurierte Protokollverzeichnis geschrieben un
   <img src="../assets/screenshot/settings.png" width="48%" />
 </p>
 
-### Über & Menü einklappen
+### Über 
 <p align="center">
   <img src="../assets/screenshot/about.png" width="48%" />
-  <img src="../assets/screenshot/collapsed.png" width="48%" />
 </p>
 
 ## 🎬 Bedienungs-Demo
@@ -193,6 +203,10 @@ Stellen Sie sicher, dass Sie die Rust-Toolchain (Rust 1.92+ oder neuer) installi
   - **Portabilität**: Optimierter Release-Build erzeugt eine einzige kompakte ausführbare Datei.
 
 
+
+## ⭐️ Herzensprojekt
+
+Wenn Sie dieses Projekt nützlich fanden, wäre ich Ihnen dankbar, wenn Sie einen Stern auf GitHub hinterlassen könnten. Ihre Unterstützung hilft dabei, ein breiteres Publikum zu erreichen, und wird sehr geschätzt. Es ist diese Ermutigung, die mich motiviert, weiter zu bauen.
 
 ## 📄 Lizenz
 

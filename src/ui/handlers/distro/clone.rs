@@ -34,6 +34,7 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, app_state: Arc
             app.set_clone_source_name(name.clone().into());
             app.set_clone_target_name(target_name.into());
             app.set_clone_target_path(target_path.into());
+            app.set_clone_base_path(distro_location.to_string().into());
             app.set_clone_error("".into());
             app.set_show_clone_dialog(true);
         }
@@ -49,6 +50,7 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, app_state: Arc
                 let target_name = app.get_clone_target_name().to_string();
                 let final_path = path.join(target_name).to_string_lossy().to_string();
                 app.set_clone_target_path(final_path.into());
+                app.set_clone_base_path(path.to_string_lossy().to_string().into());
             }
         }
     });
@@ -132,14 +134,14 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, app_state: Arc
     let ah = app_handle.clone();
     app.on_clone_name_changed(move |new_name| {
         if let Some(app) = ah.upgrade() {
-            let current_path = app.get_clone_target_path().to_string();
-            if current_path.is_empty() { return; }
+            let base_path = app.get_clone_base_path().to_string();
+            if base_path.is_empty() { return; }
             
-            let path = std::path::Path::new(&current_path);
-            if let Some(parent) = path.parent() {
-                let new_path = parent.join(new_name.to_string()).to_string_lossy().to_string();
-                app.set_clone_target_path(new_path.into());
-            }
+            let new_path = std::path::Path::new(&base_path)
+                .join(new_name.to_string())
+                .to_string_lossy()
+                .to_string();
+            app.set_clone_target_path(new_path.into());
         }
     });
 

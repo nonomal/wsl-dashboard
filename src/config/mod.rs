@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use tracing::{info, error};
 
 mod migration;
-mod instances;
+pub mod instances;
 pub mod models;
 
 pub use models::*;
@@ -24,9 +24,14 @@ impl ConfigManager {
         home_dir.join(".wsldashboard").join("settings.toml")
     }
 
-    fn get_instances_path() -> PathBuf {
+    pub fn get_instances_path() -> PathBuf {
         let home_dir = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
         home_dir.join(".wsldashboard").join("instances.toml")
+    }
+
+    fn get_network_config_path() -> PathBuf {
+        let home_dir = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
+        home_dir.join(".wsldashboard").join("network.toml")
     }
 
     // Initialize configuration manager
@@ -189,11 +194,55 @@ impl ConfigManager {
         Ok(())
     }
 
+    // Update sidebar settings and save
+    pub fn update_sidebar_settings(&mut self, sidebar: SidebarConfig) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        self.config.sidebar = sidebar;
+        Self::save_config(&self.config_path, &mut self.config)?;
+        info!("✅ Sidebar configuration saved successfully");
+        Ok(())
+    }
+
     // Update popup detection timestamp
     pub fn update_check_time(&mut self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         self.config.settings.check_time = chrono::Utc::now().timestamp_millis().to_string();
         Self::save_config(&self.config_path, &mut self.config)?;
         info!("Updated check-time to: {}", self.config.settings.check_time);
+        Ok(())
+    }
+
+    // --- Network Config Management ---
+    
+    fn load_network_config() -> NetworkConfig {
+        let path = Self::get_network_config_path();
+        if path.exists() {
+            if let Ok(content) = fs::read_to_string(&path) {
+                match toml::from_str::<NetworkConfig>(&content) {
+                    Ok(config) => return config,
+                    Err(e) => {
+                        error!("Failed to parse network.toml, falling back to default: {}", e);
+                    }
+                }
+            }
+        }
+        NetworkConfig::default()
+    }
+
+    fn save_network_config(network: &NetworkConfig) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        let path = Self::get_network_config_path();
+        let toml_string = toml::to_string_pretty(network)?;
+        fs::write(path, toml_string)?;
+        Ok(())
+    }
+
+    pub fn get_network_config(&self) -> NetworkConfig {
+        Self::load_network_config()
+    }
+
+    pub fn update_network_config(&self, mut network: NetworkConfig) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        network.common.modify_time = chrono::Utc::now().timestamp_millis().to_string();
+        let rule_count = network.port_proxies.len();
+        Self::save_network_config(&network)?;
+        info!("✅ Network configuration ({} rules) saved successfully to network.toml", rule_count);
         Ok(())
     }
 
@@ -274,7 +323,8 @@ impl ConfigManager {
 
     pub fn toggle_usb_auto_attach(&mut self, bus_id: &str, vid_pid: &str, distro: &str) -> Result<bool, Box<dyn std::error::Error + Send + Sync>> {
         let list = &mut self.config.usb.auto_attach_list;
-        let index = list.iter().position(|d| d.vid_pid == vid_pid || d.bus_id == bus_id);
+        // Use bus_id for exact matching during toggle as the click is specific to a bus-id
+        let index = list.iter().position(|d| d.bus_id == bus_id);
         
         let is_enabled = if let Some(i) = index {
             list.remove(i);

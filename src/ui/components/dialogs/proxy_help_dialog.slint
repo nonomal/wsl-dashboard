@@ -1,0 +1,97 @@
+import { Theme, AppI18n, LayoutConstants } from "../../theme.slint";
+
+export component ProxyHelpDialog inherits Rectangle {
+    width: 500px;
+    height: proxy_layout.preferred-height;
+    background: Theme.card_bg;
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: Theme.border_color;
+
+    proxy_layout := VerticalLayout {
+        padding: 24px;
+        spacing: 16px;
+        
+        Text {
+            text: AppI18n.t("dialog.http_proxy_helper", []);
+            font-size: 16px * LayoutConstants.font-scale;
+            font-family: Theme.default_font;
+            font-weight: 700;
+            color: Theme.text_primary;
+            horizontal-alignment: AppI18n.is-rtl ? right : left;
+        }
+
+        Rectangle {
+            height: 1px;
+            background: Theme.border_color;
+        }
+
+        HorizontalLayout {
+            spacing: 16px;
+            alignment: AppI18n.is-rtl ? end : start;
+            
+            // RTL: Text then Icon
+            if (AppI18n.is-rtl): VerticalLayout {
+                spacing: 12px;
+                
+                Text {
+                    text: AppI18n.t("dialog.http_proxy_helper_desc1", []);
+                    font-size: 14px * LayoutConstants.font-scale;
+                    font-family: Theme.default_font;
+                    color: Theme.text_primary;
+                    wrap: word-wrap;
+                    horizontal-alignment: right;
+                }
+
+                Text {
+                    text: AppI18n.t("dialog.http_proxy_helper_desc2", []);
+                    font-size: 14px * LayoutConstants.font-scale;
+                    font-family: Theme.default_font;
+                    color: Theme.text_secondary;
+                    wrap: word-wrap;
+                    horizontal-alignment: right;
+                }
+            }
+
+            // Icon in a blue circle
+            Rectangle {
+                width: 32px;
+                height: 32px;
+                border-radius: 16px;
+                background: Theme.accent;
+                
+                Text {
+                    text: "\u{E9ce}"; // Question mark
+                    font-family: Theme.icon_font;
+                    font-size: 18px;
+                    color: white;
+                    vertical-alignment: center;
+                    horizontal-alignment: center;
+                }
+            }
+
+            // LTR: Icon then Text
+            if (!AppI18n.is-rtl): VerticalLayout {
+                spacing: 12px;
+                
+                Text {
+                    text: AppI18n.t("dialog.http_proxy_helper_desc1", []);
+                    font-size: 14px * LayoutConstants.font-scale;
+                    font-family: Theme.default_font;
+                    color: Theme.text_primary;
+                    wrap: word-wrap;
+                    horizontal-alignment: left;
+                }
+
+                Text {
+                    text: AppI18n.t("dialog.http_proxy_helper_desc2", []);
+                    font-size: 14px * LayoutConstants.font-scale;
+                    font-family: Theme.default_font;
+                    color: Theme.text_secondary;
+                    wrap: word-wrap;
+                    horizontal-alignment: left;
+                }
+            }
+        }
+    }
+}

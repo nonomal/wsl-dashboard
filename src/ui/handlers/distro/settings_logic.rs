@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use tracing::{info, error, warn};
+use tracing::{info, error};
 use crate::{AppState, AppWindow};
 use crate::ui::data::refresh_distros_ui;
 
@@ -114,71 +114,55 @@ pub async fn perform_save_settings(
         let setup_cmd = format!("printf '{}' > /etc/init.wsl-dashboard && chmod +x /etc/init.wsl-dashboard", script_content);
         let _ = executor.execute_command(&["-d", &name, "-u", "root", "-e", "sh", "-c", &setup_cmd]).await;
         
-        let write_result = crate::app::autostart::update_windows_autostart(&name, autostart).await;
-        
-        if let Err(e) = &write_result {
-            error!("Failed to update Windows autostart for '{}': {}", name, e);
-            if let Some(desktop_dir) = dirs::desktop_dir() {
-                let backup_path = desktop_dir.join("wsl-dashboard.vbs");
-                let vbs_content = format!(
-                    "Set ws = WScript.CreateObject(\"WScript.Shell\")\r\nws.run \"wsl -d {} -u root /etc/init.wsl-dashboard start\", vbhide",
-                    name
-                );
-                let _ = std::fs::write(&backup_path, vbs_content);
-            }
-        }
-
-        let ah_verify = ah.clone();
-        let name_clone = name.clone();
-        tokio::spawn(async move {
-            tokio::time::sleep(std::time::Duration::from_secs(5)).await;
-            if let Ok(vbs_path) = crate::app::autostart::get_vbs_path() {
-                if !vbs_path.exists() {
-                    warn!("Verification failed: VBS file does not exist in the startup directory");
-                    if let Some(desktop_dir) = dirs::desktop_dir() {
-                        let backup_path = desktop_dir.join("wsl-dashboard.vbs");
-                        if !backup_path.exists() {
-                             let vbs_content = format!(
-                                "Set ws = WScript.CreateObject(\"WScript.Shell\")\r\nws.run \"wsl -d {} -u root /etc/init.wsl-dashboard start\", vbhide",
-                                name_clone
-                            );
-                            let _ = std::fs::write(&backup_path, vbs_content);
-                        }
-                    }
-                    
+        // 5. Check and register task if needed
+        if !crate::network::scheduler::check_task_exists() {
+            info!("Auto-start task not found, attempting to register with elevation...");
+            match crate::network::scheduler::register_task_with_elevation() {
+                Ok(_) => {
+                    info!("Successfully registered auto-start task via elevation.");
+                    // Show a toast success message
+                    let ah_toast = ah.clone();
                     let _ = slint::invoke_from_event_loop(move || {
-                        if let Some(app) = ah_verify.upgrade() {
-                            if let Ok(startup_dir) = crate::app::autostart::get_startup_dir() {
-                                let path_str = startup_dir.to_string_lossy().to_string();
-                                
-                                let msg = format!("{}\n\n{}", 
-                                    crate::i18n::t("dialog.autostart_timeout"),
-                                    crate::i18n::t("dialog.click_to_open_startup")
-                                );
-                                app.set_current_message(msg.into());
-
-                                let mut display_path = path_str.clone();
-                                if let Some(home_dir) = dirs::home_dir() {
-                                    let home_str = home_dir.to_string_lossy().to_string();
-                                    if display_path.starts_with(&home_str) {
-                                        display_path = display_path.replacen(&home_str, "~", 1);
-                                    }
+                        if let Some(app) = ah_toast.upgrade() {
+                            app.set_task_status_text("Task successfully scheduled".into());
+                            app.set_task_status_visible(true);
+                            
+                            let ah_hide = ah_toast.clone();
+                            slint::Timer::single_shot(std::time::Duration::from_secs(3), move || {
+                                if let Some(app_h) = ah_hide.upgrade() {
+                                    app_h.set_task_status_visible(false);
                                 }
-
-                                app.set_current_message_link(display_path.into());
-                                app.set_current_message_url(path_str.into());
-                            } else {
-                                app.set_current_message(crate::i18n::t("dialog.autostart_timeout").into());
-                            }
-                            app.set_show_message_dialog(true);
+                            });
+                        }
+                    });
+                }
+                Err(e) => {
+                    error!("Failed to register auto-start task: {}", e);
+                    let err_msg = if e.contains("InvalidOperation") || e.contains("denied") {
+                        "Operation denied (UAC)".to_string()
+                    } else {
+                        format!("Failed to schedule: {}", e)
+                    };
+                    // Show a toast error message
+                    let ah_toast = ah.clone();
+                    let _ = slint::invoke_from_event_loop(move || {
+                        if let Some(app) = ah_toast.upgrade() {
+                            app.set_task_status_text(err_msg.into());
+                            app.set_task_status_visible(true);
+                            
+                            let ah_hide = ah_toast.clone();
+                            slint::Timer::single_shot(std::time::Duration::from_secs(3), move || {
+                                if let Some(app_h) = ah_hide.upgrade() {
+                                    app_h.set_task_status_visible(false);
+                                }
+                            });
                         }
                     });
                 }
             }
-        });
-    } else {
-        let _ = crate::app::autostart::update_windows_autostart(&name, false).await;
+        }
     }
+
 
     refresh_distros_ui(ah, as_ptr).await;
 }

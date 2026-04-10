@@ -29,6 +29,7 @@ I18N :  [English](../README.md) | [简体中文](./README_zh_CN.md) | [繁體中
 - [💻 시스템 요구 사항](#-시스템-요구-사항)
 - [📦 설치 가이드](#-설치-가이드)
 - [🛠️ 기술 스택 및 성능](#️-기술-스택-및-성능)
+- [⭐️ 사랑의 결실](#️-사랑의-결실)
 - [📄 라이선스](#-라이선스)
 
 ---
@@ -81,6 +82,8 @@ I18N :  [English](../README.md) | [简体中文](./README_zh_CN.md) | [繁體中
 - **스마트 설치**: Microsoft Store, GitHub 또는 로컬 파일(RootFS/VHDX)에서 설치할 수 있습니다. 내장된 RootFS 다운로드 도우미가 포함되어 있습니다.
 - **글로벌 안전성**: 안전한 동시 마이그레이션/백업 작업을 위한 뮤텍스(Mutex) 잠금 및 삭제 시 자동 Appx 정리를 지원합니다.
 - **초저전력 메모리 점유**: 효율성을 위해 고도로 최적화되었습니다. 트레이 정숙 모드 시작 시 약 **10MB**의 RAM만 사용합니다. 창 모드 사용 시 폰트 복잡성에 따라 메모리 사용량이 달라집니다. 표준 언어(영어, 독일어, 스페인어 등)는 **약 18MB**, 한중일 등 큰 문자 세트 언어는 **약 38MB**를 사용합니다.
+- **고급 네트워킹**: 원활한 포트 포워딩 관리(방화벽 규칙 자동 생성 포함) 및 통합된 연결을 위한 전역 HTTP 프록시 구성.
+- **USB 장치 관리**: 대시보드 UI에서 직접 `usbipd-win` 과의 완전한 통합을 통해 모든 WSL 인스턴스에서 로컬 USB 장치를 손쉽게 바인드, 연결 및 관리할 수 있습니다.
 
 
 ## ⚙️ 설정 및 로그
@@ -95,6 +98,7 @@ I18N :  [English](../README.md) | [简体中文](./README_zh_CN.md) | [繁體中
 - 시스템 부팅 시 자동 시작을 활성화합니다(자동 경로 복구 포함).
 - 시작 시 앱을 시스템 트레이로 최소화하도록 설정하여 방해 없는 환경을 제공합니다.
 - 닫기 버튼을 눌렀을 때 종료 대신 시스템 트레이로 최소화되도록 설정합니다.
+- 특정 기능 탭의 표시 여부를 전환하여 사이드바를 사용자 지정합니다.
 
 로그 파일은 구성된 로그 디렉토리에 기록되며, 문제 보고 시 첨부할 수 있습니다.
 
@@ -112,9 +116,16 @@ I18N :  [English](../README.md) | [简体中文](./README_zh_CN.md) | [繁體中
   <img src="../assets/screenshot/home-configs.png" width="48%" />
 </p>
 
-### USB
+### USB & 메뉴를 접으세요
 <p align="center">
   <img src="../assets/screenshot/usb.png" width="48%" />
+  <img src="../assets/screenshot/collapsed.png" width="48%" />
+</p>
+
+### 회로망
+<p align="center">
+  <img src="../assets/screenshot/port-forwarding.png" width="48%" />
+  <img src="../assets/screenshot/http-proxy.png" width="48%" />
 </p>
 
 ### 인스턴스 추가 및 설정
@@ -123,10 +134,9 @@ I18N :  [English](../README.md) | [简体中文](./README_zh_CN.md) | [繁體中
   <img src="../assets/screenshot/settings.png" width="48%" />
 </p>
 
-### 정보 및 메뉴 축소
+### ~에 대한
 <p align="center">
   <img src="../assets/screenshot/about.png" width="48%" />
-  <img src="../assets/screenshot/collapsed.png" width="48%" />
 </p>
 
 ## 🎬 작동 데모
@@ -193,6 +203,10 @@ Rust 툴체인(Rust 1.92 이상)이 설치되어 있는지 확인하세요.
   - **이식성**: 최적화된 릴리스 빌드는 단일 압축 실행 파일을 생성합니다.
 
 
+
+## ⭐️ 사랑의 결실
+
+이 프로젝트가 유용하다고 생각하신다면 GitHub에서 별(star)을 남겨주시면 감사하겠습니다. 여러분의 지지는 더 많은 사용자에게 도달하는 데 도움이 되며 진심으로 감사드리고 있습니다. 이러한 격려가 계속해서 개발할 수 있는 동기가 됩니다.
 
 ## 📄 라이선스
 

@@ -29,6 +29,7 @@ I18N :  English | [简体中文](./manual/README_zh_CN.md) | [繁體中文](./ma
 - [💻 System Requirements](#-system-requirements)
 - [📦 Installation](#-installation)
 - [🛠️ Tech Stack & Performance](#️-tech-stack--performance)
+- [⭐️ Labor of love](#️-labor-of-love)
 - [📄 License](#-license)
 
 ---
@@ -81,6 +82,8 @@ English, Simplified Chinese, Traditional Chinese, Hindi, Spanish, French, Arabic
 - **Smart Installation**: Install from Microsoft Store, GitHub, or local files (RootFS/VHDX). Includes a built-in RootFS download helper.
 - **Global Safety**: Mutex locks for safe concurrent migration/backup operations and automatic Appx cleanup on removal.
 - **Ultra-Low Memory Footprint**: Highly optimized for efficiency. Silent startup (system tray) uses only **~10MB** RAM. Windowed mode usage varies by font complexity: **~18MB** for standard languages (English, German, Spanish, etc.) and **~38MB** for large font languages (Chinese, Japanese, Korean, etc.).
+- **Advanced Networking**: Seamless port forwarding management (with automatic firewall rule creation) and global HTTP proxy configuration for unified connectivity.
+- **USB Device Management**: Full integration with `usbipd-win` for effortless binding, attaching, and managing of local USB devices across your WSL instances directly from the dashboard UI.
 
 
 ## ⚙️ Configuration & Logs
@@ -95,6 +98,7 @@ All configuration is managed through the Settings view:
 - Enable automatic startup on system boot (with automatic path repair).
 - Set the app to minimize to the system tray on startup for a distraction-free experience.
 - Configure the close button to minimize to the system tray instead of exiting.
+- Customize the sidebar by toggling the visibility of specific feature tabs.
 
 Log files are written to the configured log directory and can be attached when reporting issues.
 
@@ -112,9 +116,16 @@ Log files are written to the configured log directory and can be attached when r
   <img src="assets/screenshot/home-configs.png" width="48%" />
 </p>
 
-### USB
+### USB & Collapse menu
 <p align="center">
   <img src="assets/screenshot/usb.png" width="48%" />
+  <img src="assets/screenshot/collapsed.png" width="48%" />
+</p>
+
+### Network
+<p align="center">
+  <img src="assets/screenshot/port-forwarding.png" width="48%" />
+  <img src="assets/screenshot/http-proxy.png" width="48%" />
 </p>
 
 ### Add Instance & Settings
@@ -123,10 +134,9 @@ Log files are written to the configured log directory and can be attached when r
   <img src="assets/screenshot/settings.png" width="48%" />
 </p>
 
-### About & Collapse menu
+### About
 <p align="center">
   <img src="assets/screenshot/about.png" width="48%" />
-  <img src="assets/screenshot/collapsed.png" width="48%" />
 </p>
 
 ## 🎬 Operation Demo
@@ -193,12 +203,16 @@ Ensure you have the Rust toolchain (Rust 1.92+ or newer) installed.
   - **Portability**: Optimized release build produces a single compact executable.
 
 
+## ⭐️ Labor of love
+
+If you have found this project useful, I would be grateful if you could leave a star on GitHub. Your endorsement helps it reach a wider audience and is deeply appreciated. It is this encouragement that motivates me to keep building.
+
 
 ## 📄 License
 
 This project is licensed under the GPL-3.0 – see the [LICENSE](LICENSE) file for details.
 
+
 ---
 
 Built with ❤️ for the WSL Community.
-

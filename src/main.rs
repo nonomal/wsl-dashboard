@@ -1,4 +1,4 @@
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+#![windows_subsystem = "windows"]
 
 #[cfg(feature = "dhat-heap")]
 #[global_allocator]
@@ -6,7 +6,7 @@ static ALLOC: dhat::Alloc = dhat::Alloc;
 
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use tracing::{info, debug, error};
+use tracing::{info, error};
 use slint::{ComponentHandle, Model};
 
 // Define application modules
@@ -17,11 +17,12 @@ mod ui;
 mod config;
 mod app;
 mod i18n;
+mod network;
 
 // Import Slint UI components
 slint::include_modules!();
 
-use app::{AppState, APP_NAME, APP_ID, COMPANY_NAME, LEGAL_COPYRIGHT, GITHUB_URL, GITHUB_ISSUES};
+use app::{AppState, APP_NAME, APP_ID, GITHUB_URL, GITHUB_ISSUES};
 use ui::data::refresh_data;
 use ui::handlers;
 
@@ -30,34 +31,27 @@ async fn main() {
     #[cfg(feature = "dhat-heap")]
     let _profiler = dhat::Profiler::new_heap();
     
-    // Check for /silent command line argument first
+    // Check command line arguments
     let args: Vec<String> = std::env::args().collect();
-    let is_silent_mode = args.iter().any(|arg| arg.eq_ignore_ascii_case("/silent"));
     
-    // 1. Single Instance check
-    let instance = app::single_instance::SingleInstance::new("wsldashboard-v0.3-lock");
-    if !instance.is_single() {
-        // Another instance is running
-        if !is_silent_mode {
-            // Try to activate the existing instance
-            if app::single_instance::try_activate_existing_instance() {
-                info!("Activated existing instance, exiting...");
-            } else {
-                eprintln!("Another instance is already running. Exiting.");
+    #[cfg(all(debug_assertions, windows))]
+    {
+        // Try to attach to parent console in debug mode so `cargo run` logs are visible.
+        // Skip attaching if we are specifically running the scheduler.
+        if !args.iter().any(|a| a == "/scheduler") {
+            unsafe {
+                use windows::Win32::System::Console::{AttachConsole, ATTACH_PARENT_PROCESS};
+                let _ = AttachConsole(ATTACH_PARENT_PROCESS);
             }
-        } else {
-            // In silent mode, just exit quietly
-            eprintln!("Another instance is already running (silent mode). Exiting.");
         }
-        return;
     }
-    
-    // Initialize configuration manager to get log path
+
+    // 1. Initialize configuration manager first to get log path and settings
     let config_manager = config::ConfigManager::new().await;
     let settings = config_manager.get_settings().clone();
     let tray_settings = config_manager.get_tray_settings().clone();
 
-    // Load i18n based on settings
+    // 2. Load i18n based on settings
     let system_language = config_manager.get_config().system.system_language.clone();
     let lang = if settings.ui_language == "auto" {
         &config_manager.get_config().system.system_language
@@ -66,14 +60,170 @@ async fn main() {
     };
     i18n::load_resources(lang);
     
+    // 3. Set up tracing logs EARLY to capture potential /scheduler or startup errors
     let initial_logs_location = settings.logs_location.clone();
     let log_level = settings.log_level;
     let timezone = config_manager.get_config().system.timezone.clone();
-
-    // Set up tracing logs
     let logging_system = utils::logging::init_logging(&initial_logs_location, log_level, &timezone);
 
-    // Cleanup expired logs
+
+
+    // 4. Initial check for network sync command before single instance or other UI loads
+    if let Some(pos) = args.iter().position(|a| a == "/scheduler") {
+        #[cfg(windows)]
+        unsafe {
+            use windows::Win32::System::Console::{AttachConsole, ATTACH_PARENT_PROCESS};
+            let _ = AttachConsole(ATTACH_PARENT_PROCESS);
+        }
+
+        info!(">>> [START] Network sync command detected via /scheduler <<<");
+
+        // 4.0 Cleanup legacy startup scripts (vbs) asynchronously with timeout protection
+        crate::utils::system::cleanup_legacy_vbs_startup();
+        
+        // 4.1 Load all necessary configurations
+        let instances_path = config::ConfigManager::get_instances_path();
+        let container = config::instances::load_instances(&instances_path);
+        let net_config = config_manager.get_network_config();
+        let rules = &net_config.port_proxies;
+        
+        // 4.2 Identify target distros for synchronization
+        let mut target_distros: std::collections::HashSet<String> = std::collections::HashSet::new();
+        if pos + 1 < args.len() && !args[pos + 1].starts_with('/') {
+            target_distros.insert(args[pos + 1].clone());
+        } else {
+            for r in rules {
+                target_distros.insert(r.distro_name.clone());
+            }
+        }
+
+        // 4.3 Background startup for target distros (if configured for auto-startup)
+        let mut distros_spawned = 0;
+        for name in &target_distros {
+            if let Some(inst_config) = container.instances.get(name) {
+                if inst_config.auto_startup {
+                    info!("Distro '{}' marked for auto-start. Spawning background init script...", name);
+                    #[cfg(windows)]
+                    {
+                        use std::process::Command;
+                        use std::os::windows::process::CommandExt;
+                        const CREATE_NO_WINDOW: u32 = 0x08000000;
+                        
+                        let _ = Command::new("wsl")
+                            .args(&["-d", name, "-u", "root", "/etc/init.wsl-dashboard", "start"])
+                            .creation_flags(CREATE_NO_WINDOW)
+                            .spawn();
+                        distros_spawned += 1;
+                    }
+                }
+            }
+        }
+        
+        // 4.4 Wait for network interfaces to stabilize if any distros were spawned
+        if distros_spawned > 0 {
+            info!("Waiting 5 seconds for {} spawned distros to stabilize network interfaces...", distros_spawned);
+            tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+        } else {
+            info!("No new distros were spawned. Proceeding with existing running instances.");
+        }
+        
+        // 4.5 Execute synchronization for each target distro
+        for name in target_distros {
+            let distro_rules: Vec<_> = rules.iter().filter(|r| r.distro_name == name).cloned().collect();
+            if distro_rules.is_empty() {
+                info!("No rules found for distro '{}', skipping.", name);
+                continue;
+            }
+            
+            info!(">>> Executing elevated sync for '{}' (Total Rules: {})", name, distro_rules.len());
+            // sync_port_proxies has internal 10-retry logic for IP fetching
+            if let Err(e) = network::port_proxy::sync_port_proxies(&name, &distro_rules) {
+                error!("Sync FAILED for '{}': {}", name, e);
+            } else {
+                info!("Sync SUCCESS for '{}'.", name);
+            }
+        }
+        
+        // 4.6 Auto-attach USB devices if configured
+        info!(">>> [START] USB auto-attach synchronization <<<");
+        let usb_config = config_manager.get_usb_config().clone();
+        
+        if !usb_config.auto_attach_list.is_empty() {
+             // Check if any WSL 2 instance is running (required for usbipd attach)
+             let is_any_running = {
+                let mut cmd = std::process::Command::new("wsl");
+                cmd.args(["-l", "-v"]);
+                #[cfg(windows)]
+                {
+                    use std::os::windows::process::CommandExt;
+                    const CREATE_NO_WINDOW: u32 = 0x08000000;
+                    cmd.creation_flags(CREATE_NO_WINDOW);
+                }
+                cmd.env("WSL_UTF8", "1");
+                
+                match cmd.output() {
+                    Ok(out) => {
+                        let stdout = crate::wsl::decoder::decode_output(&out.stdout);
+                        stdout.lines()
+                            .skip(1) // Skip header
+                            .any(|line| {
+                                let lower = line.to_lowercase();
+                                let parts: Vec<&str> = line.split_whitespace().collect();
+                                // Must be Running AND Version 2
+                                lower.contains("running") && parts.iter().any(|&p| p == "2")
+                            })
+                    }
+                    Err(_) => false,
+                }
+            };
+            
+            if is_any_running {
+                info!("Found running WSL 2 instance. Processing {} auto-attach device(s)...", usb_config.auto_attach_list.len());
+                for device in &usb_config.auto_attach_list {
+                    info!("Auto-attaching USB device: BusId={}, VidPid={}, TargetDistro='{}'", 
+                        device.bus_id, device.vid_pid, device.distribution);
+                    
+                    // UsbManager::attach internally performs 'usbipd bind' then 'usbipd attach'
+                    match crate::usb::UsbManager::attach(&device.bus_id, &device.distribution).await {
+                        Ok(_) => info!("SUCCESS: USB device {} attached.", device.bus_id),
+                        Err(e) => {
+                             error!("FAILED to auto-attach USB device {}: {}", device.bus_id, e);
+                        }
+                    }
+                }
+            } else {
+                info!("No running WSL 2 instance found. Skipping USB auto-attach.");
+            }
+        } else {
+            info!("No USB devices configured for auto-attach.");
+        }
+        info!(">>> [FINISH] USB auto-attach synchronization completed. <<<");
+        
+        info!(">>> [FINISH] All scheduled network tasks completed. <<<");
+        // Ensure logs are flushed before exit
+        drop(logging_system);
+        return; // Exit short-lived cli process
+    }
+    
+    // 5. Silent mode detection
+    let is_silent_mode = args.iter().any(|arg| arg.eq_ignore_ascii_case("/silent"));
+    
+    // 6. Single Instance check (after log initialization to capture errors)
+    let instance = app::single_instance::SingleInstance::new("wsldashboard-v0.3-lock");
+    if !instance.is_single() {
+        if !is_silent_mode {
+            if app::single_instance::try_activate_existing_instance() {
+                info!("Activated existing instance, exiting...");
+            } else {
+                eprintln!("Another instance is already running. Exiting.");
+            }
+        } else {
+            eprintln!("Another instance is already running (silent mode). Exiting.");
+        }
+        return;
+    }
+    
+    // 7. Cleanup expired logs
     utils::logging::cleanup_expired_logs(&initial_logs_location, settings.log_days);
 
     info!("Starting {} (ID: {})...", APP_NAME, APP_ID);
@@ -109,110 +259,54 @@ async fn main() {
     app.global::<AppInfo>().set_version(env!("CARGO_PKG_VERSION").into());
     app.global::<AppInfo>().set_homepage(GITHUB_URL.into());
     app.global::<AppInfo>().set_issues_url(format!("{}{}", GITHUB_URL, GITHUB_ISSUES).into());
-    
-    debug!("App Metadata - Company: {}, Copyright: {}", COMPANY_NAME, LEGAL_COPYRIGHT);
-    
-    let app_handle = app.as_weak();
 
-    // Initialize system tray (window is initially visible unless in silent mode)
-    if let Err(e) = app::tray::SystemTray::initialize(app_handle.clone(), !is_silent_mode) {
+    // 9. Initialize system tray
+    if let Err(e) = app::tray::SystemTray::initialize(app.as_weak(), !is_silent_mode) {
         error!("Failed to initialize system tray: {}", e);
     }
-    
-    // Rename windows for Task Manager identification
-    app::window::rename_app_windows();
 
-    // Handle tray re-initialization (e.g. on language change)
     app.on_reinit_tray({
-        let ah = app_handle.clone();
-        let silent = is_silent_mode;
+        let ah = app.as_weak();
         move || {
             let current_visible = if let Some(app) = ah.upgrade() {
                 app.get_is_window_visible()
             } else {
-                !silent
+                false
             };
+            info!("Re-initializing tray, current visibility: {}", current_visible);
             if let Err(e) = app::tray::SystemTray::initialize(ah.clone(), current_visible) {
                 error!("Failed to re-initialize system tray: {}", e);
             }
         }
     });
 
-    // Initialize data refresh
-    refresh_data(app_handle.clone(), app_state.clone()).await;
+    // 10. Load settings to UI (crucial for i18n, fonts, and theme)
+    ui::data::load_settings_to_ui(&app, &app_state, &settings, &tray_settings).await;
 
-    // Load configuration to UI
-    {
-        let state = app_state.lock().await;
-        let settings = state.config_manager.get_settings().clone();
-        let tray = state.config_manager.get_tray_settings().clone();
-        drop(state);
-        ui::data::load_settings_to_ui(&app, &app_state, &settings, &tray).await;
-        ui::data::refresh_localized_strings(&app);
-    }
+    // 11. Setup handlers
+    handlers::setup(&app, app.as_weak(), app_state.clone()).await;
+    
+    // 12. Refresh initial data (distros list)
+    refresh_data(app.as_weak(), app_state.clone()).await;
 
-    // Set release_url based on timezone
-    {
-        let state = app_state.lock().await;
-        let timezone = &state.config_manager.get_config().system.timezone;
-        let release_base_url = if timezone == app::ZH_TIMEZONE {
-            app::GITEE_URL
-        } else {
-            GITHUB_URL
-        };
-        app.global::<AppInfo>().set_release_url(format!("{}{}", release_base_url, app::GITHUB_RELEASES).into());
-    }
+    // 13. Start background tasks (check for updates, monitor WSL/USB status)
+    app::startup::spawn_check_task(app.as_weak(), app_state.clone());
+    app::tasks::spawn_wsl_monitor(app.as_weak(), app_state.clone());
+    app::tasks::spawn_usb_monitor(app.as_weak());
+    app::tasks::spawn_state_listener(app.as_weak(), app_state.clone());
 
-    // Set up all UI callbacks
-    handlers::common::setup(&app, app_handle.clone(), app_state.clone());
-    handlers::window::setup(&app, app_handle.clone());
-    handlers::distro::setup(&app, app_handle.clone(), app_state.clone());
-    handlers::settings::setup(&app, app_handle.clone(), app_state.clone());
-    handlers::update::setup(&app, app_handle.clone(), app_state.clone());
-    handlers::instance::setup(&app, app_handle.clone(), app_state.clone());
-    handlers::usb::setup(&app, app_handle.clone(), app_state.clone());
-
-
-    // Start monitoring
-    app::tasks::spawn_wsl_monitor(app_handle.clone(), app_state.clone());
-    app::tasks::spawn_usb_monitor(app_handle.clone());
-
-    // Listen for distribution state changes and automatically update UI
-    app::tasks::spawn_state_listener(app_handle.clone(), app_state.clone());
-
-    // Automatically check for updates and expiration at startup
-    app::startup::spawn_check_task(app_handle.clone(), app_state.clone());
-
-    // Show window and center it only if NOT in silent mode
-    if !is_silent_mode {
-        app::window::show_and_center(&app);
-    } else {
-        // If /silent parameter is present, ensure window is hidden and taskbar is skipped
-        // We still use a short delay to ensure the Slint event loop is fully initialized 
-        // and the tray icon is correctly handled.
-        info!("Starting minimized to system tray (silent mode).");
-        let ah = app_handle.clone();
-        slint::Timer::single_shot(std::time::Duration::from_millis(100), move || {
-            if let Some(app) = ah.upgrade() {
-                app.set_is_window_visible(false);
-                app::window::set_skip_taskbar(&app, true);
-                debug!("Window hidden to tray after startup delay.");
-            }
-        });
-    }
-
-    // Run application event loop with a keep-alive timer to prevent exit when hidden
+    // Start UI
+    app::window::show_and_center(&app, is_silent_mode);
+    
+    // 14. Run application event loop with a keep-alive timer to prevent exit when hidden
     // We Box::leak to ensure the timer stays alive as long as the process runs.
     let keep_alive_timer = Box::leak(Box::new(slint::Timer::default()));
     keep_alive_timer.start(slint::TimerMode::Repeated, std::time::Duration::from_secs(1), || {
         // Keep-alive heartbeat
     });
-    
-    info!("Event loop started.");
-    slint::run_event_loop().expect("Failed to run event loop");
-    info!("Event loop exited.");
 
-    // Processing after application exit
+    slint::run_event_loop().expect("Failed to run Slint event loop");
+
+    // 15. Handle cleanup on exit
     app::tasks::handle_app_exit(&app, &app_state).await;
 }
-

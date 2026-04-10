@@ -64,8 +64,8 @@ impl WslCommandExecutor {
     }
 
     // Open terminal in distribution
-    pub async fn open_distro_terminal(&self, distro_name: &str, working_dir: &str) -> WslCommandResult<String> {
-        crate::wsl::ops::ui::open_distro_terminal(self, distro_name, working_dir).await
+    pub async fn open_distro_terminal(&self, distro_name: &str, working_dir: &str, proxy_exports: Option<Vec<(String, String)>>) -> WslCommandResult<String> {
+        crate::wsl::ops::ui::open_distro_terminal(self, distro_name, working_dir, proxy_exports).await
     }
 
     // Open specified path in distribution

@@ -91,6 +91,8 @@ pub struct Config {
     pub tray: TraySettings,
     #[serde(default)]
     pub usb: UsbConfig,
+    #[serde(default)]
+    pub sidebar: SidebarConfig,
 }
 
 impl Config {
@@ -139,6 +141,36 @@ impl Config {
 
             tray: TraySettings::default(),
             usb: UsbConfig::default(),
+            sidebar: SidebarConfig::default(),
+        }
+    }
+}
+
+// --- Sidebar Configuration ---
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SidebarConfig {
+    #[serde(default = "default_true")]
+    pub add: bool,
+    #[serde(default = "default_true")]
+    pub usb: bool,
+    #[serde(default = "default_true")]
+    pub network: bool,
+    #[serde(default = "default_true")]
+    pub about: bool,
+}
+
+fn default_true() -> bool {
+    true
+}
+
+impl Default for SidebarConfig {
+    fn default() -> Self {
+        Self {
+            add: true,
+            usb: true,
+            network: true,
+            about: true,
         }
     }
 }
@@ -149,6 +181,51 @@ impl Config {
 pub struct UsbConfig {
     #[serde(rename = "auto-attach-list", default)]
     pub auto_attach_list: Vec<UsbAutoAttachDevice>,
+}
+
+pub const NETWORK_VERSION: u32 = 1;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NetworkCommonConfig {
+    #[serde(rename = "setting-version", default = "default_network_version")]
+    pub setting_version: u32,
+    #[serde(rename = "modify-time", default = "default_modify_time")]
+    pub modify_time: String,
+}
+
+pub fn default_network_version() -> u32 { NETWORK_VERSION }
+pub fn default_modify_time() -> String { chrono::Utc::now().timestamp_millis().to_string() }
+
+impl Default for NetworkCommonConfig {
+    fn default() -> Self {
+        Self {
+            setting_version: NETWORK_VERSION,
+            modify_time: default_modify_time(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NetworkConfig {
+    #[serde(default)]
+    pub common: NetworkCommonConfig,
+    #[serde(default)]
+    pub port_proxies: Vec<crate::network::models::PortProxyRule>,
+    #[serde(default)]
+    pub proxy: crate::network::models::HttpProxyConfig,
+}
+
+impl Default for NetworkConfig {
+    fn default() -> Self {
+        Self {
+            common: NetworkCommonConfig {
+                setting_version: NETWORK_VERSION,
+                modify_time: chrono::Utc::now().timestamp_millis().to_string(),
+            },
+            port_proxies: Vec::new(),
+            proxy: Default::default(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

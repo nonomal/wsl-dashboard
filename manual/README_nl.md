@@ -29,6 +29,7 @@ I18N :  [English](../README.md) | [简体中文](./README_zh_CN.md) | [繁體中
 - [💻 Systeemvereisten](#-systeemvereisten)
 - [📦 Installatiehandleiding](#-installatiehandleiding)
 - [🛠️ Tech Stack & Prestaties](#️-tech-stack--prestaties)
+- [⭐️ Liefdeswerk](#️-liefdeswerk)
 - [📄 Licentie](#-licentie)
 
 ---
@@ -81,6 +82,8 @@ Engels, Vereenvoudigd Chinees, Traditioneel Chinees, Hindi, Spaans, Frans, Arabi
 - **Slimme installatie**: Installeren vanuit Microsoft Store, GitHub of lokale bestanden (RootFS/VHDX). Inclusief een ingebouwde RootFS download-helper.
 - **Veiligheid**: Mutex-locks voor veilige gelijktijdige migratie-/backup-operaties en automatische opschoning van Appx bij verwijdering.
 - **Ultra-laag geheugengebruik**: Sterk geoptimaliseerd voor efficiëntie. Stille startup (systeemvak) gebruikt slechts **~10 MB** RAM. Gebruik in venstermodus varieert per fontcomplexiteit: **~18 MB** voor standaardtalen en **~38 MB** voor talen met grote tekensets (Chinees, Japans, Koreaans).
+- **Geavanceerde netwerken**: Naadloos beheer van port forwarding (met automatische aanmaak van firewallregels) en wereldwijde HTTP-proxyconfiguratie voor geünificeerde connectiviteit.
+- **USB-apparaatbeheer**: Volledige integratie met `usbipd-win` voor het moeiteloos binden, aankoppelen en beheren van lokale USB-apparaten in al uw WSL-instanties direct vanaf het dashboard.
 
 
 ## ⚙️ Configuratie & Logboeken
@@ -95,6 +98,7 @@ Alle configuratie wordt beheerd via de Instellingen-weergave:
 - Schakel automatisch starten bij systeemopstart in (met automatisch padherstel).
 - Stel de app in om bij opstarten te minimaliseren naar het systeemvak.
 - Stel de sluitknop in om te minimaliseren naar het systeemvak in plaats van af te sluiten.
+- Pas de zijbalk aan door de zichtbaarheid van specifieke functietabbladen in of uit te schakelen.
 
 Logbestanden worden naar de geconfigureerde logmap geschreven en kunnen worden bijgevoegd bij het melden van problemen.
 
@@ -112,9 +116,16 @@ Logbestanden worden naar de geconfigureerde logmap geschreven en kunnen worden b
   <img src="../assets/screenshot/home-configs.png" width="48%" />
 </p>
 
-### USB
+### USB & menu inklappen
 <p align="center">
   <img src="../assets/screenshot/usb.png" width="48%" />
+  <img src="../assets/screenshot/collapsed.png" width="48%" />
+</p>
+
+### netwerk
+<p align="center">
+  <img src="../assets/screenshot/port-forwarding.png" width="48%" />
+  <img src="../assets/screenshot/http-proxy.png" width="48%" />
 </p>
 
 ### Instance toevoegen & Instellingen
@@ -123,10 +134,9 @@ Logbestanden worden naar de geconfigureerde logmap geschreven en kunnen worden b
   <img src="../assets/screenshot/settings.png" width="48%" />
 </p>
 
-### Over & menu inklappen
+### Over
 <p align="center">
   <img src="../assets/screenshot/about.png" width="48%" />
-  <img src="../assets/screenshot/collapsed.png" width="48%" />
 </p>
 
 ## 🎬 Demonstratie
@@ -193,6 +203,10 @@ Zorg ervoor dat de Rust-toolchain (Rust 1.92 of nieuwer) is geïnstalleerd.
   - **Portabiliteit**: Geoptimaliseerde release-build produceert een enkele compacte executable.
 
 
+
+## ⭐️ Liefdeswerk
+
+Als u dit project nuttig heeft gevonden, zou ik het op prijs stellen als u een ster achterlaat op GitHub. Uw steun helpt het een breder publiek te bereiken en wordt zeer gewaardeerd. Het is deze aanmoediging die mij motiveert om door te gaan met bouwen.
 
 ## 📄 Licentie
 

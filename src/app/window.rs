@@ -1,5 +1,5 @@
 #[cfg(target_os = "windows")]
-use tracing::info;
+use tracing::{info, error};
 use crate::AppWindow;
 
 #[cfg(target_os = "windows")]
@@ -41,8 +41,13 @@ unsafe extern "system" fn enum_main_window_proc(hwnd: HWND, lparam: LPARAM) -> B
 
             let owner = GetWindow(hwnd, GW_OWNER).unwrap_or(HWND(std::ptr::null_mut()));
 
+            // LOG EVERY MATCHING PID WINDOW
+            info!("Found window for PID {}: Title='{}', Class='{}', Owner={:?}", data.target_pid, title, class_name, owner);
+
             // ABSOLUTE IDENTIFIER: Slint UI is the only one we care about.
-            if owner.0.is_null() && (title.contains("WINDOW_UI") || title == "WSL Dashboard Main" || class_name.contains("Slint")) {
+            // Exclude tray helper windows and event targets
+            let is_tray = title.contains("Tray") || class_name.contains("tray_icon_app") || class_name.contains("Target");
+            if !is_tray && owner.0.is_null() && (title.contains("WINDOW_UI") || title == "WSL Dashboard Main" || class_name.contains("Slint")) {
                 data.main_window = Some(hwnd);
                 return BOOL(0); // Stop enumeration
             }
@@ -66,7 +71,9 @@ unsafe extern "system" fn enum_fallback_window_proc(hwnd: HWND, lparam: LPARAM) 
             let owner = GetWindow(hwnd, GW_OWNER).unwrap_or(HWND(std::ptr::null_mut()));
 
             // In extreme cold start, title might be empty, so we trust class name + no owner
-            if owner.0.is_null() && (class_name.contains("Slint") || class_name.contains("Window")) {
+            // Strictly exclude known background helper classes
+            let is_helper = class_name.contains("tray_icon_app") || class_name.contains("Target");
+            if !is_helper && owner.0.is_null() && (class_name.contains("Slint") || class_name.contains("Window")) {
                 data.main_window = Some(hwnd);
                 return BOOL(0); // Stop enumeration
             }
@@ -96,72 +103,114 @@ fn find_main_window() -> Option<HWND> {
 }
 
 #[cfg(target_os = "windows")]
+fn hide_window_completely(hwnd: HWND) {
+    unsafe {
+        // 1. Hide it first
+        let _ = ShowWindow(hwnd, SW_HIDE);
+        
+        // 2. Set opacity to 0 and move off-screen
+        let mut ex_style = GetWindowLongW(hwnd, GWL_EXSTYLE) as u32;
+        ex_style |= WS_EX_LAYERED.0;
+        let _ = SetWindowLongW(hwnd, GWL_EXSTYLE, ex_style as i32);
+        let _ = SetLayeredWindowAttributes(hwnd, windows::Win32::Foundation::COLORREF(0), 0, LWA_ALPHA);
+        let _ = SetWindowPos(hwnd, HWND(std::ptr::null_mut()), -32000, -32000, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+
+        // 3. Remove from taskbar
+        let mut ex_style = GetWindowLongW(hwnd, GWL_EXSTYLE) as u32;
+        ex_style |= WS_EX_TOOLWINDOW.0;
+        ex_style &= !WS_EX_APPWINDOW.0;
+        SetWindowLongW(hwnd, GWL_EXSTYLE, ex_style as i32);
+        
+        let _ = SetWindowPos(hwnd, HWND(std::ptr::null_mut()), 0, 0, 0, 0, 
+                            SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+        info!("Window logically and physically hidden from desktop and taskbar.");
+    }
+}
+
+#[cfg(target_os = "windows")]
 pub fn set_skip_taskbar(_app: &crate::AppWindow, skip: bool) {
     info!("set_skip_taskbar(skip={})", skip);
     std::thread::spawn(move || {
-        for _i in 0..15 {
+        for _i in 0..20 {
             if let Some(hwnd) = find_main_window() {
                 unsafe {
                     // Hide first to ensure taskbar refresh
                     let _ = ShowWindow(hwnd, SW_HIDE);
-                    
-                    let mut ex_style = GetWindowLongW(hwnd, GWL_EXSTYLE) as u32;
+
                     if skip {
-                        ex_style |= WS_EX_TOOLWINDOW.0;
-                        ex_style &= !WS_EX_APPWINDOW.0;
+                        hide_window_completely(hwnd);
                     } else {
+                        let mut ex_style = GetWindowLongW(hwnd, GWL_EXSTYLE) as u32;
                         ex_style &= !WS_EX_TOOLWINDOW.0;
                         ex_style |= WS_EX_APPWINDOW.0;
-                    }
-                    SetWindowLongW(hwnd, GWL_EXSTYLE, ex_style as i32);
-                    
-                    let _ = SetWindowPos(hwnd, HWND(std::ptr::null_mut()), 0, 0, 0, 0, 
-                                        SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
-                    
-                    if !skip {
+                        SetWindowLongW(hwnd, GWL_EXSTYLE, ex_style as i32);
+                        
+                        let _ = SetWindowPos(hwnd, HWND(std::ptr::null_mut()), 0, 0, 0, 0, 
+                                            SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+                        
                         let _ = ShowWindow(hwnd, SW_RESTORE);
                         let _ = ShowWindow(hwnd, SW_SHOW);
                         let _ = SetForegroundWindow(hwnd);
                     }
-                    return;
                 }
+                return;
             }
-            std::thread::sleep(std::time::Duration::from_millis(150));
+            std::thread::sleep(std::time::Duration::from_millis(100));
         }
     });
-}
-
-#[cfg(target_os = "windows")]
-pub fn set_window_opacity(opacity: u8) {
-    if let Some(hwnd) = find_main_window() {
-        unsafe {
-            let mut ex_style = GetWindowLongW(hwnd, GWL_EXSTYLE) as u32;
-            ex_style |= WS_EX_LAYERED.0;
-            let _ = SetWindowLongW(hwnd, GWL_EXSTYLE, ex_style as i32);
-            let _ = SetLayeredWindowAttributes(hwnd, windows::Win32::Foundation::COLORREF(0), opacity, LWA_ALPHA);
-        }
-    }
 }
 
 #[cfg(not(target_os = "windows"))]
 pub fn set_window_opacity(_opacity: u8) {}
 
+#[cfg(target_os = "windows")]
+fn set_window_opacity_by_hwnd(hwnd: HWND, opacity: u8) {
+    unsafe {
+        let mut ex_style = GetWindowLongW(hwnd, GWL_EXSTYLE) as u32;
+        ex_style |= WS_EX_LAYERED.0;
+        let _ = SetWindowLongW(hwnd, GWL_EXSTYLE, ex_style as i32);
+        let _ = SetLayeredWindowAttributes(hwnd, windows::Win32::Foundation::COLORREF(0), opacity, LWA_ALPHA);
+    }
+}
+
 #[cfg(not(target_os = "windows"))]
 pub fn set_skip_taskbar(_app: &crate::AppWindow, _skip: bool) {}
 
-pub fn show_and_center(app: &AppWindow) {
+pub fn show_and_center(app: &AppWindow, silent: bool) {
     use slint::ComponentHandle;
-    info!("show_and_center requested");
+    info!("show_and_center requested (silent={})", silent);
     
     #[cfg(target_os = "windows")]
     {
-        // 1. Try to find the window handle BEFORE it's shown
-        // We poll aggressively for a short time
-        for _ in 0..20 {
+        if silent {
+            info!("Silent mode: Skipping app.show() to keep window hidden.");
+            app.window().set_minimized(true);
+            app.window().set_position(slint::LogicalPosition::new(-32000.0, -32000.0));
+            app.set_is_window_visible(false);
+            
+            // CRITICAL: Even in silent mode, we must rename and hide any existing helper windows (like tray) 
+            // so they don't appear as blank icons in the taskbar. 
+            // Since windows might appear asynchronously, we use a background sweep for the first 2 seconds.
+            std::thread::spawn(move || {
+                for i in 0..6 {
+                    rename_app_windows();
+                    let delay = match i {
+                        0 => 50,
+                        1 => 200,
+                        2 => 500,
+                        _ => 1000,
+                    };
+                    std::thread::sleep(std::time::Duration::from_millis(delay));
+                }
+            });
+            return;
+        }
+
+        // 1. Initial manual hide: opacity 0 + offscreen to prevent flicker during Slint's show()
+        // We poll briefly for a handle if it exists, otherwise Slint's app.show() will create it.
+        for _ in 0..10 {
             if let Some(hwnd) = find_main_window() {
-                // Instantly hide it via opacity and move it off-screen 
-                // just in case Slint's show() is faster than our next steps
-                set_window_opacity(0);
+                set_window_opacity_by_hwnd(hwnd, 0);
                 unsafe {
                     let _ = SetWindowPos(hwnd, HWND(std::ptr::null_mut()), -32000, -32000, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
                 }
@@ -169,17 +218,14 @@ pub fn show_and_center(app: &AppWindow) {
             }
             std::thread::sleep(std::time::Duration::from_millis(5));
         }
-        
-        // 2. Initial show (it will be invisible at -32000 if step 1 succeeded)
+
         app.set_is_window_visible(true);
         let _ = app.show();
 
-        set_skip_taskbar(app, false);
-        rename_app_windows();
-
+        // 2. CONSOLIDATED REVEAL FLOW: ONE thread to handle positioning, styling, and activation
         std::thread::spawn(move || {
-            // We give it a few more retries to ensure we have the final window handle and correct size
-            for _ in 0..50 {
+            // We give it plenty of retries to ensure Slint has fully initialized the window
+            for _ in 0..60 {
                 if let Some(hwnd) = find_main_window() {
                     unsafe {
                         let mut rect = RECT::default();
@@ -187,8 +233,15 @@ pub fn show_and_center(app: &AppWindow) {
                             let w = rect.right - rect.left;
                             let h = rect.bottom - rect.top;
                             
-                            // Only center if we have a valid size (Slint might take a moment to layout)
+                            // Only proceed if Slint has performed layout (size > 100x100)
                             if w > 100 && h > 100 { 
+                                // A. Set correct taskbar style (APPWINDOW)
+                                let mut ex_style = GetWindowLongW(hwnd, GWL_EXSTYLE) as u32;
+                                ex_style &= !WS_EX_TOOLWINDOW.0;
+                                ex_style |= WS_EX_APPWINDOW.0;
+                                SetWindowLongW(hwnd, GWL_EXSTYLE, ex_style as i32);
+                                
+                                // B. Calculate center position on current monitor
                                 let hmonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTOPRIMARY);
                                 let mut monitor_info = MONITORINFO {
                                     cbSize: std::mem::size_of::<MONITORINFO>() as u32,
@@ -200,45 +253,55 @@ pub fn show_and_center(app: &AppWindow) {
                                     let x = mr.left + (mr.right - mr.left - w) / 2;
                                     let y = mr.top + (mr.bottom - mr.top - h) / 2;
                                     
-                                    // 3. Move window to the ACTUAL center
-                                    let _ = SetWindowPos(hwnd, HWND_TOP, x, y, 0, 0, SWP_NOSIZE);
+                                    // C. Move to center AND bring to top layer
+                                    let _ = SetWindowPos(hwnd, HWND_TOP, x, y, 0, 0, SWP_NOSIZE | SWP_FRAMECHANGED);
                                     
-                                    // 4. Final reveal
-                                    let mut ex_style = GetWindowLongW(hwnd, GWL_EXSTYLE) as u32;
-                                    ex_style |= WS_EX_LAYERED.0;
-                                    let _ = SetWindowLongW(hwnd, GWL_EXSTYLE, ex_style as i32);
-                                    let _ = SetLayeredWindowAttributes(hwnd, windows::Win32::Foundation::COLORREF(0), 255, LWA_ALPHA);
-                                    
+                                    // D. RENAME (Internal bookkeeping)
+                                    rename_app_windows();
+
+                                    // E. FINAL Activation: Show, Restore, and FORCE Foreground
+                                    let _ = ShowWindow(hwnd, SW_RESTORE);
                                     let _ = ShowWindow(hwnd, SW_SHOW);
                                     let _ = SetForegroundWindow(hwnd);
-                                    info!("Window centered and revealed at {}, {}", x, y);
+                                    
+                                    // F. Reveal: Transition opacity back to 255
+                                    set_window_opacity_by_hwnd(hwnd, 255);
+
+                                    info!("Window successfully centered at {}, {} and robustly activated.", x, y);
                                     return;
                                 }
                             }
                         }
                     }
                 }
-                std::thread::sleep(std::time::Duration::from_millis(10));
+                std::thread::sleep(std::time::Duration::from_millis(20));
             }
+            error!("Failed to find or activate main window within timeout.");
         });
     }
 
     #[cfg(not(target_os = "windows"))]
     {
-        app.set_is_window_visible(true);
-        let _ = app.show();
+        if !silent {
+            app.set_is_window_visible(true);
+            let _ = app.show();
+        }
     }
 }
 
 pub fn activate_window_by_hwnd(hwnd: HWND) {
     #[cfg(target_os = "windows")]
     unsafe {
-        let _ = ShowWindow(hwnd, SW_HIDE);
+        // STYLE FIRST: Ensure it's not a tool window and is an app window so it appears in taskbar correctly
         let mut ex_style = GetWindowLongW(hwnd, GWL_EXSTYLE) as u32;
         ex_style &= !WS_EX_TOOLWINDOW.0;
         ex_style |= WS_EX_APPWINDOW.0;
         SetWindowLongW(hwnd, GWL_EXSTYLE, ex_style as i32);
-        let _ = SetWindowPos(hwnd, HWND(std::ptr::null_mut()), 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+        
+        // Refresh frame and bring to top position
+        let _ = SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
+        
+        // Activation: Restore if minimized, then show and focus
         let _ = ShowWindow(hwnd, SW_RESTORE);
         let _ = ShowWindow(hwnd, SW_SHOW);
         let _ = SetForegroundWindow(hwnd);
@@ -266,7 +329,8 @@ unsafe extern "system" fn rename_windows_final_proc(hwnd: HWND, lparam: LPARAM) 
         let owner = unsafe { GetWindow(hwnd, GW_OWNER).unwrap_or(HWND(std::ptr::null_mut())) };
 
         // EXPLICIT IDENTIFICATION
-        let is_slint_ui = owner.0.is_null() && (title.contains("WINDOW_UI") || title == "WSL Dashboard Main" || class_name.contains("Slint"));
+        let is_tray = title.contains("Tray") || class_name.contains("tray_icon_app") || class_name.contains("Target");
+        let is_slint_ui = !is_tray && owner.0.is_null() && (title.contains("WINDOW_UI") || title == "WSL Dashboard Main" || class_name.contains("Slint"));
 
         if is_slint_ui {
             let new_title: Vec<u16> = "WSL Dashboard Main\0".encode_utf16().collect();
@@ -275,18 +339,26 @@ unsafe extern "system" fn rename_windows_final_proc(hwnd: HWND, lparam: LPARAM) 
             // Ensure Main UI has APPWINDOW and NOT TOOLWINDOW (unless specifically skipped)
             // But let set_skip_taskbar handle the skip logic later.
         } else {
-            // FORCE CLEANUP OF TRAY WINDOWS
-            let new_title: Vec<u16> = "WSL Dashboard Tray\0".encode_utf16().collect();
-            let _ = unsafe { SetWindowTextW(hwnd, windows::core::PCWSTR(new_title.as_ptr())) };
-            
-            // CRITICAL: Force helper windows to NOT show in taskbar
-            let mut ex_style = unsafe { GetWindowLongW(hwnd, GWL_EXSTYLE) as u32 };
-            ex_style |= WS_EX_TOOLWINDOW.0;
-            ex_style &= !WS_EX_APPWINDOW.0;
-            unsafe {
-                SetWindowLongW(hwnd, GWL_EXSTYLE, ex_style as i32);
-                let _ = SetWindowPos(hwnd, HWND(std::ptr::null_mut()), 0, 0, 0, 0, 
-                                    SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+            // FORCE CLEANUP OF TRAY WINDOWS - but be careful not to hide things that look like Slint windows
+            // even if they don't have the final title yet.
+            if !class_name.contains("Slint") && !class_name.contains("Window") {
+                let new_title: Vec<u16> = "WSL Dashboard Tray\0".encode_utf16().collect();
+                let _ = unsafe { SetWindowTextW(hwnd, windows::core::PCWSTR(new_title.as_ptr())) };
+                
+                // CRITICAL: Force helper windows to NOT show in taskbar
+                let mut ex_style = unsafe { GetWindowLongW(hwnd, GWL_EXSTYLE) as u32 };
+                ex_style |= WS_EX_TOOLWINDOW.0;
+                ex_style &= !WS_EX_APPWINDOW.0;
+                unsafe {
+                    SetWindowLongW(hwnd, GWL_EXSTYLE, ex_style as i32);
+                    let _ = SetWindowPos(hwnd, HWND(std::ptr::null_mut()), 0, 0, 0, 0, 
+                                        SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+                    
+                    // Explicitly hide to force taskbar refresh
+                    let _ = ShowWindow(hwnd, SW_HIDE);
+                }
+            } else {
+                info!("Skipping HIDE for potential Slint window: title='{}', class='{}'", title, class_name);
             }
         }
     }

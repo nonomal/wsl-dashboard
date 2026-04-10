@@ -150,7 +150,9 @@ export component InformationDialog inherits Rectangle {
 
                 InfoRow {
                     label: AppI18n.t("dialog.state", [AppI18n.version]);
-                    value: (root.info.status == "Running") ? AppI18n.t("distro.running", [AppI18n.version]) : AppI18n.t("distro.stopped", [AppI18n.version]);
+                    value: (root.info.status == "Running") 
+                        ? (AppI18n.t("distro.running", [AppI18n.version]) + (root.info.ip != "" ? " (IP: " + root.info.ip + " )" : "")) 
+                        : AppI18n.t("distro.stopped", [AppI18n.version]);
                     value_color: root.info.status == "Running" ? #28a745 : Theme.text_primary;
                 }
 

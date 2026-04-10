@@ -6,6 +6,7 @@ export struct Information {
     vhdx_path: string,
     vhdx_size: string,
     actual_used: string,
+    ip: string,
 }
 
 export struct Distro {
@@ -46,6 +47,16 @@ export struct UsbDevice {
     attached_distro: string,
 }
 
+export struct PortProxyRuleUI {
+    id: string,
+    distro_name: string,
+    listen_address: string,
+    listen_port: string,
+    target_port: string,
+    enable_firewall: bool,
+    is_active: bool,
+}
+
 export struct SettingsStrings {
     language: string,
     auto_update: string,
@@ -60,6 +71,7 @@ export struct SettingsStrings {
     close_to_tray: string,
     save: string,
     wsl_settings: string,
+    sidebar_features: string,
 }
 
 export struct AboutStrings {
@@ -70,6 +82,8 @@ export struct AboutStrings {
     website: string,
     issues: string,
     discussions: string,
+    star: string,
+    love: string,
     github: string,
     license: string,
     copyright: string,
@@ -77,7 +91,7 @@ export struct AboutStrings {
 
 export global Theme {
     in property <bool> dark_mode: false;
-    out property <color> background: dark_mode ? #1E1E1E : #F3F3F3;
+    out property <color> background: dark_mode ? #2d2d30 : #F3F3F3;
     out property <color> content_bg: dark_mode ? #1E1E1E : #FFFFFF;
     out property <color> sidebar_bg: transparent;
     out property <color> card_bg: dark_mode ? #2D2D30 : #FFFFFF;

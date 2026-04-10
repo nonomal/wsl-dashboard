@@ -29,6 +29,7 @@ I18N :  [English](../README.md) | [简体中文](./README_zh_CN.md) | [繁體中
 - [💻 Requisiti di Sistema](#-requisiti-di-sistema)
 - [📦 Guida all'Installazione](#-guida-allinstallazione)
 - [🛠️ Stack Tecnologico e Performance](#️-stack-tecnologico-e-performance)
+- [⭐️ Lavoro fatto con amore](#️-lavoro-fatto-con-amore)
 - [📄 Licenza](#-licenza)
 
 ---
@@ -81,6 +82,8 @@ Inglese, Cinese (Semplificato), Cinese (Tradizionale), Hindi, Spagnolo, Francese
 - **Installazione Intelligente**: Installa dal Microsoft Store, GitHub o file locali (RootFS/VHDX). Assistente al download RootFS integrato.
 - **Sicurezza Globale**: Blocchi mutex per operazioni di migrazione/backup simultanee sicure e pulizia automatica di Appx alla rimozione.
 - **Impronta di Memoria Bassissima**: Estremamente ottimizzato. L'avvio silenzioso (tray) utilizza solo **~10MB** di RAM. L'uso in modalità finestra varia in base alla complessità dei caratteri: **~18MB** per lingue standard e **~38MB** per lingue con set di caratteri estesi (Cinese, Giapponese, Coreano).
+- **Rete avanzata**: Gestione fluida dell'inoltro delle porte (con creazione automatica delle regole del firewall) e configurazione proxy HTTP globale per una connettività unificata.
+- **Gestione dispositivi USB**: Integrazione completa con `usbipd-win` per un facile collegamento, attivazione e gestione dei dispositivi USB locali su tutte le istanze WSL direttamente dall'interfaccia utente.
 
 
 ## ⚙️ Configurazione e Log
@@ -95,6 +98,7 @@ Tutta la configurazione è gestita tramite la vista Impostazioni:
 - Abilita l'avvio automatico all'accesso del sistema (con riparazione automatica dei percorsi).
 - Imposta l'app per ridursi nel tray all'avvio.
 - Configura il pulsante di chiusura per ridurre nel tray invece di uscire dal programma.
+- Personalizza la barra laterale attivando o disattivando la visibilità di schede di funzionalità specifiche.
 
 I file di log vengono scritti nella directory configurata e possono essere allegati quando si segnalano problemi.
 
@@ -112,9 +116,16 @@ I file di log vengono scritti nella directory configurata e possono essere alleg
   <img src="../assets/screenshot/home-configs.png" width="48%" />
 </p>
 
-### USB
+### USB  e menu compresso
 <p align="center">
   <img src="../assets/screenshot/usb.png" width="48%" />
+  <img src="../assets/screenshot/collapsed.png" width="48%" />
+</p>
+
+### rete
+<p align="center">
+  <img src="../assets/screenshot/port-forwarding.png" width="48%" />
+  <img src="../assets/screenshot/http-proxy.png" width="48%" />
 </p>
 
 ### Aggiungi Istanza e Impostazioni
@@ -123,10 +134,9 @@ I file di log vengono scritti nella directory configurata e possono essere alleg
   <img src="../assets/screenshot/settings.png" width="48%" />
 </p>
 
-### Informazioni e menu compresso
+### Informazioni
 <p align="center">
   <img src="../assets/screenshot/about.png" width="48%" />
-  <img src="../assets/screenshot/collapsed.png" width="48%" />
 </p>
 
 ## 🎬 Demo di Funzionamento
@@ -193,6 +203,10 @@ Assicurati di avere installato la toolchain Rust (Rust 1.92+ o successivo).
   - **Portabilità**: La build ottimizzata produce un unico eseguibile compatto.
 
 
+
+## ⭐️ Lavoro fatto con amore
+
+Se hai trovato utile questo progetto, ti sarei grato se potessi lasciare una stella su GitHub. Il tuo supporto aiuta a raggiungere un pubblico più ampio ed è profondamente apprezzato. È questo incoraggiamento che mi motiva a continuare a costruire.
 
 ## 📄 Licenza
 

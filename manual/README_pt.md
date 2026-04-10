@@ -29,6 +29,7 @@ I18N :  [English](../README.md) | [简体中文](./README_zh_CN.md) | [繁體中
 - [💻 Requisitos do Sistema](#-requisitos-do-sistema)
 - [📦 Guia de Instalação](#-guia-de-instalação)
 - [🛠️ Tecnologias e Desempenho](#️-tecnologias-e-desempenho)
+- [⭐️ Trabalho de amor](#️-trabalho-de-amor)
 - [📄 Licença](#-licença)
 
 ---
@@ -81,6 +82,8 @@ Inglês, Chinês, Chinês, Hindi, Espanhol, Francês, Arabic, Bengali, Portuguê
 - **Instalação Inteligente**: Instalação a partir da Microsoft Store, GitHub ou ficheiros locais (RootFS/VHDX). Inclui assistente de transferência de RootFS integrado.
 - **Segurança Global**: Bloqueios mutex para operações seguras de migração/backup concorrentes e limpeza automática de Appx ao remover.
 - **Pegada de Memória Ultra Baixa**: Altamente otimizado para eficiência. O arranque silencioso (tray) utiliza apenas **~10MB** de RAM. O uso em modo janela varia conforme a complexidade do tipo de letra: **~18MB** para idiomas padrão e **~38MB** para idiomas com grandes conjuntos de caracteres (Chinês, Japonês, Coreano).
+- **Redes avançadas**: Gerenciamento contínuo de encaminhamento de portas (com criação automática de regras de firewall) e configuração global de proxy HTTP para conectividade unificada.
+- **Gerenciamento de Dispositivos USB**: Integração total com `usbipd-win` para uma vinculação, anexação e gerenciamento fáceis de dispositivos USB locais em suas instâncias do WSL, diretamente da interface do painel.
 
 
 ## ⚙️ Configuração e Registos
@@ -95,6 +98,7 @@ Toda a configuração é gerida através da vista Definições:
 - Ative o arranque automático no boot do sistema (com reparação automática de caminhos).
 - Configure a aplicação para minimizar para a bandeja ao iniciar.
 - Configure o botão de fechar para minimizar para a bandeja em vez de sair do programa.
+- Personalize a barra lateral alternando a visibilidade de guias de recursos específicos.
 
 Os ficheiros de registo são gravados no diretório configurado e podem ser anexados ao reportar problemas.
 
@@ -112,9 +116,16 @@ Os ficheiros de registo são gravados no diretório configurado e podem ser anex
   <img src="../assets/screenshot/home-configs.png" width="48%" />
 </p>
 
-### USB
+### USB & Menu recolhido
 <p align="center">
   <img src="../assets/screenshot/usb.png" width="48%" />
+  <img src="../assets/screenshot/collapsed.png" width="48%" />
+</p>
+
+### rede
+<p align="center">
+  <img src="../assets/screenshot/port-forwarding.png" width="48%" />
+  <img src="../assets/screenshot/http-proxy.png" width="48%" />
 </p>
 
 ### Adicionar Instância & Definições
@@ -123,10 +134,9 @@ Os ficheiros de registo são gravados no diretório configurado e podem ser anex
   <img src="../assets/screenshot/settings.png" width="48%" />
 </p>
 
-### Sobre & Menu recolhido
+### Sobre
 <p align="center">
   <img src="../assets/screenshot/about.png" width="48%" />
-  <img src="../assets/screenshot/collapsed.png" width="48%" />
 </p>
 
 ## 🎬 Demonstração de Funcionamento
@@ -193,6 +203,10 @@ Certifique-se de que tem o conjunto de ferramentas Rust instalado (Rust 1.92+ ou
   - **Portabilidade**: O build otimizado produz um único executável compacto.
 
 
+
+## ⭐️ Trabalho de amor
+
+Se achou este projeto útil, ficaria grato se pudesse deixar uma estrela no GitHub. O seu apoio ajuda a chegar a um público mais vasto e é profundamente apreciado. É este incentivo que me motiva a continuar a construir.
 
 ## 📄 Licença
 

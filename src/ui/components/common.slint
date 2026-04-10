@@ -159,7 +159,7 @@ export component ActionIcon inherits Rectangle {
     Text {
         visible: is_font_icon;
         text: icon;
-        font-size: 14px;
+        font-size: 14px * LayoutConstants.font-scale;
         font-family: Theme.icon_font;
         color: root.icon_color;
         horizontal-alignment: center;
@@ -181,16 +181,14 @@ export component ActionIcon inherits Rectangle {
         // Positioned at bottom right (LTR) or bottom left (RTL)
         x: AppI18n.is-rtl ? -2px : parent.width - self.width + 2px;
         y: parent.height - self.height + 2px;
-        background: Theme.card_bg;
-        border-radius: 3px;
         z: 10;
-        Text {
-            text: "\u{EA18}"; // Shield icon
-            font-family: Theme.icon_font;
-            font-size: 10px;
-            color: #FFB900; // Windows gold color
-            horizontal-alignment: center;
-            vertical-alignment: center;
+        Image {
+            source: @image-url("../../../assets/feat/microsoft-shield.png");
+            x: (parent.width - self.width) / 2;
+            y: (parent.height - self.height) / 2;
+            width: 10px;
+            height: 10px;
+            image-fit: contain;
         }
     }
     touch := TouchArea {
@@ -210,7 +208,7 @@ export component WindowControlButton inherits Rectangle {
     background: touch.has-hover ? hover-color : transparent;
     Text {
         text: text;
-        font-size: 10px;
+        font-size: 10px * LayoutConstants.font-scale;
         font-family: Theme.icon_font;
         color: touch.has_hover ? (text == "\u{E8BB}" ? white : Theme.text_primary) : icon_color;
         horizontal-alignment: center;

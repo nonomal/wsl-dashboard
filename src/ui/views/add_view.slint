@@ -377,7 +377,7 @@ export component AddInstanceView inherits VerticalLayout {
         spacing: 8px;
         Text {
             text: AppI18n.t("add.note", [AppI18n.version]);
-            font-size: 11px;
+            font-size: 11px * LayoutConstants.font-scale;
             font-family: Theme.default_font;
             color: Theme.text_secondary;
             wrap: word-wrap;

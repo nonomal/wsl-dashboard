@@ -15,12 +15,20 @@ pub struct RootFSHelpData {
 // Use the VSCodeExtensionData from app::state
 use crate::app::VSCodeExtensionData;
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct DistroStartScriptData {
+    pub name: String,
+    pub url: String,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RootFSHelpResponse {
     #[serde(rename = "rootfs-help")]
     pub rootfs_help: Vec<RootFSHelpData>,
     #[serde(rename = "vscode-extension")]
     pub vscode_extension: Option<VSCodeExtensionData>,
+    #[serde(rename = "distro-start-script")]
+    pub distro_start_script: Option<DistroStartScriptData>,
 }
 
 pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, _app_state: Arc<Mutex<AppState>>) {
@@ -75,14 +83,16 @@ pub async fn fetch_latest_instance_data(ah: slint::Weak<AppWindow>, as_ptr: Arc<
 
     match fetch_result {
         Ok(Ok(data)) => {
-            if !data.rootfs_help.is_empty() || data.vscode_extension.is_some() {
-                debug!("Successfully fetched {} RootFS help items and VS Code extension info", data.rootfs_help.len());
+            if !data.rootfs_help.is_empty() || data.vscode_extension.is_some() || data.distro_start_script.is_some() {
+                debug!("Successfully fetched {} RootFS help items, VS Code extension info, and distro start script URL", data.rootfs_help.len());
                 
                 // Update VS Code extension info in AppState
                 if let Some(ext) = data.vscode_extension.clone() {
                     let mut state = as_ptr.lock().await;
                     state.vscode_extension = Some(ext);
                 }
+
+                let start_script_url = data.distro_start_script.map(|d| d.url).unwrap_or_default();
 
                 let items: Vec<RootFSHelpItem> = data.rootfs_help.into_iter().map(|d| {
                     RootFSHelpItem {
@@ -95,7 +105,12 @@ pub async fn fetch_latest_instance_data(ah: slint::Weak<AppWindow>, as_ptr: Arc<
                     if let Some(app) = ah.upgrade() {
                         let model = VecModel::from(items);
                         app.set_rootfs_help_list(ModelRc::from(std::rc::Rc::new(model)));
-                        debug!("RootFS help list updated in UI");
+                        
+                        if !start_script_url.is_empty() {
+                            app.set_settings_startup_script_url(start_script_url.into());
+                        }
+                        
+                        debug!("RootFS help list and start script URL updated in UI");
                     }
                 });
             }

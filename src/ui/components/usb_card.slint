@@ -123,6 +123,7 @@ component UsbStatusGroup inherits VerticalLayout {
 export component UsbDeviceCard inherits Rectangle {
     in property <UsbDevice> device;
     in-out property <bool> expanded: false;
+    in property <bool> is_task_exists: true;
     callback expand_clicked();
     callback bind_clicked(string);
     callback unbind_clicked(string);
@@ -262,6 +263,7 @@ export component UsbDeviceCard inherits Rectangle {
                             if (device.status != "NotShared"): ActionIcon {
                                 icon: "\u{E945}";
                                 is_font_icon: true;
+                                show_shield: !root.is_task_exists;
                                 icon_color: device.auto_attach ? Theme.accent : Theme.text_primary;
                                 tooltip: AppI18n.t("usb.auto_attach", [AppI18n.version]);
                                 clicked => {
@@ -325,6 +327,7 @@ export component UsbDeviceCard inherits Rectangle {
                             if (device.status != "NotShared"): ActionIcon {
                                 icon: "\u{E945}";
                                 is_font_icon: true;
+                                show_shield: !root.is_task_exists;
                                 icon_color: device.auto_attach ? Theme.accent : Theme.text_primary;
                                 tooltip: AppI18n.t("usb.auto_attach", [AppI18n.version]);
                                 clicked => {

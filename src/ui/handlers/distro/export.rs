@@ -16,6 +16,7 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, app_state: Arc
                 return;
             }
             app.set_export_distro_name(name.into());
+            app.set_export_compress(true);
             // Default target directory to distro_location from settings
             let default_path = app.get_distro_location();
             app.set_export_target_path(default_path);
@@ -55,6 +56,7 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, app_state: Arc
         }
 
         ah.set_export_error("".into());
+        let use_compress = ah.get_export_compress();
         ah.set_show_export_dialog(false);
         
         // Synchronously set exporting status to prevent double-click entry
@@ -66,6 +68,7 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, app_state: Arc
         let target_path = target_path.to_string();
 
         let _ = slint::spawn_local(async move {
+
             // Show exporting indicator using TaskStatusToast
             let stop_signal = Arc::new(std::sync::atomic::AtomicBool::new(false));
             if let Some(app) = ah_clone.upgrade() {
@@ -75,12 +78,13 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, app_state: Arc
             }
             
             // Conflict resolution: add timestamp if file exists (e.g. Debian13.0.20260113141025.tar.gz)
-            let mut filename = format!("{}.tar.gz", distro_source);
+            let extension = if use_compress { "tar.gz" } else { "tar" };
+            let mut filename = format!("{}.{}", distro_source, extension);
             let mut export_file = std::path::Path::new(&target_path).join(&filename);
             
             if export_file.exists() {
                 let timestamp = chrono::Local::now().format("%Y%m%d%H%M%S").to_string();
-                filename = format!("{}.{}.tar.gz", distro_source, timestamp);
+                filename = format!("{}.{}.{}", distro_source, timestamp, extension);
                 export_file = std::path::Path::new(&target_path).join(&filename);
             }
             

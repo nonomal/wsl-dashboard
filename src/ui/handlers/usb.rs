@@ -48,9 +48,10 @@ fn to_slint_device(dev: &crate::usb::UsbDeviceModel, auto_attach_list: &[crate::
     }
 
     // Determine if auto-attach is enabled in our configuration
+    // Use Bus ID for exact mapping as the user interacts with specific instances
     let vid_pid = format!("{}:{}", vid.as_deref().unwrap_or(""), pid.as_deref().unwrap_or(""));
     let is_in_config = auto_attach_list.iter().any(|a| {
-        (a.vid_pid == vid_pid && !vid_pid.starts_with(':')) || a.bus_id == dev.bus_id.as_deref().unwrap_or_default()
+        a.bus_id == dev.bus_id.as_deref().unwrap_or_default()
     });
     
     // Auto-attach only works if the device is currently Shared or Attached.
@@ -321,13 +322,51 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, app_state: Arc
             // 1. Get device details (VID:PID) asynchronously
             let devices = crate::usb::UsbManager::list_devices().await?;
             let (target_vid_pid, target_distro) = if let Some(dev) = devices.iter().find(|d| d.bus_id.as_deref().unwrap_or("") == bus_id_str) {
-                let vp = format!("{}:{}", dev.vid.as_deref().unwrap_or(""), dev.pid.as_deref().unwrap_or(""));
+                // Ensure we also perform deep VID/PID extraction here (align with list logic)
+                let mut vid = dev.vid.clone();
+                let mut pid = dev.pid.clone();
+                let full_instance_id = dev.instance_id.clone().unwrap_or_default();
+                
+                if (vid.is_none() || pid.is_none()) && full_instance_id.contains("VID_") {
+                    if let Some(v_start) = full_instance_id.find("VID_") {
+                        if full_instance_id.len() >= v_start + 8 {
+                            vid = Some(full_instance_id[v_start + 4..v_start + 8].to_lowercase());
+                        }
+                    }
+                    if let Some(p_start) = full_instance_id.find("PID_") {
+                        if full_instance_id.len() >= p_start + 8 {
+                            pid = Some(full_instance_id[p_start + 4..p_start + 8].to_lowercase());
+                        }
+                    }
+                }
+                
+                let vp = format!("{}:{}", vid.as_deref().unwrap_or(""), pid.as_deref().unwrap_or(""));
                 (vp, "".to_string())
             } else {
                  return Err(format!("Device {} not found", bus_id_str));
             };
 
-            // 2. Update config (requires lock)
+            // 2. Ensure Task Scheduler task exists (for elevated auto-attach background worker)
+            let task_exists = crate::network::scheduler::check_task_exists();
+            if !task_exists {
+                info!("Scheduled task not found, attempting to register with elevation before enabling auto-attach");
+                // Attempt to register (will trigger UAC)
+                if let Err(e) = crate::network::scheduler::register_task_with_elevation() {
+                    error!("Failed to register scheduled task: {}", e);
+                    // We continue anyway so the preference is still saved even if task creation fails/cancels
+                }
+                
+                // Update UI state regardless of result to reflect current reality
+                let exists_now = crate::network::scheduler::check_task_exists();
+                let ah_ui = ah.clone();
+                let _ = slint::invoke_from_event_loop(move || {
+                    if let Some(app) = ah_ui.upgrade() {
+                        app.set_network_is_helper_installed(exists_now);
+                    }
+                });
+            }
+
+            // 3. Update config (requires lock)
             {
                let mut state = as_ptr.lock().await;
                let _ = state.config_manager.toggle_usb_auto_attach(&bus_id_str, &target_vid_pid, &target_distro);

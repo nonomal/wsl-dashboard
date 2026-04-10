@@ -1,0 +1,276 @@
+import { Theme, AppI18n, SettingsStrings, LayoutConstants } from "../../theme.slint";
+import { CustomScrollbar } from "../../components/scrollbar.slint";
+import { 
+    CustomCheckBox, 
+    CustomButton 
+} from "../../components/form_widgets.slint";
+import { 
+    GeneralSettingsSection, 
+    PathSettingsSection, 
+    SidebarSettingsSection 
+} from "sections.slint";
+
+export component SettingsView inherits Rectangle {
+    in-out property <string> ui_language: "auto";
+    in-out property <string> distro_location: "";
+    in-out property <string> logs_location: "";
+    in-out property <int> log_level: 4;
+    in-out property <int> log_days: 7;
+    in-out property <int> check_update_interval: 7;
+    in-out property <bool> auto_shutdown: false;
+    in-out property <bool> tray_autostart: false;
+    in-out property <bool> tray_start_minimized: false;
+    in-out property <bool> tray_close_to_tray: true;
+    in-out property <bool> sidebar_add: true;
+    in-out property <bool> sidebar_usb: true;
+    in-out property <bool> sidebar_network: true;
+    in-out property <bool> sidebar_about: true;
+    in property <SettingsStrings> strings;
+
+    // Options Models
+    private property <[string]> language-options: [
+        AppI18n.t("settings.languages.auto", [AppI18n.version]), AppI18n.t("settings.languages.en", [AppI18n.version]),
+        AppI18n.t("settings.languages.zh_cn", [AppI18n.version]), AppI18n.t("settings.languages.zh_tw", [AppI18n.version]),
+        AppI18n.t("settings.languages.hi", [AppI18n.version]), AppI18n.t("settings.languages.es", [AppI18n.version]),
+        AppI18n.t("settings.languages.fr", [AppI18n.version]), AppI18n.t("settings.languages.ar", [AppI18n.version]),
+        AppI18n.t("settings.languages.bn", [AppI18n.version]), AppI18n.t("settings.languages.pt", [AppI18n.version]),
+        AppI18n.t("settings.languages.ru", [AppI18n.version]), AppI18n.t("settings.languages.ur", [AppI18n.version]),
+        AppI18n.t("settings.languages.id", [AppI18n.version]), AppI18n.t("settings.languages.de", [AppI18n.version]),
+        AppI18n.t("settings.languages.ja", [AppI18n.version]), AppI18n.t("settings.languages.tr", [AppI18n.version]),
+        AppI18n.t("settings.languages.ko", [AppI18n.version]), AppI18n.t("settings.languages.it", [AppI18n.version]),
+        AppI18n.t("settings.languages.nl", [AppI18n.version]), AppI18n.t("settings.languages.sv", [AppI18n.version]),
+        AppI18n.t("settings.languages.cs", [AppI18n.version]), AppI18n.t("settings.languages.el", [AppI18n.version]),
+        AppI18n.t("settings.languages.hu", [AppI18n.version]), AppI18n.t("settings.languages.he", [AppI18n.version]),
+        AppI18n.t("settings.languages.no", [AppI18n.version]), AppI18n.t("settings.languages.da", [AppI18n.version]),
+        AppI18n.t("settings.languages.fi", [AppI18n.version]), AppI18n.t("settings.languages.sk", [AppI18n.version]),
+        AppI18n.t("settings.languages.sl", [AppI18n.version]), AppI18n.t("settings.languages.is", [AppI18n.version])
+    ];
+    private property <[string]> log-level-options: [
+        AppI18n.t("settings.log_levels.error", [AppI18n.version]), AppI18n.t("settings.log_levels.warn", [AppI18n.version]),
+        AppI18n.t("settings.log_levels.info", [AppI18n.version]), AppI18n.t("settings.log_levels.debug", [AppI18n.version]),
+        AppI18n.t("settings.log_levels.trace", [AppI18n.version])
+    ];
+    private property <[string]> log-days-options: [
+        AppI18n.t("settings.log_retention_options.seven_days", [AppI18n.version]),
+        AppI18n.t("settings.log_retention_options.half_month", [AppI18n.version]),
+        AppI18n.t("settings.log_retention_options.one_month", [AppI18n.version])
+    ];
+    private property <[string]> check-update-options: [
+        AppI18n.t("settings.update_options.daily", [AppI18n.version]), AppI18n.t("settings.update_options.weekly", [AppI18n.version]),
+        AppI18n.t("settings.update_options.biweekly", [AppI18n.version]), AppI18n.t("settings.update_options.monthly", [AppI18n.version])
+    ];
+
+    // Selected Indices
+    property <int> selected-language-index: get-language-index(ui_language);
+    property <int> selected-log-level-index: get-log-level-index(log_level);
+    property <int> selected-check-update-index: get-check-update-index(check_update_interval);
+    property <int> selected-log-days-index: get-log-days-index(log_days);
+
+    // Sync back indices to properties
+    changed selected-language-index => {
+        ui_language = index-to-lang(selected-language-index);
+    }
+    changed selected-log-level-index => {
+        log_level = selected-log-level-index + 1;
+    }
+    changed selected-check-update-index => {
+        if (selected-check-update-index == 0) { check_update_interval = 1; }
+        else if (selected-check-update-index == 1) { check_update_interval = 7; }
+        else if (selected-check-update-index == 2) { check_update_interval = 15; }
+        else if (selected-check-update-index == 3) { check_update_interval = 30; }
+    }
+    changed selected-log-days-index => {
+        if (selected-log-days-index == 0) { log_days = 7; }
+        else if (selected-log-days-index == 1) { log_days = 15; }
+        else if (selected-log-days-index == 2) { log_days = 30; }
+    }
+
+    pure function get-language-index(lang: string) -> int {
+        if (lang == "en") { return 1; }
+        if (lang == "zh-CN") { return 2; }
+        if (lang == "zh-TW") { return 3; }
+        if (lang == "hi") { return 4; }
+        if (lang == "es") { return 5; }
+        if (lang == "fr") { return 6; }
+        if (lang == "ar") { return 7; }
+        if (lang == "bn") { return 8; }
+        if (lang == "pt") { return 9; }
+        if (lang == "ru") { return 10; }
+        if (lang == "ur") { return 11; }
+        if (lang == "id") { return 12; }
+        if (lang == "de") { return 13; }
+        if (lang == "ja") { return 14; }
+        if (lang == "tr") { return 15; }
+        if (lang == "ko") { return 16; }
+        if (lang == "it") { return 17; }
+        if (lang == "nl") { return 18; }
+        if (lang == "sv") { return 19; }
+        if (lang == "cs") { return 20; }
+        if (lang == "el") { return 21; }
+        if (lang == "hu") { return 22; }
+        if (lang == "he") { return 23; }
+        if (lang == "no") { return 24; }
+        if (lang == "da") { return 25; }
+        if (lang == "fi") { return 26; }
+        if (lang == "sk") { return 27; }
+        if (lang == "sl") { return 28; }
+        if (lang == "is") { return 29; }
+        return 0; // auto
+    }
+
+    pure function index-to-lang(idx: int) -> string {
+        if (idx == 1) { return "en"; }
+        if (idx == 2) { return "zh-CN"; }
+        if (idx == 3) { return "zh-TW"; }
+        if (idx == 4) { return "hi"; }
+        if (idx == 5) { return "es"; }
+        if (idx == 6) { return "fr"; }
+        if (idx == 7) { return "ar"; }
+        if (idx == 8) { return "bn"; }
+        if (idx == 9) { return "pt"; }
+        if (idx == 10) { return "ru"; }
+        if (idx == 11) { return "ur"; }
+        if (idx == 12) { return "id"; }
+        if (idx == 13) { return "de"; }
+        if (idx == 14) { return "ja"; }
+        if (idx == 15) { return "tr"; }
+        if (idx == 16) { return "ko"; }
+        if (idx == 17) { return "it"; }
+        if (idx == 18) { return "nl"; }
+        if (idx == 19) { return "sv"; }
+        if (idx == 20) { return "cs"; }
+        if (idx == 21) { return "el"; }
+        if (idx == 22) { return "hu"; }
+        if (idx == 23) { return "he"; }
+        if (idx == 24) { return "no"; }
+        if (idx == 25) { return "da"; }
+        if (idx == 26) { return "fi"; }
+        if (idx == 27) { return "sk"; }
+        if (idx == 28) { return "sl"; }
+        if (idx == 29) { return "is"; }
+        return "auto";
+    }
+
+    pure function get-log-level-index(level: int) -> int {
+        if (level >= 1 && level <= 5) { return level - 1; }
+        return 2;
+    }
+    pure function get-check-update-index(interval: int) -> int {
+        if (interval == 1) { return 0; }
+        if (interval == 7) { return 1; }
+        if (interval == 15) { return 2; }
+        if (interval == 30) { return 3; }
+        return 1;
+    }
+    pure function get-log-days-index(days: int) -> int {
+        if (days == 30) { return 2; }
+        if (days == 15) { return 1; }
+        return 0;
+    }
+
+    callback save-settings();
+    callback select-distro-folder();
+    callback select-logs-folder();
+    callback open-wsl-settings();
+
+    VerticalLayout {
+        padding: 0px;
+        spacing: 0px;
+
+        Rectangle {
+            vertical-stretch: 1;
+            clip: true;
+            flickable := Flickable {
+                viewport-height: content-layout.preferred-height;
+                width: parent.width;
+                height: 100%;
+                content-layout := VerticalLayout {
+                    padding-left: AppI18n.is-rtl ? 16px : 4px;
+                    padding-right: AppI18n.is-rtl ? 4px : 16px;
+                    padding-top: 4px;
+                    padding-bottom: 4px;
+                    spacing: 12px;
+                    alignment: start;
+
+                    GeneralSettingsSection {
+                        strings: root.strings;
+                        selected_language_index <=> root.selected-language-index;
+                        selected_check_update_index <=> root.selected-check-update-index;
+                        selected_log_level_index <=> root.selected-log-level-index;
+                        selected_log_days_index <=> root.selected-log-days-index;
+                        language_options: root.language-options;
+                        check_update_options: root.check-update-options;
+                        log_level_options: root.log-level-options;
+                        log_days_options: root.log-days-options;
+                    }
+
+                    PathSettingsSection {
+                        strings: root.strings;
+                        distro_location <=> root.distro_location;
+                        logs_location <=> root.logs_location;
+                        select_distro_folder => { root.select-distro-folder(); }
+                        select_logs_folder => { root.select-logs-folder(); }
+                    }
+                    
+                    // Behavior Section
+                    Rectangle {
+                        background: Theme.card_bg;
+                        border-radius: 8px;
+                        border-width: 1px;
+                        border-color: Theme.border_color;
+
+                        VerticalLayout {
+                            padding: 12px;
+                            spacing: 12px;
+                            CustomCheckBox { checked <=> root.auto_shutdown; text: root.strings.auto_close; }
+                            CustomCheckBox { checked <=> root.tray_autostart; text: root.strings.auto_start; }
+                            CustomCheckBox { checked <=> root.tray_start_minimized; text: root.strings.minimize_tray; }
+                            CustomCheckBox { checked <=> root.tray_close_to_tray; text: root.strings.close_to_tray; }
+                        }
+                    }
+
+                    SidebarSettingsSection {
+                        strings: root.strings;
+                        sidebar_add <=> root.sidebar_add;
+                        sidebar_usb <=> root.sidebar_usb;
+                        sidebar_network <=> root.sidebar_network;
+                        sidebar_about <=> root.sidebar_about;
+                    }
+                }
+            }
+
+            if (flickable.viewport-height > flickable.height): CustomScrollbar {
+                x: AppI18n.is-rtl ? 4px : parent.width - 10px;
+                y: 0; width: 8px; height: 100%;
+                maximum: flickable.viewport-height - flickable.height;
+                page_size: flickable.height;
+                value: -flickable.viewport-y;
+                scroll_to(v) => { flickable.viewport-y = -v; }
+            }
+        }
+
+        // Bottom Buttons
+        HorizontalLayout {
+            padding-top: 4px; padding-bottom: 4px;
+            padding-right: AppI18n.is-rtl ? 4px : 16px;
+            padding-left: AppI18n.is-rtl ? 16px : 4px;
+            if (AppI18n.is-rtl): CustomButton {
+                text: root.strings.save; primary: true; height: 32px;
+                clicked => { root.save_settings(); }
+            }
+            if (!AppI18n.is-rtl): CustomButton {
+                text: root.strings.wsl_settings; height: 32px;
+                clicked => { root.open-wsl-settings(); }
+            }
+            Rectangle { horizontal-stretch: 1; }
+            if (!AppI18n.is-rtl): CustomButton {
+                text: root.strings.save; primary: true; height: 32px;
+                clicked => { root.save_settings(); }
+            }
+            if (AppI18n.is-rtl): CustomButton {
+                text: root.strings.wsl_settings; height: 32px;
+                clicked => { root.open-wsl-settings(); }
+            }
+        }
+    }
+}

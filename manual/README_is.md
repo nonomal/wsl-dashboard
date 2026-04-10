@@ -29,6 +29,7 @@ I18N :  [English](../README.md) | [简体中文](./README_zh_CN.md) | [繁體中
 - [💻 Kerfiskröfur](#-kerfiskröfur)
 - [📦 Uppsetningarleiðbeiningar](#-uppsetningarleiðbeiningar)
 - [🛠️ Tæknistafla og afköst](#️-tæknistafla-og-afköst)
+- [⭐️ Gert af ást](#️-gert-af-ást)
 - [📄 Leyfi](#-leyfi)
 
 ---
@@ -81,6 +82,8 @@ Enska, einfölduð kínverska, hefðbundin kínverska, hindí, spænska, franska
 - **Snjöll uppsetning**: Setja upp frá Microsoft Store, GitHub eða staðbundnum skrám (RootFS/VHDX). Innbyggt RootFS niðurhalshjálpartæki fylgir.
 - **Alþjóðlegt öryggi**: Mutex-lásar fyrir örugga samtímaflutninga/afritun og sjálfvirk Appx-hreinsun við eyðingu.
 - **Mjög lítil minnisnotkun**: Mjög fínstillt fyrir skilvirkni. Hljóðlaus ræsing (í bakka) notar aðeins um **~10MB** vinnsluminni. Notkun í gluggaham fer eftir leturgerðum: **~18MB** fyrir stöðluð tungumál og **~38MB** fyrir tungumál með stóra táknasett (kínverska, japanska, kóreska).
+- **Ítarleg netkerfi**: Óaðfinnanleg stjórnun á áframsendingu gátta (með sjálfvirkri gerð eldveggsreglna) og alþjóðleg uppsetning HTTP-umboðsþjóns fyrir sameinaða tengingu.
+- **Stjórnun USB-tækja**: Full samþætting við `usbipd-win` til að binda, tengja og stjórna staðbundnum USB-tækjum áreynslulaust í öllum WSL-tilvikum þínum beint af mælaborðinu.
 
 
 ## ⚙️ Stillingar og annálar
@@ -95,6 +98,7 @@ Enska, einfölduð kínverska, hefðbundin kínverska, hindí, spænska, franska
 - Virkja sjálfvirka ræsingu með kerfinu (með sjálfvirkri slóðaviðgerð).
 - Stilltu forritið á að lágmarkast í kerfisbakka við ræsingu.
 - Stilla lokunarhnappinn á að lágmarka forritið í bakka í stað þess að hætta.
+- Sérsníddu hliðarstikuna með því að skipta um sýnileika tiltekinna eiginleikaflipa.
 
 Annálaskrár eru skrifaðar í stillta möppu og má láta þær fylgja með þegar tilkynnt er um vandamál.
 
@@ -112,9 +116,16 @@ Annálaskrár eru skrifaðar í stillta möppu og má láta þær fylgja með þ
   <img src="../assets/screenshot/home-configs.png" width="48%" />
 </p>
 
-### USB
+### USB og saman dreginn matseðill
 <p align="center">
   <img src="../assets/screenshot/usb.png" width="48%" />
+  <img src="../assets/screenshot/collapsed.png" width="48%" />
+</p>
+
+### net
+<p align="center">
+  <img src="../assets/screenshot/port-forwarding.png" width="48%" />
+  <img src="../assets/screenshot/http-proxy.png" width="48%" />
 </p>
 
 ### Bæta við tilviki og Stillingar
@@ -123,10 +134,9 @@ Annálaskrár eru skrifaðar í stillta möppu og má láta þær fylgja með þ
   <img src="../assets/screenshot/settings.png" width="48%" />
 </p>
 
-### Um forritið og saman dreginn matseðill
+### Um forritið 
 <p align="center">
   <img src="../assets/screenshot/about.png" width="48%" />
-  <img src="../assets/screenshot/collapsed.png" width="48%" />
 </p>
 
 ## 🎬 Sýnikennsla
@@ -193,6 +203,10 @@ Gakktu úr skugga um að þú hafir Rust tækjapakkann (Rust 1.92+ eða nýrri) 
   - **Sveigjanleiki**: Fínstillt útgáfusmíð skilar einni þéttri keyrsluskrá.
 
 
+
+## ⭐️ Gert af ást
+
+Ef þér finnst þetta verkefni gagnlegt væri ég þakklátur ef þú gætir gefið því stjörnu á GitHub. Stuðningur þinn hjálpar því að ná til breiðari hóps og er mikils metinn. Það er þessi hvatning sem dregur mig áfram í þróuninni.
 
 ## 📄 Leyfi
 

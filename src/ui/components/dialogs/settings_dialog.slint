@@ -15,12 +15,15 @@ export component SettingsDialog inherits Rectangle {
     in-out property <bool> is_default: false;
     in-out property <bool> autostart: false;
     in-out property <string> startup_script: "";
+    in property <string> startup_script_url: "";
     in property <string> terminal_dir_error: "";
     in property <string> vscode_dir_error: "";
     in property <string> startup_script_error: "";
     in property <string> default_error: "";
     callback close;
     callback save;
+    callback open-url(string);
+    in property <bool> is_task_exists: true;
     
     // Background mask
     background: #00000080;
@@ -145,12 +148,33 @@ export component SettingsDialog inherits Rectangle {
                         // --- Optional Startup Script ---
                         if root.autostart: VerticalLayout {
                             spacing: 8px;
-                            Text {
-                                text: AppI18n.t("dialog.startup_script_title", [AppI18n.version]);
-                                font-size: 13px * LayoutConstants.font-scale;
-                                font-family: Theme.default_font;
-                                color: Theme.text_secondary;
-                                horizontal-alignment: AppI18n.is-rtl ? right : left;
+                            HorizontalLayout {
+                                spacing: 4px;
+                                alignment: start;
+                                Text {
+                                    text: AppI18n.t("dialog.startup_script_title", [AppI18n.version]);
+                                    font-size: 13px * LayoutConstants.font-scale;
+                                    font-family: Theme.default_font;
+                                    color: Theme.text_secondary;
+                                    horizontal-alignment: AppI18n.is-rtl ? right : left;
+                                }
+
+                                if (root.startup_script_url != ""): TouchArea {
+                                    width: 16px;
+                                    height: 16px;
+                                    mouse-cursor: pointer;
+                                    clicked => {
+                                        root.open-url(root.startup_script_url);
+                                    }
+                                    Text {
+                                        text: "\u{E897}";
+                                        font-family: Theme.icon_font;
+                                        font-size: 12px;
+                                        color: parent.has-hover ? Theme.accent : Theme.text_secondary;
+                                        vertical-alignment: center;
+                                        horizontal-alignment: center;
+                                    }
+                                }
                             }
 
                             CustomLineEdit {
@@ -259,14 +283,31 @@ export component SettingsDialog inherits Rectangle {
                         }
                     }
 
-                    Text {
-                        text: AppI18n.t("dialog.save", [AppI18n.version]);
-                        color: white;
-                        font-size: 13px * LayoutConstants.font-scale;
-                        font-family: Theme.default_font;
-                        font-weight: 500;
-                        horizontal-alignment: center;
-                        vertical-alignment: center;
+                    HorizontalLayout {
+                        spacing: 4px;
+                        alignment: center;
+                        if (root.autostart && !root.is_task_exists): Rectangle {
+                            width: 14px;
+                            height: 14px;
+                            y: (parent.height - self.height) / 2;
+                            Image {
+                                source: @image-url("../../../../assets/feat/microsoft-shield.png");
+                                width: 12px;
+                                height: 12px;
+                                image-fit: contain;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
+                        Text {
+                            text: AppI18n.t("dialog.save", [AppI18n.version]);
+                            color: white;
+                            font-size: 13px * LayoutConstants.font-scale;
+                            font-family: Theme.default_font;
+                            font-weight: 500;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
                     }
                 }
 
@@ -311,14 +352,31 @@ export component SettingsDialog inherits Rectangle {
                         }
                     }
 
-                    Text {
-                        text: AppI18n.t("dialog.save", [AppI18n.version]);
-                        color: white;
-                        font-size: 13px * LayoutConstants.font-scale;
-                        font-family: Theme.default_font;
-                        font-weight: 500;
-                        horizontal-alignment: center;
-                        vertical-alignment: center;
+                    HorizontalLayout {
+                        spacing: 4px;
+                        alignment: center;
+                        Text {
+                            text: AppI18n.t("dialog.save", [AppI18n.version]);
+                            color: white;
+                            font-size: 13px * LayoutConstants.font-scale;
+                            font-family: Theme.default_font;
+                            font-weight: 500;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+                        if (root.autostart && !root.is_task_exists): Rectangle {
+                            width: 14px;
+                            height: 14px;
+                            y: (parent.height - self.height) / 2;
+                            Image {
+                                source: @image-url("../../../../assets/feat/microsoft-shield.png");
+                                width: 12px;
+                                height: 12px;
+                                image-fit: contain;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
                     }
                 }
             }

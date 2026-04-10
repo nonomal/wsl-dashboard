@@ -7,8 +7,15 @@ export component Sidebar inherits Rectangle {
     in property <string> home_text: "";
     in property <string> add_text: "";
     in property <string> usb_text: "";
+    in property <string> network_text: "";
     in property <string> settings_text: "";
     in property <string> about_text: "";
+    
+    // Visibility toggles
+    in property <bool> show_add: true;
+    in property <bool> show_usb: true;
+    in property <bool> show_network: true;
+    in property <bool> show_about: true;
     
     // Callbacks to bubble up
     callback tab_selected(int);
@@ -72,7 +79,7 @@ export component Sidebar inherits Rectangle {
             }
         }
 
-        SidebarItem {
+        if (root.show_add): SidebarItem {
             icon: "\u{E710}";
             text: root.add_text;
             selected: selected_tab == 1;
@@ -81,8 +88,7 @@ export component Sidebar inherits Rectangle {
                 root.tab_selected(1);
             }
         }
-
-        SidebarItem {
+        if (root.show_usb): SidebarItem {
             icon: "\u{E88E}";
             text: root.usb_text;
             selected: selected_tab == 2;
@@ -91,7 +97,15 @@ export component Sidebar inherits Rectangle {
                 root.tab_selected(2);
             }
         }
-
+        if (root.show_network): SidebarItem {
+            icon: "\u{EE77}"; // Network icon
+            text: root.network_text;
+            selected: selected_tab == 3;
+            collapsed: root.collapsed;
+            clicked => {
+                root.tab_selected(3);
+            }
+        }
         Rectangle {
             vertical-stretch: 1;
         } // Spacer: Pushes everything below it to the bottom
@@ -122,7 +136,7 @@ export component Sidebar inherits Rectangle {
             }
         }
 
-        SidebarItem {
+        if (root.show_about): SidebarItem {
             icon: "\u{E9ce}";
             text: root.about_text;
             selected: selected_tab == 6;

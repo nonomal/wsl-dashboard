@@ -28,6 +28,7 @@ I18N :  [English](../README.md) | [简体中文](./README_zh_CN.md) | [繁體中
 - [🎬 Demonstasjon](#-demonstasjon)
 - [💻 Systemkrav](#-systemkrav)
 - [📦 Installasjonsguide](#-installasjonsguide)
+- [⭐️ Kjærlighetsarbeid](#️-kjærlighetsarbeid)
   - [🛠️ Teknologistakk og ytelse](#️-teknologistakk-og-ytelse)
   - [📄 Lisens](#-lisens)
 
@@ -81,6 +82,8 @@ Engelsk, Kinesisk (Forenklet), Kinesisk (Tradisjonell), Hindi, Spansk, Fransk, A
 - **Smart installasjon**: Installer fra Microsoft Store, GitHub eller lokale filer (RootFS/VHDX). Inkluderer en innebygd RootFS-nedlastingshjelper.
 - **Global sikkerhet**: Mutex-låser for sikre samtidige migrerings-/sikkerhetskopieringsoperasjoner og automatisk Appx-opprydding ved fjerning.
 - **Svært lavt minnebruk**: Høyt optimalisert for effektivitet. Stille oppstart (systemstatusfelt) bruker bare **~10 MB** RAM. Bruk i vindusmodus varierer etter fontkompleksitet: **~18 MB** for standardspråk og **~38 MB** for språk med store tegnsett (kinesisk, japansk, koreansk).
+- **Avansert nettverk**: Sømløs styring av portvideresending (ved automatisk opprettelse av brannmurregler) og global HTTP-proxykonfigurasjon for enhetlig tilkobling.
+- **Administrasjon av USB-enheter**: Full integrasjon med `usbipd-win` for enkel binding, tilkobling og administrasjon av lokale USB-enheter på tvers av dine WSL-instanser direkte fra dashbordets brukergrensesnitt.
 
 
 ## ⚙️ Konfigurasjon og logger
@@ -95,6 +98,7 @@ All konfigurasjon administreres gjennom Innstillinger-visningen:
 - Aktiver automatisk start ved systemoppstart (med automatisk reparasjon av filbane).
 - Sett appen til å minimere til systemstatusfeltet ved oppstart.
 - Konfigurer lukkeknappen til å minimere til systemstatusfeltet i stedet for å avslutte.
+- Tilpass sidefeltet ved å bytte synlighet for spesifikke funksjonsfaner.
 
 Loggfiler skrives til den konfigurerte loggmappen og kan legges ved når du rapporterer problemer.
 
@@ -112,9 +116,16 @@ Loggfiler skrives til den konfigurerte loggmappen og kan legges ved når du rapp
   <img src="../assets/screenshot/home-configs.png" width="48%" />
 </p>
 
-### USB
+### USB og minimert meny
 <p align="center">
   <img src="../assets/screenshot/usb.png" width="48%" />
+  <img src="../assets/screenshot/collapsed.png" width="48%" />
+</p>
+
+### nettverk
+<p align="center">
+  <img src="../assets/screenshot/port-forwarding.png" width="48%" />
+  <img src="../assets/screenshot/http-proxy.png" width="48%" />
 </p>
 
 ### Legg til instans og innstillinger
@@ -123,10 +134,9 @@ Loggfiler skrives til den konfigurerte loggmappen og kan legges ved når du rapp
   <img src="../assets/screenshot/settings.png" width="48%" />
 </p>
 
-### Om og minimert meny
+### Om 
 <p align="center">
   <img src="../assets/screenshot/about.png" width="48%" />
-  <img src="../assets/screenshot/collapsed.png" width="48%" />
 </p>
 
 ## 🎬 Demonstasjon
@@ -193,6 +203,10 @@ Sørg for at du har Rust-verktøykjeden (Rust 1.92+ eller nyere) installert.
   - **Portabilitet**: Optimalisert produksjonsbygg produserer en enkelt kompakt kjørbar fil.
 
 
+
+## ⭐️ Kjærlighetsarbeid
+
+Hvis du har funnet dette prosjektet nyttig, ville jeg være takknemlig om du kunne legge igjen en stjerne på GitHub. Din støtte hjelper det å nå et bredere publikum og settes dypt pris på. Det er denne oppmuntringen som motiverer meg til å fortsette å bygge.
 
 ## 📄 Lisens
 

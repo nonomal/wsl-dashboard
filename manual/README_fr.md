@@ -29,6 +29,7 @@ I18N :  [English](../README.md) | [简体中文](./README_zh_CN.md) | [繁體中
 - [💻 Configuration Requise](#-configuration-requise)
 - [📦 Guide d'Installation](#-guide-dinstallation)
 - [🛠️ Stack Technique & Performance](#️-stack-technique--performance)
+- [⭐️ Œuvre d'amour](#️-œuvre-damour)
 - [📄 Licence](#-licence)
 
 ---
@@ -81,6 +82,8 @@ Anglais, Chinois (Simplifié), Chinois (Traditionnel), Hindi, Espagnol, Françai
 - **Installation Intelligente** : Installer depuis le Microsoft Store, GitHub ou des fichiers locaux (RootFS/VHDX). Assistant de téléchargement RootFS intégré.
 - **Sécurité Globale** : Verrous mutex pour des opérations concurrentes sécurisées et nettoyage automatique Appx lors de la suppression.
 - **Usage Mémoire Ultra-bas** : Hautement optimisé. Le démarrage silencieux (tray) utilise seulement **~10 Mo** de RAM. L'usage en mode fenêtre varie selon la complexité des polices : **~18 Mo** pour les langues standards et **~38 Mo** pour les langues à grands jeux de caractères (Chinois, Japonais, Coréen).
+- **Réseaux avancés**: Gestion fluide de la redirection de ports (avec création automatique de règles de pare-feu) et configuration globale du proxy HTTP pour une connectivité unifiée.
+- **Gestion des Périphériques USB**: Intégration complète avec `usbipd-win` pour relier, attacher et gérer sans effort les périphériques USB locaux sur vos instances WSL directement depuis l'interface.
 
 
 ## ⚙️ Configuration & Logs
@@ -95,6 +98,7 @@ Toute la configuration est gérée via la vue Paramètres :
 - Activer le démarrage automatique au boot (avec réparation auto du chemin).
 - Régler l'app pour se réduire en tray au démarrage.
 - Configurer le bouton fermer pour réduire en tray au lieu de quitter.
+- Personnalisez la barre latérale en basculant la visibilité de certains onglets de fonctionnalités.
 
 Les fichiers de log sont écrits dans le répertoire configuré et peuvent être joints lors du signalement de problèmes.
 
@@ -112,9 +116,16 @@ Les fichiers de log sont écrits dans le répertoire configuré et peuvent être
   <img src="../assets/screenshot/home-configs.png" width="48%" />
 </p>
 
-### USB
+### USB & menu réduit
 <p align="center">
   <img src="../assets/screenshot/usb.png" width="48%" />
+  <img src="../assets/screenshot/collapsed.png" width="48%" />
+</p>
+
+### réseau
+<p align="center">
+  <img src="../assets/screenshot/port-forwarding.png" width="48%" />
+  <img src="../assets/screenshot/http-proxy.png" width="48%" />
 </p>
 
 ### Ajouter une Instance & Paramètres
@@ -123,10 +134,9 @@ Les fichiers de log sont écrits dans le répertoire configuré et peuvent être
   <img src="../assets/screenshot/settings.png" width="48%" />
 </p>
 
-### À propos & menu réduit
+### À propos
 <p align="center">
   <img src="../assets/screenshot/about.png" width="48%" />
-  <img src="../assets/screenshot/collapsed.png" width="48%" />
 </p>
 
 ## 🎬 Démonstration
@@ -193,6 +203,10 @@ Assurez-vous d'avoir installé la chaîne d'outils Rust (Rust 1.92+ ou plus réc
   - **Portabilité** : Le build optimisé produit un exécutable compact unique.
 
 
+
+## ⭐️ Œuvre d'amour
+
+Si vous avez trouvé ce projet utile, je vous serais reconnaissant de bien vouloir laisser une étoile sur GitHub. Votre soutien l'aide à atteindre un public plus large et est profondément apprécié. C'est cet encouragement qui me motive à continuer de construire.
 
 ## 📄 Licence
 
