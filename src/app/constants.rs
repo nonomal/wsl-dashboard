@@ -53,3 +53,7 @@ pub fn is_chinese_lang(lang: &str) -> bool {
     lang.to_lowercase().starts_with("zh")
 }
 
+/// WSL distribution initialization script path
+#[allow(dead_code)]
+pub const WSL_INIT_SCRIPT: &str = "/etc/init.wsl-dashboard";
+

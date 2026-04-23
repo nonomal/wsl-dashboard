@@ -56,15 +56,21 @@ pub async fn perform_save_settings(
         }
 
         if autostart && !startup_script.trim().is_empty() {
-            let (exists, executable) = executor.check_file_executable(&name, &startup_script).await;
-            if !exists {
-                app.set_settings_startup_script_error(crate::i18n::t("dialog.script_not_found").into());
-                has_error = true;
-            } else if !executable {
-                app.set_settings_startup_script_error(crate::i18n::t("dialog.script_not_executable").into());
+            let startup_script_trimmed = startup_script.trim();
+            if startup_script_trimmed == crate::app::WSL_INIT_SCRIPT {
+                app.set_settings_startup_script_error(crate::i18n::t("dialog.startup_script_forbidden").into());
                 has_error = true;
             } else {
-                app.set_settings_startup_script_error("".into());
+                let (exists, executable) = executor.check_file_executable(&name, startup_script_trimmed).await;
+                if !exists {
+                    app.set_settings_startup_script_error(crate::i18n::t("dialog.script_not_found").into());
+                    has_error = true;
+                } else if !executable {
+                    app.set_settings_startup_script_error(crate::i18n::t("dialog.script_not_executable").into());
+                    has_error = true;
+                } else {
+                    app.set_settings_startup_script_error("".into());
+                }
             }
         } else {
             app.set_settings_startup_script_error("".into());
@@ -113,7 +119,7 @@ pub async fn perform_save_settings(
         script_content.push_str("# WSL Dashboard Keep-alive\\n");
         script_content.push_str("exec sleep infinity\\n");
 
-        let setup_cmd = format!("printf '{}' > /etc/init.wsl-dashboard && chmod +x /etc/init.wsl-dashboard", script_content);
+        let setup_cmd = format!("printf '{}' > {} && chmod +x {}", script_content, crate::app::WSL_INIT_SCRIPT, crate::app::WSL_INIT_SCRIPT);
         let _ = executor.execute_command(&["-d", &name, "-u", "root", "-e", "sh", "-c", &setup_cmd]).await;
         
         // 5. Check and register task if needed

@@ -80,26 +80,24 @@ pub async fn open_distro_terminal(_executor: &WslCommandExecutor, distro_name: &
 
     task::spawn_blocking(move || {
         let mut command = std::process::Command::new("cmd");
+        let mut cmd_str = String::new();
         
         if let Some(exports) = proxy_exports {
-            let mut cmd_str = String::new();
             let mut wslenv = String::new();
             
             for (k, v) in exports {
                 cmd_str.push_str(&format!("echo export {}={}& ", k, v));
-                cmd_str.push_str(&format!("set {}={}& ", k, v));
+                cmd_str.push_str(&format!("set \"{}={}\"& ", k, v));
                 wslenv.push_str(&format!("{}/u:", k));
             }
             if !wslenv.is_empty() {
                 wslenv.pop(); // remove trailing colon
-                cmd_str.push_str(&format!("set WSLENV={} & ", wslenv));
+                cmd_str.push_str(&format!("set \"WSLENV={}\"& ", wslenv));
             }
-            cmd_str.push_str(&format!("wsl -d {} --cd {}", name, cd_path));
-            
-            command.args(&["/c", "start", "cmd", "/c", &cmd_str]);
-        } else {
-            command.args(&["/c", "start", "wsl", "-d", &name, "--cd", &cd_path]);
         }
+
+        cmd_str.push_str(&format!("wsl -d {} --cd {}", name, cd_path));
+        command.args(&["/c", "start", &format!("WSL: {}", name), "cmd", "/c", &cmd_str]);
         
         #[cfg(windows)]
         {

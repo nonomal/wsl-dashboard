@@ -22,7 +22,7 @@ mod network;
 // Import Slint UI components
 slint::include_modules!();
 
-use app::{AppState, APP_NAME, APP_ID, GITHUB_URL, GITHUB_ISSUES};
+use app::{AppState, APP_NAME, APP_ID, GITHUB_URL, GITHUB_ISSUES, WSL_INIT_SCRIPT};
 use ui::data::refresh_data;
 use ui::handlers;
 
@@ -87,13 +87,27 @@ async fn main() {
         let net_config = config_manager.get_network_config();
         let rules = &net_config.port_proxies;
         
-        // 4.2 Identify target distros for synchronization
+        // 4.2 Identify target distros for synchronization and auto-start
         let mut target_distros: std::collections::HashSet<String> = std::collections::HashSet::new();
         if pos + 1 < args.len() && !args[pos + 1].starts_with('/') {
             target_distros.insert(args[pos + 1].clone());
         } else {
+            // Source 1: Distros with port proxy rules
             for r in rules {
                 target_distros.insert(r.distro_name.clone());
+            }
+
+            // Source 2: Distros with auto-startup enabled
+            for (name, inst) in &container.instances {
+                if inst.auto_startup {
+                    target_distros.insert(name.clone());
+                }
+            }
+
+            // Source 3: Distros with USB auto-attach configurations
+            let usb_config = config_manager.get_usb_config();
+            for device in &usb_config.auto_attach_list {
+                target_distros.insert(device.distribution.clone());
             }
         }
 
@@ -110,7 +124,7 @@ async fn main() {
                         const CREATE_NO_WINDOW: u32 = 0x08000000;
                         
                         let _ = Command::new("wsl")
-                            .args(&["-d", name, "-u", "root", "/etc/init.wsl-dashboard", "start"])
+                            .args(&["-d", name, "-u", "root", WSL_INIT_SCRIPT, "start"])
                             .creation_flags(CREATE_NO_WINDOW)
                             .spawn();
                         distros_spawned += 1;

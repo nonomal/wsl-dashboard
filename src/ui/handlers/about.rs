@@ -129,7 +129,8 @@ fn build_pic_url(pic: &str, timezone: &str) -> String {
     } else {
         crate::app::STATIC_API_FREE
     };
-    format!("{}{}?t={}", base_url, pic, ts)
+    let separator = if pic.contains('?') { "&" } else { "?" };
+    format!("{}{}{}t={}", base_url, pic, separator, ts)
 }
 
 /// Download the image and decode to raw RGBA8 pixel bytes + width/height
