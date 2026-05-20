@@ -22,6 +22,12 @@ try {
     Write-Host "`n[INFO] Checking if Gitee Release $Tag exists..."
     $Response = Invoke-RestMethod -Uri $GetUrl -Method Get -ErrorAction Stop
     Write-Host "[DEBUG] Release Response: $($Response | ConvertTo-Json -Depth 3)"
+    
+    if ([string]::IsNullOrWhiteSpace($Response) -or $Response.id -eq $null) {
+        Write-Host "[INFO] Release not found. Creating new release..."
+        throw "Release not found"
+    }
+    
     $ReleaseId = $Response.id
     Write-Host "[OK] Release exists. ID: $ReleaseId"
 } catch {
