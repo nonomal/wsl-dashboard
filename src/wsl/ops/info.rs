@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use tokio::task;
 use tracing::{info, debug, error};
 use crate::wsl::executor::WslCommandExecutor;
@@ -18,11 +21,11 @@ pub async fn list_available_distros(executor: &WslCommandExecutor) -> WslCommand
 }
 
 pub async fn detect_fastest_source(_executor: &WslCommandExecutor) -> bool {
-    info!("Probing network connection to https://github.com");
+    info!("Probing network connection to {}", crate::app::GITHUB_DOMAIN);
 
     let result = task::spawn_blocking(|| {
-        // Check https://github.com with 5 seconds timeout
-        match ureq::head("https://github.com")
+        // Check GitHub domain with 5 seconds timeout
+        match ureq::head(crate::app::GITHUB_DOMAIN)
             .timeout(std::time::Duration::from_secs(5))
             .call() 
         {
@@ -67,41 +70,14 @@ pub async fn get_distro_information(executor: &WslCommandExecutor, distro_name: 
 
         // VHDX Logic (ported from PS heuristic)
         if reg_info.version == 2 {
-            let base_path = std::path::PathBuf::from(&reg_info.base_path);
-            let mut vhdx_path = None;
-
-            // Common locations
-            let probe_paths = vec![
-                base_path.join("ext4.vhdx"),
-                base_path.join("LocalState\\ext4.vhdx"),
-            ];
-
-            for p in probe_paths {
-                if p.exists() {
-                    vhdx_path = Some(p);
-                    break;
-                }
-            }
-
-            // Fallback: search in base path
-            if vhdx_path.is_none() && base_path.exists() {
-                if let Ok(entries) = std::fs::read_dir(&base_path) {
-                    for entry in entries.flatten() {
-                        if let Ok(file_type) = entry.file_type() {
-                            if file_type.is_file() && entry.path().extension().map_or(false, |ext| ext == "vhdx") {
-                                vhdx_path = Some(entry.path());
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if let Some(p) = vhdx_path {
+            if let Some(p) = get_vhdx_path(&reg_info.base_path) {
                 information.vhdx_path = p.to_string_lossy().to_string();
-                if let Ok(metadata) = std::fs::metadata(p) {
+                if let Ok(metadata) = std::fs::metadata(&p) {
                     let size_gb = metadata.len() as f64 / (1024.0 * 1024.0 * 1024.0);
                     information.vhdx_size = format!("{:.2} GB", size_gb);
+                    
+                    // Check sparse status
+                    information.is_sparse = crate::utils::system::is_sparse_file(&p.to_string_lossy());
                 }
             }
         }
@@ -168,4 +144,34 @@ pub async fn get_distro_install_location(_executor: &WslCommandExecutor, distro_
     }
 
     WslCommandResult::error("".into(), "Failed to find install location in registry".into())
+}
+pub fn get_vhdx_path(base_path_str: &str) -> Option<std::path::PathBuf> {
+    let base_path = std::path::PathBuf::from(base_path_str);
+    
+    // Common locations
+    let probe_paths = vec![
+        base_path.join("ext4.vhdx"),
+        base_path.join("LocalState\\ext4.vhdx"),
+    ];
+
+    for p in probe_paths {
+        if p.exists() {
+            return Some(p);
+        }
+    }
+
+    // Fallback: search in base path
+    if base_path.exists() {
+        if let Ok(entries) = std::fs::read_dir(&base_path) {
+            for entry in entries.flatten() {
+                if let Ok(file_type) = entry.file_type() {
+                    if file_type.is_file() && entry.path().extension().map_or(false, |ext| ext == "vhdx") {
+                        return Some(entry.path());
+                    }
+                }
+            }
+        }
+    }
+
+    None
 }

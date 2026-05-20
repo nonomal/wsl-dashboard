@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 import {
     ConfirmationDialog,
     ExportDialog,
@@ -12,6 +15,7 @@ import {
     VSCodeStartupDialog,
     WslConfigDialog,
     NetworkAddRuleDialog,
+    CompressDialog,
 } from "dialogs.slint";
 import { ProxyHelpDialog } from "./dialogs/proxy_help_dialog.slint";
 import { CheckProxyDialog } from "./dialogs/check_proxy_dialog.slint";
@@ -28,6 +32,9 @@ export component ModalManager inherits Rectangle {
     in property <bool> show_update: false;
     in property <bool> show_install_warn: false;
     in property <bool> show_expire: false;
+    in property <string> expire_latest_version: "";
+    in property <string> expire_release_date: "";
+    in property <string> expire_download_url: "";
     in property <bool> show_information: false;
     in-out property <bool> show_settings: false;
     in property <bool> show_rootfs_help: false;
@@ -36,6 +43,8 @@ export component ModalManager inherits Rectangle {
     in-out property <bool> show_add_network_rule: false;
     in-out property <bool> show_check_proxy: false;
     in-out property <bool> show_network_proxy_help: false;
+    in-out property <bool> show_compress: false;
+    in property <bool> show_stop_wsl_confirm: false;
     in property <bool> is_installing: false;
 
     // Data
@@ -71,6 +80,7 @@ export component ModalManager inherits Rectangle {
     in property <bool> settings_is_task_exists: true;
     in-out property <bool> settings_terminal_proxy: true;
     in property <Information> information;
+
     in property <[RootFSHelpItem]> rootfs_help_list;
     
     // Network properties
@@ -109,6 +119,19 @@ export component ModalManager inherits Rectangle {
     in property <string> wsl_config_command_error: "";
     in property <string> wsl_config_preview_content: "";
 
+    // Compress properties
+    in property <string> compress_target_name: "";
+    in property <string> compress_vhdx_size: "---";
+    in property <string> compress_free_space: "---";
+    in property <bool> compress_space_sufficient: false;
+    in property <string> compress_backup_path: "";
+    in property <string> compress_script_url: "";
+    in property <bool> compress_is_wsl2: true;
+    in property <bool> compress_is_sparse: false;
+    in-out property <bool> compress_enable_sparse: false;
+    in-out property <bool> compress_cleanup: true;
+    in-out property <bool> compress_backup: true;
+
     // Callbacks
     callback confirm_delete();
     callback cancel_delete();
@@ -144,10 +167,15 @@ export component ModalManager inherits Rectangle {
     callback open_url(string);
     callback add_network_rule(string, string, string, string, bool);
     callback check_proxy_connection(string);
+    callback confirm_compress(string, bool, bool, bool, string);
+    callback cancel_compress();
+    callback confirm_stop_wsl();
+    callback cancel_stop_wsl();
+
     if (show_delete): ConfirmationDialog {
         width: 100%;
         height: 100%;
-        dialog_height: 180px;
+        dialog_height: 200px;
         title_text: AppI18n.t("dialog.delete_title", [delete_target_name, AppI18n.version]);
         message: AppI18n.t("dialog.delete_msg", [delete_target_name, AppI18n.version]);
         confirm => {
@@ -155,6 +183,19 @@ export component ModalManager inherits Rectangle {
         }
         cancel => {
             root.cancel_delete();
+        }
+    }
+    if (show_stop_wsl_confirm): ConfirmationDialog {
+        width: 100%;
+        height: 100%;
+        dialog_height: 210px;
+        title_text: AppI18n.t("dialog.stop_wsl_title", [AppI18n.version]);
+        message: AppI18n.t("dialog.stop_wsl_msg", [AppI18n.version]);
+        confirm => {
+            root.confirm_stop_wsl();
+        }
+        cancel => {
+            root.cancel_stop_wsl();
         }
     }
     if (show_export): ExportDialog {
@@ -216,7 +257,7 @@ export component ModalManager inherits Rectangle {
     if (show_move_confirm): ConfirmationDialog {
         width: 100%;
         height: 100%;
-        dialog_height: 250px;
+        dialog_height: 280px;
         title_text: AppI18n.t("dialog.move_title", [root.move_source_name, AppI18n.version]);
         message: root.move_confirm_message;
         confirm => {
@@ -250,7 +291,7 @@ export component ModalManager inherits Rectangle {
     if (show_update): CheckUpdateDialog {
         width: 100%;
         height: 100%;
-        message_content: AppI18n.t("dialog.update_msg", [AppInfo.latest_version, AppInfo.version, AppI18n.version]);
+        message_content: AppI18n.t("dialog.update_msg", [AppInfo.latest_version, AppInfo.latest_release_date, AppI18n.version]);
         is_expire: false;
         show_cancel: true;
         download => {
@@ -273,7 +314,7 @@ export component ModalManager inherits Rectangle {
     if (show_expire): CheckUpdateDialog {
         width: 100%;
         height: 100%;
-        message_content: AppI18n.t("dialog.expire_msg", [AppI18n.version]);
+        message_content: self.is_expire ? AppI18n.t("dialog.expire_msg", [root.expire_latest_version, root.expire_release_date, AppI18n.version]) : AppI18n.t("dialog.expire_msg", [AppI18n.version]);
         is_expire: true;
         show_cancel: true;
         download => {
@@ -423,6 +464,29 @@ export component ModalManager inherits Rectangle {
             clicked => { root.show_network_proxy_help = false; }
         }
         ProxyHelpDialog {
+            close => { root.show_network_proxy_help = false; }
+        }
+    }
+
+    if (show_compress): CompressDialog {
+        width: 100%;
+        height: 100%;
+        distro_name: root.compress_target_name;
+        vhdx_size: root.compress_vhdx_size;
+        free_space: root.compress_free_space;
+        space_sufficient: root.compress_space_sufficient;
+        backup_path: root.compress_backup_path;
+        script_url: root.compress_script_url;
+        cleanup <=> root.compress_cleanup;
+        backup <=> root.compress_backup;
+        is_wsl2: root.compress_is_wsl2;
+        is_sparse: root.compress_is_sparse;
+        enable_sparse <=> root.compress_enable_sparse;
+        confirm(n, c, b, s, u) => {
+            root.confirm_compress(n, c, b, s, u);
+        }
+        cancel => {
+            root.cancel_compress();
         }
     }
 }

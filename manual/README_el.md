@@ -4,7 +4,7 @@
   <img src="../assets/logo/logo.png" width="128" height="128" alt="Λογότυπο WSL Dashboard" />
 </p>
 
-Ένας σύγχρονος, υψηλής απόδοσης και ελαφρύς πίνακας ελέγχου για τη διαχείριση περιβαλλόντων WSL (Windows Subsystem for Linux). Κατασκευασμένος με Rust και Slint για μια κορυφαία εμπειρία χρήσης.
+Ένας σύγχρονος, υψηλής απόδοσης, ελαφρύς και με χαμηλή μνήμη πίνακας ελέγχου διαχείρισης στιγμιότυπων WSL (Windows Subsystem for Linux). Δημιουργημένος με Rust και Slint για μια κορυφαία εγγενή εμπειρία.
 
 ---
 
@@ -199,7 +199,7 @@ I18N :  [English](../README.md) | [简体中文](./README_zh_CN.md) | [繁體中
      > Το script απαιτεί την εργαλειοθήκη `x86_64-pc-windows-msvc`.
 
      ```powershell
-     .\build\scripts\build.ps1
+     .\build\portable\build.ps1
      ```
 
 
@@ -239,6 +239,7 @@ A big thank you to the following communities for their support:
 - [Tokio - An asynchronous Rust runtime](https://tokio.rs) - For the efficient async runtime
 - [Windows Developer Community](https://developer.microsoft.com/en-us/windows/community) - For continuous platform improvements
 - [Reddit](https://www.reddit.com) - For global community discussions and support
+- [Hacker News](https://news.ycombinator.com) - For global community discussions and support
 - [Linux.do](https://linux.do) - For popular community for IT professionals
 - [V2EX](https://www.v2ex.com) - For Chinese tech community discussions
 

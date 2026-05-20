@@ -1,16 +1,19 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use crate::wsl::dashboard::WslDashboard;
 
 use tracing::error;
 
-/// RAII Guard for managing active operations on a per-distro basis.
-/// Automatically unregisters the operation when dropped.
+// RAII Guard for managing active operations on a per-distro basis.
+// Automatically unregisters the operation when dropped.
 pub struct DistroOpGuard {
     dashboard: WslDashboard,
     distro_name: String,
 }
 
 impl DistroOpGuard {
-    /// Creates a new guard and registers the operation.
+    // Creates a new guard and registers the operation.
     pub async fn create(dashboard: WslDashboard, distro_name: String, op_name: String) -> Self {
         dashboard.register_operation(distro_name.clone(), op_name).await;
         Self {

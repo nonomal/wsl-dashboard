@@ -1,14 +1,19 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
 // Configuration file version constant
-pub const SETTINGS_VERSION: u32 = 5;
+pub const SETTINGS_VERSION: u32 = 6;
 
 // Application configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ApplicationConfig {
     pub name: String,
-    pub homepage: String,
+    #[serde(alias = "homepage")]
+    pub project_repository: String,
+    pub project_website: String,
     #[serde(rename = "app-version", alias = "version")]
     pub app_version: String,
     #[serde(rename = "setting-version", default)]
@@ -55,6 +60,8 @@ pub struct UserSettings {
     pub log_level: u8,
     #[serde(rename = "log-days", default = "default_log_days")]
     pub log_days: u8,
+    #[serde(rename = "colorful-icons", default)]
+    pub colorful_icons: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -117,7 +124,8 @@ impl Config {
         Self {
             application: ApplicationConfig {
                 name: crate::app::APP_NAME.to_string(),
-                homepage: crate::app::GITHUB_URL.to_string(),
+                project_repository: crate::app::PROJECT_REPOSITORY.to_string(),
+                project_website: crate::app::PROJECT_WEBSITE.to_string(),
                 app_version: env!("CARGO_PKG_VERSION").to_string(),
                 setting_version: SETTINGS_VERSION as u8,
                 startup_time: chrono::Utc::now().timestamp_millis().to_string(),
@@ -140,6 +148,7 @@ impl Config {
                 sidebar_collapsed: false,
                 log_level: 4,
                 log_days: 7,
+                colorful_icons: true,
             },
 
             tray: TraySettings::default(),
@@ -153,6 +162,8 @@ impl Config {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SidebarConfig {
+    #[serde(default = "default_true")]
+    pub toggle: bool,
     #[serde(default = "default_true")]
     pub add: bool,
     #[serde(default = "default_true")]
@@ -170,6 +181,7 @@ fn default_true() -> bool {
 impl Default for SidebarConfig {
     fn default() -> Self {
         Self {
+            toggle: true,
             add: true,
             usb: true,
             network: true,

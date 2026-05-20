@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use slint::ComponentHandle;
@@ -7,7 +10,7 @@ use std::future::Future;
 use serde_json::json;
 use crate::utils::system::copy_to_clipboard;
 
-/// Convert backend USB device model to Slint model
+// Convert backend USB device model to Slint model
 fn to_slint_device(dev: &crate::usb::UsbDeviceModel, auto_attach_list: &[crate::config::models::UsbAutoAttachDevice]) -> UsbDevice {
     let full_instance_id = dev.instance_id.clone().unwrap_or_default();
     let sn_part = full_instance_id.split('\\').last().unwrap_or("").to_string();
@@ -84,8 +87,8 @@ fn to_slint_device(dev: &crate::usb::UsbDeviceModel, auto_attach_list: &[crate::
     }
 }
 
-/// Helper: run an async USB operation on a background thread, then update UI.
-/// This prevents the UI thread from freezing during external command execution.
+// Helper: run an async USB operation on a background thread, then update UI.
+// This prevents the UI thread from freezing during external command execution.
 fn spawn_usb_task<F, Fut>(ah: slint::Weak<AppWindow>, task_fn: F)
 where
     F: FnOnce() -> Fut + Send + 'static,

@@ -1,6 +1,9 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use super::models::{NetworkInterface};
 
-/// Get the list of Windows network interfaces (Internal IPs recommended)
+// Get the list of Windows network interfaces (Internal IPs recommended)
 pub fn get_physical_interfaces() -> Vec<NetworkInterface> {
     let mut interfaces = Vec::new();
 

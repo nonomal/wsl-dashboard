@@ -1,46 +1,27 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tracing::{info, error};
 use slint::ComponentHandle;
-use crate::{AppWindow, AppState, Theme, AppI18n, config, i18n};
+use crate::{AppWindow, AppState, Theme, AppI18n, i18n};
 
 pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, app_state: Arc<Mutex<AppState>>) {
     let ah = app_handle.clone();
     let as_ptr = app_state.clone();
-    app.on_save_settings(move || {
+    app.on_save_general_settings(move || {
         let ah = ah.clone();
         let as_ptr = as_ptr.clone();
         let _ = slint::spawn_local(async move {
             if let Some(app) = ah.upgrade() {
                 let ui_language = app.get_ui_language().to_string();
-                let distro_location = app.get_distro_location().to_string();
-                let logs_location = app.get_logs_location().to_string();
-                let auto_shutdown = app.get_auto_shutdown();
                 let tray_autostart = app.get_tray_autostart();
                 let tray_start_minimized = app.get_tray_start_minimized();
                 let tray_close_to_tray = app.get_tray_close_to_tray();
-                let log_level = app.get_log_level() as u8;
-                let log_days = app.get_log_days() as u8;
                 let check_update = app.get_check_update_interval() as u8;
-                let system_color = app.get_system_color();
-                
-                let sidebar_add = app.get_sidebar_add();
-                let sidebar_usb = app.get_sidebar_usb();
-                let sidebar_network = app.get_sidebar_network();
-                let sidebar_about = app.get_sidebar_about();
 
                 let mut state = as_ptr.lock().await;
-
-                // Update sidebar settings
-                let sidebar_config = config::SidebarConfig {
-                    add: sidebar_add,
-                    usb: sidebar_usb,
-                    network: sidebar_network,
-                    about: sidebar_about,
-                };
-                if let Err(e) = state.config_manager.update_sidebar_settings(sidebar_config) {
-                    error!("Failed to save sidebar settings: {}", e);
-                }
 
                 // Apply Dashboard autostart setting to Windows
                 if let Err(e) = crate::app::autostart::set_dashboard_autostart(tray_autostart, tray_start_minimized).await {
@@ -48,24 +29,13 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, app_state: Arc
                 }
 
                 // Update tray settings in config
-                let tray_settings = config::TraySettings {
+                let tray_settings = crate::config::TraySettings {
                     autostart: tray_autostart,
                     start_minimized: tray_start_minimized,
                     close_to_tray: tray_close_to_tray,
                 };
                 if let Err(e) = state.config_manager.update_tray_settings(tray_settings) {
                     error!("Failed to save tray settings: {}", e);
-                }
-
-                let temp_location = state.config_manager.get_settings().temp_location.clone();
-                let current_logs_location = state.config_manager.get_settings().logs_location.clone();
-
-                // If log path or level changes, update logging system
-                if let Some(ls) = state.logging_system.as_mut() {
-                    if current_logs_location != logs_location {
-                        ls.update_path(&logs_location);
-                    }
-                    ls.update_level(log_level);
                 }
 
                 // Update i18n
@@ -82,7 +52,6 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, app_state: Arc
                 app.global::<AppI18n>().set_version(app.global::<AppI18n>().get_version() + 1);
                 crate::ui::data::refresh_localized_strings(&app);
                 
-                // Update font based on new language
                 let font_family = if crate::app::is_chinese_lang(lang_to_load) {
                     crate::app::FONT_ZH
                 } else {
@@ -90,7 +59,6 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, app_state: Arc
                 };
                 app.global::<Theme>().set_default_font(font_family.into());
 
-                // Re-initialize tray if language changed to update menu text
                 if old_lang != ui_language {
                     info!("Language changed from '{}' to '{}', triggering system tray re-initialization...", old_lang, ui_language);
                     let ah_tray = ah.clone();
@@ -101,22 +69,120 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, app_state: Arc
                     });
                 }
 
+                let mut settings = state.config_manager.get_settings().clone();
+                settings.ui_language = ui_language;
+                settings.check_update = check_update;
 
-                let user_settings = config::UserSettings {
-                    modify_time: chrono::Utc::now().timestamp_millis().to_string(),
-                    distro_location,
-                    logs_location: logs_location.clone(),
-                    temp_location,
-                    ui_language,
-                    auto_shutdown,
-                    dark_mode: app.global::<Theme>().get_dark_mode(),
-                    log_level,
-                    log_days,
-                    check_update,
-                    check_time: state.config_manager.get_settings().check_time.clone(),
-                    sidebar_collapsed: app.get_sidebar_collapsed(),
-                    system_color,
-                };
+                match state.config_manager.update_settings(settings) {
+                    Ok(_) => {
+                        drop(state);
+                        let _ = slint::invoke_from_event_loop(move || {
+                            if let Some(app) = ah.upgrade() {
+                                app.set_current_message(i18n::t("settings.saved_success").into());
+                                app.set_show_message_dialog(true);
+                            }
+                        });
+                    }
+                    Err(e) => {
+                        let error_msg = i18n::tr("settings.saved_failed", &[e.to_string()]);
+                        drop(state);
+                        error!("{}", error_msg);
+                        let _ = slint::invoke_from_event_loop(move || {
+                            if let Some(app) = ah.upgrade() {
+                                app.set_current_message(error_msg.into());
+                                app.set_show_message_dialog(true);
+                            }
+                        });
+                    }
+                }
+            }
+        });
+    });
+
+    let ah = app_handle.clone();
+    let as_ptr = app_state.clone();
+    app.on_save_advanced_settings(move || {
+        let ah = ah.clone();
+        let as_ptr = as_ptr.clone();
+        let _ = slint::spawn_local(async move {
+            if let Some(app) = ah.upgrade() {
+                let distro_location = app.get_distro_location().to_string();
+                let logs_location = app.get_logs_location().to_string();
+                let auto_shutdown = app.get_auto_shutdown();
+                let log_level = app.get_log_level() as u8;
+                let log_days = app.get_log_days() as u8;
+                let sparse_vhd = app.get_sparse_vhd();
+                
+                // Write sparseVhd directly to ~/.wslconfig
+                if let Err(e) = crate::utils::wsl_config::set_sparse_vhd(sparse_vhd) {
+                    error!("Failed to set sparseVhd in ~/.wslconfig: {}", e);
+                } else {
+                    info!("Successfully updated sparseVhd to {} in ~/.wslconfig", sparse_vhd);
+                }
+
+                let mut state = as_ptr.lock().await;
+
+                // Update logging system if changed
+                let current_logs_location = state.config_manager.get_settings().logs_location.clone();
+                if let Some(ls) = state.logging_system.as_mut() {
+                    if current_logs_location != logs_location {
+                        ls.update_path(&logs_location);
+                    }
+                    ls.update_level(log_level);
+                }
+
+                let mut settings = state.config_manager.get_settings().clone();
+                settings.distro_location = distro_location;
+                settings.logs_location = logs_location;
+                settings.auto_shutdown = auto_shutdown;
+                settings.log_level = log_level;
+                settings.log_days = log_days;
+
+                match state.config_manager.update_settings(settings) {
+                    Ok(_) => {
+                        drop(state);
+                        let _ = slint::invoke_from_event_loop(move || {
+                            if let Some(app) = ah.upgrade() {
+                                app.set_current_message(i18n::t("settings.saved_success").into());
+                                app.set_show_message_dialog(true);
+                            }
+                        });
+                    }
+                    Err(e) => {
+                        let error_msg = i18n::tr("settings.saved_failed", &[e.to_string()]);
+                        drop(state);
+                        error!("{}", error_msg);
+                        let _ = slint::invoke_from_event_loop(move || {
+                            if let Some(app) = ah.upgrade() {
+                                app.set_current_message(error_msg.into());
+                                app.set_show_message_dialog(true);
+                            }
+                        });
+                    }
+                }
+            }
+        });
+    });
+
+    let ah = app_handle.clone();
+    let as_ptr = app_state.clone();
+    app.on_save_interface_settings(move || {
+        let ah = ah.clone();
+        let as_ptr = as_ptr.clone();
+        let _ = slint::spawn_local(async move {
+            if let Some(app) = ah.upgrade() {
+                let sidebar_add = app.get_sidebar_add();
+                let sidebar_toggle = app.get_sidebar_toggle();
+                let sidebar_usb = app.get_sidebar_usb();
+                let sidebar_network = app.get_sidebar_network();
+                let sidebar_about = app.get_sidebar_about();
+                let colorful_icons = app.get_colorful_icons();
+                let system_color = app.get_system_color();
+
+                let mut state = as_ptr.lock().await;
+
+                // Sync to global theme for immediate effect
+                app.global::<crate::Theme>().set_colorful_icons(colorful_icons);
 
                 // Dynamic ThemeWatcher switching
                 let old_system_color = state.config_manager.get_settings().system_color;
@@ -139,13 +205,24 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, app_state: Arc
                     }
                 }
 
-                match state.config_manager.update_settings(user_settings) {
+                let mut settings = state.config_manager.get_settings().clone();
+                settings.colorful_icons = colorful_icons;
+                settings.system_color = system_color;
+                let _ = state.config_manager.update_settings(settings);
+
+                let sidebar_config = crate::config::SidebarConfig {
+                    add: sidebar_add,
+                    toggle: sidebar_toggle,
+                    usb: sidebar_usb,
+                    network: sidebar_network,
+                    about: sidebar_about,
+                };
+
+                match state.config_manager.update_sidebar_settings(sidebar_config) {
                     Ok(_) => {
                         drop(state);
                         let _ = slint::invoke_from_event_loop(move || {
                             if let Some(app) = ah.upgrade() {
-                                // Translate message if possible, or just keep english for now as it's dynamic
-                                // But better to use a key if we had one "settings.saved_success"
                                 app.set_current_message(i18n::t("settings.saved_success").into());
                                 app.set_show_message_dialog(true);
                             }
@@ -225,7 +302,7 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, app_state: Arc
                 if let Some(app) = app.upgrade() {
                     app.set_current_message(i18n::t("settings.wsl2_required").into());
                     app.set_current_message_link(i18n::t("settings.update_wsl").into());
-                    app.set_current_message_url("https://github.com/microsoft/WSL/releases/latest".into());
+                    app.set_current_message_url(crate::app::WSL_GITHUB_RELEASES.into());
                     app.set_show_message_dialog(true);
                 }
             };
@@ -284,6 +361,54 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, app_state: Arc
                 // If wslsettings.exe is not found even on multiple drives,
                 // it's almost certainly because the WSL version is < 2.3.0
                 show_upgrade_prompt(ah);
+            }
+        });
+    });
+    
+
+    let as_ptr = app_state.clone();
+    app.on_confirm_stop_wsl(move || {
+        let as_ptr = as_ptr.clone();
+        let ah = app_handle.clone();
+        tokio::spawn(async move {
+            let executor = {
+                let state = as_ptr.lock().await;
+                state.wsl_dashboard.executor().clone()
+            };
+            
+            // Execute wsl --shutdown
+            let result = executor.execute_command(&["--shutdown"]).await;
+            
+            if !result.success {
+                error!("Failed to shutdown WSL: {}", result.error.unwrap_or_default());
+            } else {
+                let check_result = executor.list_distros().await;
+                let mut all_stopped = true;
+                if check_result.success {
+                    if let Some(distros) = check_result.data {
+                        for d in distros {
+                            if d.status != crate::wsl::models::WslStatus::Stopped {
+                                all_stopped = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if all_stopped {
+                    let state = as_ptr.lock().await;
+                    state.wsl_dashboard.mark_all_distros_stopped().await;
+                }
+                
+                let _ = slint::invoke_from_event_loop(move || {
+                    if let Some(app) = ah.upgrade() {
+                        if all_stopped {
+                            app.set_current_message(i18n::t("dialog.stop_wsl_success").into());
+                        } else {
+                            app.set_current_message("wsl --shutdown executed, but not all distributions are stopped.".into());
+                        }
+                        app.set_show_message_dialog(true);
+                    }
+                });
             }
         });
     });

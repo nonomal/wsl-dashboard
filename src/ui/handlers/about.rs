@@ -1,12 +1,16 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::io::Read;
 use tokio::sync::Mutex;
 use tracing::{debug, warn};
 use crate::{AppWindow, AppState};
-use crate::app::updater::OfficialGroupItem;
+use crate::api::models::OfficialGroup;
+use slint::ComponentHandle;
 
-/// Ensure the BASE_API request is triggered only once during the application's lifecycle
+// Ensure the helper about info request is triggered only once during the application's lifecycle
 static FETCHED: AtomicBool = AtomicBool::new(false);
 
 pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, _app_state: Arc<Mutex<AppState>>) {
@@ -23,14 +27,14 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, _app_state: Ar
     });
 }
 
-/// Called when the user opens the About page for the first time (from the select_tab hook in common.rs)
-pub fn trigger_fetch_if_needed(app_handle: slint::Weak<AppWindow>, app_state: Arc<Mutex<AppState>>) {
+// Called when the user opens the About page for the first time (from the select_tab hook in common.rs)
+pub fn trigger_fetch(app_handle: slint::Weak<AppWindow>, app_state: Arc<Mutex<AppState>>) {
     // AtomicBool ensures it triggers only once, preventing duplicate requests even with rapid switching to the About page
     if FETCHED.swap(true, Ordering::SeqCst) {
-        debug!("about: BASE_API already fetched, skipping");
+        debug!("about: helper about info already fetched, skipping");
         return;
     }
-    debug!("about: First visit to About page, triggering BASE_API fetch");
+    debug!("about: First visit to About page, triggering helper about info fetch");
 
     tokio::spawn(async move {
         // Read user configuration (language + timezone)
@@ -40,12 +44,26 @@ pub fn trigger_fetch_if_needed(app_handle: slint::Weak<AppWindow>, app_state: Ar
             (cfg.system.timezone.clone(), cfg.system.system_language.clone())
         };
 
-        match crate::app::updater::fetch_base_config(&timezone).await {
-            Ok(resp) => {
-                debug!("about: fetch_base_config success, official-group count={}", resp.official_group.len());
-                if let Some(item) = match_group(&resp.official_group, &sys_lang, &timezone) {
-                    let pic_url = build_pic_url(&item.pic, &timezone);
-                    debug!("about: matched group='{}', pic_url={}", item.name, pic_url);
+        let resp = tokio::task::spawn_blocking(move || {
+            crate::api::common::wslui_helper_about()
+        }).await.unwrap_or_default();
+
+        debug!("about: wslui_helper_about success, official-group count={}", resp.official_group.len());
+        
+        let app_handle_urls = app_handle.clone();
+        let documents_url = resp.documents.as_ref().map(|d| d.url.clone()).unwrap_or_default();
+        let talk_url = resp.discussions.as_ref().map(|d| d.url.clone()).unwrap_or_default();
+
+        let _ = slint::invoke_from_event_loop(move || {
+            if let Some(app) = app_handle_urls.upgrade() {
+                app.global::<crate::AppInfo>().set_documents_url(documents_url.into());
+                app.global::<crate::AppInfo>().set_talk_url(talk_url.into());
+            }
+        });
+
+        if let Some(item) = match_group(&resp.official_group, &sys_lang, &timezone) {
+            let pic_url = item.pic.clone();
+            debug!("about: matched group='{}', pic_url={}", item.name, pic_url);
                     // In the child thread, keep only raw pixel bytes + width/height (all implement Send)
                     // slint::Image holds VRc<OpaqueImageVTable> (contains *mut ()), which does not implement Send,
                     // so it must be reconstructed in the UI thread (inside invoke_from_event_loop).
@@ -68,32 +86,26 @@ pub fn trigger_fetch_if_needed(app_handle: slint::Weak<AppWindow>, app_state: Ar
                 } else {
                     debug!("about: no matching group item found");
                 }
-            }
-            Err(e) => {
-                warn!("about: fetch_base_config failed: {}", e);
-                // FETCHED is not reset: do not retry after failure in the current session
-            }
-        }
     });
 }
 
-/// Standardize language code: to lowercase + remove hyphens and underscores
-/// Example: zh-CN / zh_CN / zh-cn => zhcn
+// Standardize language code: to lowercase + remove hyphens and underscores
+// Example: zh-CN / zh_CN / zh-cn => zhcn
 fn normalize_lang(s: &str) -> String {
     s.to_lowercase()
         .replace('-', "")
         .replace('_', "")
 }
 
-/// Match an appropriate entry from the official-group array
-///
-/// Priority rule: both system-language and timezone are non-empty → AND match (case/separator insensitive)
-/// Fallback rule: entry where both system-language and timezone are empty strings (general fallback)
+// Match an appropriate entry from the official-group array
+//
+// Priority rule: both system-language and timezone are non-empty → AND match (case/separator insensitive)
+// Fallback rule: entry where both system-language and timezone are empty strings (general fallback)
 fn match_group<'a>(
-    items: &'a [OfficialGroupItem],
+    items: &'a [OfficialGroup],
     sys_lang: &str,
     timezone: &str,
-) -> Option<&'a OfficialGroupItem> {
+) -> Option<&'a OfficialGroup> {
     let nl = normalize_lang(sys_lang);
     let nt = timezone.to_lowercase();
 
@@ -114,27 +126,9 @@ fn match_group<'a>(
         .find(|i| i.system_language.is_empty() && i.timezone.is_empty())
 }
 
-/// Build the complete image URL
-/// If the pic field already contains "http", use it directly; otherwise append the domain prefix
-fn build_pic_url(pic: &str, timezone: &str) -> String {
-    if pic.contains("http") {
-        return pic.to_string();
-    }
-    let ts = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .map(|d| d.as_secs())
-        .unwrap_or(0);
-    let base_url = if timezone == crate::app::ZH_TIMEZONE {
-        crate::app::STATIC_API
-    } else {
-        crate::app::STATIC_API_FREE
-    };
-    let separator = if pic.contains('?') { "&" } else { "?" };
-    format!("{}{}{}t={}", base_url, pic, separator, ts)
-}
 
-/// Download the image and decode to raw RGBA8 pixel bytes + width/height
-/// Returns (rgba_bytes, width, height), all implement Send, can be safely passed across threads
+// Download the image and decode to raw RGBA8 pixel bytes + width/height
+// Returns (rgba_bytes, width, height), all implement Send, can be safely passed across threads
 fn load_image_pixels(url: &str) -> Result<(Vec<u8>, u32, u32), String> {
     let resp = ureq::get(url)
         .timeout(std::time::Duration::from_secs(10))

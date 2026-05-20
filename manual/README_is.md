@@ -4,7 +4,7 @@
   <img src="../assets/logo/logo.png" width="128" height="128" alt="WSL Dashboard Logó" />
 </p>
 
-Nútímalegt, afkastamikið og létt stjórnborð til að sýsla með WSL (Windows Subsystem for Linux) tilvik. Smíðað með Rust og Slint fyrir úrvals upplifun.
+Nútímalegt, afkastamikið, létt og minnissparandi mælaborð fyrir WSL (Windows Subsystem for Linux) tilviksstjórnun. Byggt með Rust og Slint fyrir frábæra innfædda upplifun.
 
 ---
 
@@ -199,7 +199,7 @@ Gakktu úr skugga um að þú hafir Rust tækjapakkann (Rust 1.92+ eða nýrri) 
      > Smíðaskriftan krefst `x86_64-pc-windows-msvc` tækjapakkans.
 
      ```powershell
-     .\build\scripts\build.ps1
+     .\build\portable\build.ps1
      ```
 
 
@@ -239,6 +239,7 @@ A big thank you to the following communities for their support:
 - [Tokio - An asynchronous Rust runtime](https://tokio.rs) - For the efficient async runtime
 - [Windows Developer Community](https://developer.microsoft.com/en-us/windows/community) - For continuous platform improvements
 - [Reddit](https://www.reddit.com) - For global community discussions and support
+- [Hacker News](https://news.ycombinator.com) - For global community discussions and support
 - [Linux.do](https://linux.do) - For popular community for IT professionals
 - [V2EX](https://www.v2ex.com) - For Chinese tech community discussions
 

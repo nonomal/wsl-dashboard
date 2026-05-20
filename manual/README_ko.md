@@ -4,7 +4,7 @@
   <img src="../assets/logo/logo.png" width="128" height="128" alt="WSL Dashboard 로고" />
 </p>
 
-현대적이고 강력하며 가벼운 WSL(Windows Subsystem for Linux) 인스턴스 관리 대시보드입니다. 프리미엄 네이티브 경험을 위해 Rust와 Slint로 제작되었습니다.
+현대적이고, 고성능이며, 가볍고, 메모리 사용량이 적은 WSL (Windows Subsystem for Linux) 인스턴스 관리 대시보드입니다. 프리미엄 네이티브 환경을 위해 Rust 및 Slint로 구축되었습니다.
 
 ---
 
@@ -199,7 +199,7 @@ Rust 툴체인(Rust 1.92 이상)이 설치되어 있는지 확인하세요.
      > 빌드 스크립트는 `x86_64-pc-windows-msvc` 툴체인이 필요합니다.
 
      ```powershell
-     .\build\scripts\build.ps1
+     .\build\portable\build.ps1
      ```
 
 
@@ -239,6 +239,7 @@ A big thank you to the following communities for their support:
 - [Tokio - An asynchronous Rust runtime](https://tokio.rs) - For the efficient async runtime
 - [Windows Developer Community](https://developer.microsoft.com/en-us/windows/community) - For continuous platform improvements
 - [Reddit](https://www.reddit.com) - For global community discussions and support
+- [Hacker News](https://news.ycombinator.com) - For global community discussions and support
 - [Linux.do](https://linux.do) - For popular community for IT professionals
 - [V2EX](https://www.v2ex.com) - For Chinese tech community discussions
 

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tracing::info;

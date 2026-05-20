@@ -1,11 +1,15 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 import { Theme, AppI18n, LayoutConstants } from "../theme.slint";
 
 export component TaskStatusToast inherits Rectangle {
     in property <string> text;
     in property <bool> is_shown: false;
+    in property <length> max_container_width: 800px;
     callback close;
     height: 52px;
-    width: max(460px, layout.preferred-width + 40px);
+    width: min(root.max_container_width, max(460px, layout.preferred-width + 40px));
     background: Theme.card_bg;
     border-radius: 8px;
     border-width: 1px;
@@ -36,7 +40,7 @@ export component TaskStatusToast inherits Rectangle {
                     text: "\u{E10A}"; // Close icon
                     font-family: Theme.icon_font;
                     font-size: 14px;
-                    color: parent.has-hover ? Theme.accent : Theme.text_secondary;
+                    color: parent.has-hover ? Theme.accent : Theme.icon_color_slate;
                     horizontal-alignment: center;
                     vertical-alignment: center;
                 }
@@ -51,7 +55,7 @@ export component TaskStatusToast inherits Rectangle {
                 text: "\u{E995}"; // Volume/Speaker icon
                 font-family: Theme.icon_font;
                 font-size: 20px;
-                color: Theme.accent;
+                color: Theme.icon_color_info;
             }
         }
         Text {
@@ -62,6 +66,7 @@ export component TaskStatusToast inherits Rectangle {
             vertical-alignment: center;
             horizontal-alignment: AppI18n.is-rtl ? right : left;
             horizontal-stretch: 1;
+            overflow: elide;
         }
 
         // Icon for RTL (at the end)
@@ -71,7 +76,7 @@ export component TaskStatusToast inherits Rectangle {
                 text: "\u{E995}"; // Volume/Speaker icon
                 font-family: Theme.icon_font;
                 font-size: 20px;
-                color: Theme.accent;
+                color: Theme.icon_color_info;
             }
         }
 
@@ -91,7 +96,7 @@ export component TaskStatusToast inherits Rectangle {
                     text: "\u{E10A}"; // Close icon
                     font-family: Theme.icon_font;
                     font-size: 14px;
-                    color: parent.has-hover ? Theme.accent : Theme.text_secondary;
+                    color: parent.has-hover ? Theme.accent : Theme.icon_color_slate;
                     horizontal-alignment: center;
                     vertical-alignment: center;
                 }

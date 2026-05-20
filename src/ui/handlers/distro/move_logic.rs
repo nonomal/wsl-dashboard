@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tracing::{info, warn};
@@ -13,12 +16,14 @@ pub fn run_move_process(
     version: String
 ) {
     let _ = slint::spawn_local(async move {
+        let _guard = crate::ui::data::BusyGuard::new();
         if let Some(app) = ah_move.upgrade() {
             app.set_task_status_visible(true);
         }
 
         let dashboard = {
             let state = as_ptr.lock().await;
+            state.wsl_dashboard.mark_distro_stopped(&source_name).await;
             state.wsl_dashboard.clone()
         };
         dashboard.set_manual_operation(true);

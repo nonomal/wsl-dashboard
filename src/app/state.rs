@@ -1,5 +1,9 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use crate::wsl::dashboard::WslDashboard;
 use crate::wsl::models::{WslDistro, WslStatus, WslVersion};
+use std::sync::atomic::AtomicI64;
 use crate::config::ConfigManager;
 use crate::utils::logging::LoggingSystem;
 
@@ -10,6 +14,16 @@ pub struct VSCodeExtensionData {
     pub url: String,
 }
 
+impl Default for VSCodeExtensionData {
+    fn default() -> Self {
+        let def = crate::api::models::VSCodeExtension::default();
+        Self {
+            name: def.name,
+            url: def.url,
+        }
+    }
+}
+
 pub struct AppState {
     pub wsl_dashboard: WslDashboard,
     pub config_manager: ConfigManager,
@@ -17,10 +31,11 @@ pub struct AppState {
     pub vscode_extension: Option<VSCodeExtensionData>,
     pub is_silent_mode: bool,
     pub theme_watcher: Option<crate::utils::theme::ThemeWatcher>,
+    pub startup_timestamp: AtomicI64,
 }
 
 impl AppState {
-    pub fn new(config_manager: ConfigManager, logging_system: LoggingSystem, is_silent_mode: bool) -> Self {
+    pub fn new(config_manager: ConfigManager, logging_system: LoggingSystem, is_silent_mode: bool, startup_timestamp: i64) -> Self {
         // Load initial distros from cache for fast startup (warm start)
         let cached = config_manager.get_cached_distros();
         let initial_distros: Vec<WslDistro> = cached.into_iter().map(|c| {
@@ -40,6 +55,7 @@ impl AppState {
             vscode_extension: None,
             is_silent_mode,
             theme_watcher: None,
+            startup_timestamp: AtomicI64::new(startup_timestamp),
         }
     }
 }

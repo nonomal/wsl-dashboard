@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use tracing::{info, error};
 use std::process::Command;
 use std::os::windows::process::CommandExt;
@@ -82,7 +85,7 @@ pub fn delete_port_proxy(listen_addr: &str, listen_port: u16) -> Result<(), Stri
     Ok(())
 }
 
-/// Elevated version of add_port_proxy (triggers UAC)
+// Elevated version of add_port_proxy (triggers UAC)
 pub fn add_port_proxy_elevated(listen_addr: &str, listen_port: u16, connect_addr: &str, connect_port: u16, _enable_firewall: bool, _distro_name: &str) -> Result<(), String> {
     info!("Requesting elevation for netsh add portproxy (Direct: {}:{} -> {}:{})", listen_addr, listen_port, connect_addr, connect_port);
     let full_command = format!(
@@ -92,7 +95,7 @@ pub fn add_port_proxy_elevated(listen_addr: &str, listen_port: u16, connect_addr
     crate::utils::system::run_invisible_elevated_command(&full_command)
 }
 
-/// Elevated version of add_port_proxy (Single cmd /c line, combined with optional firewall)
+// Elevated version of add_port_proxy (Single cmd /c line, combined with optional firewall)
 pub fn add_port_proxy_and_firewall_elevated(
     listen_addr: &str, listen_port: u16, 
     connect_addr: &str, connect_port: u16, 
@@ -116,7 +119,7 @@ pub fn add_port_proxy_and_firewall_elevated(
     crate::utils::system::run_invisible_elevated_commands(commands)
 }
 
-/// Elevated version of adding firewall rule ONLY (used when distro is not started)
+// Elevated version of adding firewall rule ONLY (used when distro is not started)
 pub fn add_firewall_rule_elevated(listen_addr: &str, listen_port: u16, distro_name: &str) -> Result<(), String> {
     let rule_name = format!("WSL_Dashboard_{}_{}", distro_name, listen_port);
     let mut commands = Vec::new();
@@ -127,7 +130,7 @@ pub fn add_firewall_rule_elevated(listen_addr: &str, listen_port: u16, distro_na
 }
 
 
-/// Elevated version of delete_port_proxy (triggers UAC) - NO firewall
+// Elevated version of delete_port_proxy (triggers UAC) - NO firewall
 pub fn delete_port_proxy_elevated(listen_addr: &str, listen_port: u16, _distro_name: &str) -> Result<(), String> {
     info!("Requesting elevation to delete portproxy (Direct): {}:{}", listen_addr, listen_port);
     let full_command = format!(
@@ -137,7 +140,7 @@ pub fn delete_port_proxy_elevated(listen_addr: &str, listen_port: u16, _distro_n
     crate::utils::system::run_invisible_elevated_command(&full_command)
 }
 
-/// Elevated version of delete_port_proxy AND firewall (Physical deletion)
+// Elevated version of delete_port_proxy AND firewall (Physical deletion)
 pub fn delete_port_proxy_and_firewall_elevated(listen_addr: &str, listen_port: u16, distro_name: &str) -> Result<(), String> {
     let rule_name = format!("WSL_Dashboard_{}_{}", distro_name, listen_port);
     let mut commands = Vec::new();
@@ -147,7 +150,7 @@ pub fn delete_port_proxy_and_firewall_elevated(listen_addr: &str, listen_port: u
     crate::utils::system::run_invisible_elevated_commands(commands)
 }
 
-/// Elevated version of applying multiple rules at once (Single UAC) - NO firewall
+// Elevated version of applying multiple rules at once (Single UAC) - NO firewall
 pub fn apply_port_proxies_elevated(rules_with_ips: Vec<(PortProxyRule, String)>) -> Result<(), String> {
     if rules_with_ips.is_empty() { return Ok(()); }
     
@@ -162,7 +165,7 @@ pub fn apply_port_proxies_elevated(rules_with_ips: Vec<(PortProxyRule, String)>)
     crate::utils::system::run_invisible_elevated_commands(all_cmd_parts)
 }
 
-/// Elevated version of deleting multiple rules at once (Single UAC) - NO firewall
+// Elevated version of deleting multiple rules at once (Single UAC) - NO firewall
 pub fn delete_port_proxies_elevated(rules: Vec<PortProxyRule>) -> Result<(), String> {
     if rules.is_empty() { return Ok(()); }
     
@@ -178,8 +181,8 @@ pub fn delete_port_proxies_elevated(rules: Vec<PortProxyRule>) -> Result<(), Str
 
 pub struct SyncResult {}
 
-/// Execute the main port synchronization flow (PortProxySyncFlow).
-/// This call requires elevation and should only be executed by privileged tasks or elevated instances.
+// Execute the main port synchronization flow (PortProxySyncFlow).
+// This call requires elevation and should only be executed by privileged tasks or elevated instances.
 pub fn sync_port_proxies(distro_name: &str, rules: &[PortProxyRule]) -> Result<Vec<SyncResult>, String> {
     info!("Starting port proxy synchronization for: {}", distro_name);
     

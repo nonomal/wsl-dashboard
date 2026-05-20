@@ -1,9 +1,13 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use std::sync::Arc;
 use std::rc::Rc;
 use tokio::sync::Mutex;
 use tracing::{trace,debug, error};
 use slint::{ModelRc, VecModel, Model, ComponentHandle};
 use std::sync::atomic::{AtomicBool, Ordering};
+use chrono::Datelike;
 
 // Import Slint UI components
 use crate::{AppState, AppWindow, Distro, InstallableDistro, SettingsStrings, wsl};
@@ -13,8 +17,36 @@ use std::time::{Instant, Duration};
 
 static LAST_WSL_REFRESH: Lazy<std::sync::Mutex<Option<Instant>>> = Lazy::new(|| std::sync::Mutex::new(None));
 static LAST_USB_REFRESH: Lazy<std::sync::Mutex<Option<Instant>>> = Lazy::new(|| std::sync::Mutex::new(None));
+static IS_BUSY: AtomicBool = AtomicBool::new(false);
+
+pub fn set_busy(busy: bool) {
+    IS_BUSY.store(busy, Ordering::SeqCst);
+}
+
+pub fn is_busy() -> bool {
+    IS_BUSY.load(Ordering::SeqCst)
+}
+
+pub struct BusyGuard;
+
+impl BusyGuard {
+    pub fn new() -> Self {
+        set_busy(true);
+        Self
+    }
+}
+
+impl Drop for BusyGuard {
+    fn drop(&mut self) {
+        set_busy(false);
+    }
+}
 
 pub fn should_refresh_wsl(reason: &str, is_visible: bool) -> bool {
+    if is_busy() {
+        trace!("WSL refresh skipped (reason: {}, app is busy)", reason);
+        return false;
+    }
     let mut last = LAST_WSL_REFRESH.lock().unwrap();
     if let Some(t) = *last {
         let elapsed = t.elapsed();
@@ -37,6 +69,10 @@ pub fn should_refresh_wsl(reason: &str, is_visible: bool) -> bool {
 }
 
 pub fn should_refresh_usb(reason: &str, is_visible: bool) -> bool {
+    if is_busy() {
+        trace!("USB refresh skipped (reason: {}, app is busy)", reason);
+        return false;
+    }
     let mut last = LAST_USB_REFRESH.lock().unwrap();
     if let Some(t) = *last {
         let elapsed = t.elapsed();
@@ -75,6 +111,13 @@ pub fn refresh_localized_strings(app: &AppWindow) {
         save: i18n::tr("settings.save", &[]).into(),
         wsl_settings: i18n::tr("settings.wsl_settings", &[]).into(),
         sidebar_features: i18n::tr("settings.sidebar_features", &[]).into(),
+        tab_general: i18n::tr("settings.tab_general", &[]).into(),
+        tab_advanced: i18n::tr("settings.tab_advanced", &[]).into(),
+        tab_interface: i18n::tr("settings.tab_interface", &[]).into(),
+        sparse_vhd: i18n::tr("settings.sparse_vhd", &[]).into(),
+        sparse_vhd_desc: i18n::tr("settings.sparse_vhd_desc", &[]).into(),
+        colorful_icons: i18n::tr("settings.colorful_icons", &[]).into(),
+        stop_wsl: i18n::tr("settings.stop_wsl", &[]).into(),
     });
 
     app.set_about_strings(crate::AboutStrings {
@@ -83,19 +126,30 @@ pub fn refresh_localized_strings(app: &AppWindow) {
         version: i18n::tr("about.version", &[]).into(),
         updates: i18n::tr("about.updates", &[]).into(),
         check_update: i18n::tr("about.check_update", &[]).into(),
-        website: i18n::tr("about.homepage", &[]).into(),
+        website: i18n::tr("about.website", &[]).into(),
+        repository: i18n::tr("about.repository", &[]).into(),
         group: i18n::tr("about.group", &[]).into(),
         issues: i18n::tr("about.issues", &[]).into(),
-        discussions: i18n::tr("about.discussions", &[]).into(),
+        announcements: i18n::tr("about.announcements", &[]).into(),
+        talk: i18n::tr("about.talk", &[]).into(),
+        documents: i18n::tr("about.documents", &[]).into(),
         star: i18n::tr("about.star", &[]).into(),
         love: i18n::tr("about.love", &[]).into(),
         github: "".into(), // Not used in UI currently
-        license: "".into(),
-        copyright: "".into(),
+        license: i18n::tr("about.license", &[]).into(),
+        copyright: {
+            let current_year = chrono::Local::now().year();
+            let year_str = if current_year <= 2026 {
+                "2026".to_string()
+            } else {
+                format!("2026-{}", current_year)
+            };
+            i18n::tr("about.copyright", &[year_str]).into()
+        },
     });
 }
 
-/// Generic helper to get localized text for use in Handlers
+// Generic helper to get localized text for use in Handlers
 pub fn get_i18n_text(key: &str) -> String {
     i18n::tr(key, &[])
 }
@@ -355,7 +409,7 @@ pub async fn refresh_distros_ui(app_handle: slint::Weak<AppWindow>, app_state: A
                 }
             }
             
-            if !is_manual_op && app.get_task_status_visible() {
+            if !is_manual_op && !is_busy() && app.get_task_status_visible() {
                 app.set_task_status_visible(false);
             }
         }
@@ -439,6 +493,8 @@ pub async fn load_settings_to_ui(app: &AppWindow, app_state: &Arc<Mutex<AppState
     app.set_auto_shutdown(settings.auto_shutdown);
     app.set_system_color(settings.system_color);
     app.global::<crate::Theme>().set_system_color(settings.system_color);
+    app.set_colorful_icons(settings.colorful_icons);
+    app.global::<crate::Theme>().set_colorful_icons(settings.colorful_icons);
     app.set_sidebar_collapsed(settings.sidebar_collapsed);
     app.set_tray_autostart(tray.autostart);
     app.set_tray_start_minimized(tray.start_minimized);
@@ -446,6 +502,7 @@ pub async fn load_settings_to_ui(app: &AppWindow, app_state: &Arc<Mutex<AppState
     app.set_log_level(settings.log_level as i32);
 
     let sidebar = app_state.lock().await.config_manager.get_config().sidebar.clone();
+    app.set_sidebar_toggle(sidebar.toggle);
     app.set_sidebar_add(sidebar.add);
     app.set_sidebar_usb(sidebar.usb);
     app.set_sidebar_network(sidebar.network);
@@ -500,6 +557,9 @@ pub async fn load_settings_to_ui(app: &AppWindow, app_state: &Arc<Mutex<AppState
         crate::app::constants::FONT_EN_FALLBACK
     };
     app.global::<crate::Theme>().set_default_font(font_family.into());
+
+    let sparse_vhd = crate::utils::wsl_config::get_sparse_vhd();
+    app.set_sparse_vhd(sparse_vhd);
 
     debug!("Configuration loaded to UI (Language: {}, Mode: {}, LogLevel: {}, LogDays: {})", 
           settings.ui_language, if settings.dark_mode { "Dark" } else { "Light" }, settings.log_level, log_days);

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use windows::Win32::System::Registry::{
     RegOpenKeyExW, RegEnumKeyExW, RegQueryValueExW, HKEY_CURRENT_USER, HKEY,
     KEY_READ, REG_SZ, REG_DWORD, REG_VALUE_TYPE, REG_OPEN_CREATE_OPTIONS
@@ -200,6 +203,17 @@ pub fn read_reg_string_ext(root: HKEY, subkey: &str, value_name: &str) -> Option
         let _ = RegCloseKey(hkey);
         res
     }
+}
+
+pub fn is_default_distro(name: &str) -> bool {
+    let subkey = "Software\\Microsoft\\Windows\\CurrentVersion\\Lxss";
+    if let Some(default_guid) = read_reg_string_ext(HKEY_CURRENT_USER, subkey, "DefaultDistribution") {
+        let distro_subkey = format!("{}\\{}", subkey, default_guid);
+        if let Some(distro_name) = read_reg_string_ext(HKEY_CURRENT_USER, &distro_subkey, "DistributionName") {
+            return distro_name == name;
+        }
+    }
+    false
 }
 
 fn encode_wide(s: &str) -> Vec<u16> {

@@ -1,10 +1,13 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use std::process::Command;
 use std::os::windows::process::CommandExt;
 use tracing::info;
 
 const CREATE_NO_WINDOW: u32 = 0x08000000;
 
-/// Get the IP address of the specified distribution, includes retry logic to wait for network readiness
+// Get the IP address of the specified distribution, includes retry logic to wait for network readiness
 pub fn get_distro_ip(distro_name: &str) -> Result<String, String> {
     info!("Fetching IP for distro: {}", distro_name);
     
@@ -86,7 +89,7 @@ pub fn get_distro_ip(distro_name: &str) -> Result<String, String> {
     ))
 }
 
-/// Check if the distribution is currently running (fast check, won't start it)
+// Check if the distribution is currently running (fast check, won't start it)
 pub fn is_distro_running(distro_name: &str) -> bool {
     let output = Command::new("wsl")
         .env("WSL_UTF8", "1")

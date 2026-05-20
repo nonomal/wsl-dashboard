@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 
 use tracing::{info, warn, debug};
 
@@ -26,9 +29,9 @@ pub fn get_startup_dir() -> Result<std::path::PathBuf, Box<dyn std::error::Error
 
 
 
-/// Sets the dashboard itself to start automatically on Windows logon using the registry (HKCU).
-/// If start_minimized is true, adds /silent parameter to the command line.
-/// Fallbacks to VBS in Startup folder if registry access is denied.
+// Sets the dashboard itself to start automatically on Windows logon using the registry (HKCU).
+// If start_minimized is true, adds /silent parameter to the command line.
+// Fallbacks to VBS in Startup folder if registry access is denied.
 pub async fn set_dashboard_autostart(enable: bool, start_minimized: bool) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let exe_path = std::env::current_exe()?;
     let path_str = exe_path.to_str().ok_or("Invalid executable path")?;
@@ -54,7 +57,7 @@ pub async fn set_dashboard_autostart(enable: bool, start_minimized: bool) -> Res
         // Try native registry first
         match crate::utils::registry::write_reg_string(windows::Win32::System::Registry::HKEY_CURRENT_USER, run_subkey, value_name, &command) {
             Ok(_) => {
-                info!("✅ Dashboard autostart set in registry.");
+                info!("Dashboard autostart set in registry.");
                 Ok(())
             }
             Err(e) => {
@@ -73,7 +76,7 @@ pub async fn set_dashboard_autostart(enable: bool, start_minimized: bool) -> Res
             }
         }
 
-        info!("✅ Dashboard autostart disabled.");
+        info!("Dashboard autostart disabled.");
         Ok(())
     }
 }
@@ -100,9 +103,9 @@ pub fn check_autostart_valid(start_minimized: bool) -> Result<bool, Box<dyn std:
     }
 }
 
-/// Automatically repairs the autostart path if the software has been moved (portable mode).
-/// - If autostart is enabled, updates the registry with current path (and /silent if start_minimized)
-/// - If autostart is disabled, removes the registry entry if it exists
+// Automatically repairs the autostart path if the software has been moved (portable mode).
+// - If autostart is enabled, updates the registry with current path (and /silent if start_minimized)
+// - If autostart is disabled, removes the registry entry if it exists
 pub async fn repair_autostart_path(autostart_enabled: bool, start_minimized: bool) {
     // 1. Repair registry autostart
     if autostart_enabled {
@@ -128,8 +131,8 @@ pub async fn repair_autostart_path(autostart_enabled: bool, start_minimized: boo
     repair_task_scheduler_path().await;
 }
 
-/// Checks whether the scheduled task's intermediary script points to the current exe.
-/// If the exe has moved (portable install), silently updates the script content (no UAC needed).
+// Checks whether the scheduled task's intermediary script points to the current exe.
+// If the exe has moved (portable install), silently updates the script content (no UAC needed).
 pub async fn repair_task_scheduler_path() {
     use crate::network::scheduler;
     use std::fs;
@@ -178,6 +181,6 @@ pub async fn repair_task_scheduler_path() {
     if let Err(e) = scheduler::ensure_task_script_exists() {
         warn!("Failed to update task script: {}", e);
     } else {
-        info!("✅ Scheduled task script updated successfully.");
+        info!("Scheduled task script updated successfully.");
     }
 }

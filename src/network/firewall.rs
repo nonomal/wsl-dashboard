@@ -1,5 +1,8 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
 
-/// --- Netsh Implementation (for batch execution with PortProxy) ---
+
+// --- Netsh Implementation (for batch execution with PortProxy) ---
 
 pub fn get_add_rule_cmd_netsh(rule_name: &str, port: u16, listen_addr: &str) -> String {
     let local_ip_param = if listen_addr == "0.0.0.0" || listen_addr.is_empty() { 

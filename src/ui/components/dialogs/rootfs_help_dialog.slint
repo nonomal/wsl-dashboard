@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 import {
     Theme,
     RootFSHelpItem,
@@ -19,22 +22,57 @@ export component RootFSHelpDialog inherits Rectangle {
 
     Rectangle {
         width: 450px;
-        height: 280px;
+        height: layout.preferred-height;
         background: Theme.card_bg;
         border-radius: 8px;
         border-width: 1px;
         border-color: Theme.border_color;
-        VerticalLayout {
-            padding: 20px;
-            spacing: 12px;
-            Text {
-                text: AppI18n.t("dialog.rootfs_help_title", [AppI18n.version]);
-                font-size: 16px * LayoutConstants.font-scale;
-                font-family: Theme.default_font;
-                font-weight: 500;
-                color: Theme.text_primary;
-                horizontal-alignment: AppI18n.is-rtl ? right : left;
+        layout := VerticalLayout {
+            padding: 24px;
+            spacing: 8px; // matches information_dialog
+            
+            // Header: title + close button
+            Rectangle {
+                height: 24px;
+                Text {
+                    x: AppI18n.is-rtl ? 32px : 0;
+                    width: parent.width - 32px;
+                    text: AppI18n.t("dialog.rootfs_help_title", [AppI18n.version]);
+                    font-size: 18px * LayoutConstants.font-scale;
+                    font-family: Theme.default_font;
+                    font-weight: 500;
+                    color: Theme.text_primary;
+                    horizontal-alignment: AppI18n.is-rtl ? right : left;
+                    vertical-alignment: center;
+                }
+                TouchArea {
+                    x: AppI18n.is-rtl ? 0 : parent.width - self.width;
+                    width: 24px;
+                    height: 24px;
+                    clicked => { root.close(); }
+                    Rectangle {
+                        background: parent.has-hover ? Theme.hover_bg : transparent;
+                        border-radius: 4px;
+                        Text {
+                            text: "\u{E8BB}";
+                            font-family: Theme.icon_font;
+                            font-size: 14px;
+                            color: Theme.text_primary;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
             }
+
+            // Divider
+            Rectangle {
+                height: 1px;
+                background: Theme.border_color;
+            }
+
+            VerticalLayout {
+                spacing: 12px;
 
             // Table Header
             HorizontalLayout {
@@ -75,16 +113,10 @@ export component RootFSHelpDialog inherits Rectangle {
                 }
             }
 
-            // Separator
-            Rectangle {
-                height: 1px;
-                background: Theme.border_color;
-            }
-
             // Table Content
             Flickable {
-                vertical-stretch: 1;
-                VerticalLayout {
+                height: table-rows.preferred-height;
+                table-rows := VerticalLayout {
                     spacing: 2px;
                     alignment: start;
                     for item[i] in root.help_list: HorizontalLayout {
@@ -138,19 +170,7 @@ export component RootFSHelpDialog inherits Rectangle {
                 }
             }
 
-            // Footer
-            HorizontalLayout {
-                alignment: AppI18n.is-rtl ? start : end;
-                CustomButton {
-                    text: AppI18n.t("dialog.confirm", [AppI18n.version]);
-                    primary: true;
-                    height: 30px;
-                    width: 70px;
-                    clicked => {
-                        root.close();
-                    }
-                }
-            }
+        }
         }
     }
 }

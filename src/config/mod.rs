@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use std::fs;
 use std::path::PathBuf;
 use tracing::{info, error};
@@ -101,7 +104,7 @@ impl ConfigManager {
             if let Err(e) = Self::save_config(&config_path, &mut config) {
                 error!("Failed to save initial configuration: {}", e);
             } else {
-                info!("✅ Configuration file initialized successfully: {}", config_path.display());
+                info!("Configuration file initialized successfully: {}", config_path.display());
             }
             
             Self {
@@ -172,7 +175,7 @@ impl ConfigManager {
         self.config.application.setting_version = SETTINGS_VERSION as u8;
         
         Self::save_config(&self.config_path, &mut self.config)?;
-        info!("✅ Configuration saved successfully");
+        info!("Configuration saved successfully");
         Ok(())
     }
 
@@ -190,7 +193,7 @@ impl ConfigManager {
     pub fn update_tray_settings(&mut self, tray: TraySettings) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         self.config.tray = tray;
         Self::save_config(&self.config_path, &mut self.config)?;
-        info!("✅ Tray configuration saved successfully");
+        info!("Tray configuration saved successfully");
         Ok(())
     }
 
@@ -198,7 +201,7 @@ impl ConfigManager {
     pub fn update_sidebar_settings(&mut self, sidebar: SidebarConfig) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         self.config.sidebar = sidebar;
         Self::save_config(&self.config_path, &mut self.config)?;
-        info!("✅ Sidebar configuration saved successfully");
+        info!("Sidebar configuration saved successfully");
         Ok(())
     }
 
@@ -242,7 +245,7 @@ impl ConfigManager {
         network.common.modify_time = chrono::Utc::now().timestamp_millis().to_string();
         let rule_count = network.port_proxies.len();
         Self::save_network_config(&network)?;
-        info!("✅ Network configuration ({} rules) saved successfully to network.toml", rule_count);
+        info!("Network configuration ({} rules) saved successfully to network.toml", rule_count);
         Ok(())
     }
 
@@ -278,7 +281,7 @@ impl ConfigManager {
 
         let path = Self::get_instances_path();
         Self::save_instances_to_disk(&path, &container)?;
-        info!("✅ Instance configuration for '{}' saved successfully", distro_name);
+        info!("Instance configuration for '{}' saved successfully", distro_name);
         Ok(())
     }
 
@@ -288,7 +291,7 @@ impl ConfigManager {
             container.common.modify_time = chrono::Utc::now().timestamp_millis().to_string();
             let path = Self::get_instances_path();
             Self::save_instances_to_disk(&path, &container)?;
-            info!("✅ Removed instance configuration for '{}'", distro_name);
+            info!("Removed instance configuration for '{}'", distro_name);
         }
         Ok(())
     }
@@ -317,7 +320,7 @@ impl ConfigManager {
     pub fn update_usb_config(&mut self, usb: UsbConfig) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         self.config.usb = usb;
         Self::save_config(&self.config_path, &mut self.config)?;
-        info!("✅ USB configuration saved successfully");
+        info!("USB configuration saved successfully");
         Ok(())
     }
 

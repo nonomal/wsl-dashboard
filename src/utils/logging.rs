@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use tracing_appender::rolling::RollingFileAppender;
 use tracing_subscriber::{
     fmt,
@@ -59,6 +62,7 @@ impl<S: Subscriber> Filter<S> for DynamicLevelFilter {
 
 
 
+#[derive(Clone)]
 pub struct LoggingSystem {
     pub writer: SwapWriter,
     pub guard: Arc<Mutex<WorkerGuard>>,

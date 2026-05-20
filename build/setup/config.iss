@@ -1,0 +1,459 @@
+; WSL Dashboard Inno Setup Script
+; Version: 0.8.0
+
+#define AppName "WSL Dashboard"
+#ifndef AppVersion
+  #define AppVersion "0.8.0"
+#endif
+#define AppPublisher "https://github.com/owu"
+#define AppURL "https://www.wslui.com"
+#define AppExeName "wsldashboard.exe"
+#define AppId "{{5CCAB770-FE6B-4A69-9486-74C5D24D3860}}"
+
+[Setup]
+; NOTE: The value of AppId uniquely identifies this application.
+; Do not use the same AppId value in installers for other applications.
+AppId={#AppId}
+AppName={#AppName}
+AppVersion={#AppVersion}
+AppVerName={#AppName}
+AppPublisher={#AppPublisher}
+AppSupportURL={#AppURL}
+DefaultDirName={autopf}\{#AppName}
+VersionInfoCompany=WSL Dashboard
+VersionInfoCopyright=2026 WSL Dashboard. All rights reserved.
+VersionInfoDescription=https://github.com/owu/wsl-dashboard
+VersionInfoProductName=WSL Dashboard Setup
+VersionInfoProductVersion={#AppVersion}.0
+VersionInfoVersion={#AppVersion}.0
+DefaultGroupName={#AppName}
+DisableProgramGroupPage=yes
+LicenseFile=..\..\LICENSE
+; Set to 64-bit installation mode to install to C:\Program Files by default instead of (x86)
+ArchitecturesAllowed=x64compatible
+ArchitecturesInstallIn64BitMode=x64compatible
+; Request admin privileges to install for all users (default installation to C:\Program Files)
+PrivilegesRequired=admin
+PrivilegesRequiredOverridesAllowed=dialog
+OutputDir=..\..\build\releases
+OutputBaseFilename=WSLDashboard.{#AppVersion}.Setup.x64
+SetupIconFile=..\..\assets\logo\logo.ico
+UninstallDisplayIcon={app}\{#AppExeName}
+UninstallDisplayName={#AppName}
+Compression=lzma
+SolidCompression=yes
+WizardStyle=modern
+; Custom wizard image: large image on the left (welcome/finish page), recommended size 164x314 BMP
+WizardImageFile=..\..\assets\setup\wizard_image.bmp
+; Custom wizard small image: small icon at top-right of inner pages, recommended size 55x58 BMP
+WizardSmallImageFile=..\..\assets\setup\wizard_small.bmp
+; Allow overwriting existing installation
+DirExistsWarning=no
+
+[Languages]
+Name: "english"; MessagesFile: "languages\English.isl"
+Name: "chinesesimplified"; MessagesFile: "languages\ChineseSimplified.isl"
+Name: "spanish"; MessagesFile: "languages\Spanish.isl"
+Name: "hindi"; MessagesFile: "languages\Hindi.isl"
+Name: "french"; MessagesFile: "languages\French.isl"
+Name: "arabic"; MessagesFile: "languages\Arabic.isl"
+Name: "bengali"; MessagesFile: "languages\Bengali.isl"
+Name: "portuguese"; MessagesFile: "languages\Portuguese.isl"
+Name: "russian"; MessagesFile: "languages\Russian.isl"
+Name: "urdu"; MessagesFile: "languages\Urdu.isl"
+Name: "indonesian"; MessagesFile: "languages\Indonesian.isl"
+Name: "german"; MessagesFile: "languages\German.isl"
+Name: "japanese"; MessagesFile: "languages\Japanese.isl"
+Name: "chinesetraditional"; MessagesFile: "languages\ChineseTraditional.isl"
+Name: "turkish"; MessagesFile: "languages\Turkish.isl"
+Name: "korean"; MessagesFile: "languages\Korean.isl"
+Name: "italian"; MessagesFile: "languages\Italian.isl"
+Name: "dutch"; MessagesFile: "languages\Dutch.isl"
+Name: "swedish"; MessagesFile: "languages\Swedish.isl"
+Name: "czech"; MessagesFile: "languages\Czech.isl"
+Name: "greek"; MessagesFile: "languages\Greek.isl"
+Name: "hungarian"; MessagesFile: "languages\Hungarian.isl"
+Name: "norwegian"; MessagesFile: "languages\Norwegian.isl"
+Name: "danish"; MessagesFile: "languages\Danish.isl"
+Name: "finnish"; MessagesFile: "languages\Finnish.isl"
+Name: "slovak"; MessagesFile: "languages\Slovak.isl"
+Name: "slovenian"; MessagesFile: "languages\Slovenian.isl"
+Name: "hebrew"; MessagesFile: "languages\Hebrew.isl"
+Name: "icelandic"; MessagesFile: "languages\Icelandic.isl"
+
+[Messages]
+SetupWindowTitle={#AppName} v{#AppVersion}
+SelectLanguageTitle={#AppName} v{#AppVersion}
+PrivilegesRequiredOverrideTitle={#AppName} v{#AppVersion}
+
+
+[Tasks]
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"
+Name: "startmenuicon"; Description: "{cm:StartMenuIcon}"; Flags: checkedonce
+Name: "createscheduler"; Description: "{cm:CreateSchedulerTask}"; Check: IsAdminInstallMode; Flags: unchecked
+
+[Files]
+Source: "..\..\target\release\{#AppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+; Add other non-embedded resources here if needed
+; Source: "assets\*"; DestDir: "{app}\assets"; Flags: ignoreversion recursesubdirs createallsubdirs
+
+[Run]
+Filename: "{app}\{#AppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(AppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+
+[Dirs]
+; Explicitly create start menu directory
+Name: "{group}"; Tasks: startmenuicon
+
+[Icons]
+; Program shortcut in start menu directory (created based on task)
+Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExeName}"; Tasks: startmenuicon
+; Visit website (ensures folder is not automatically merged in Windows 11)
+Name: "{group}\{cm:VisitWebsite}"; Filename: "{#AppURL}"; Tasks: startmenuicon
+; Uninstall shortcut in start menu directory (created with program shortcut)
+Name: "{group}\{cm:UninstallerName,{#AppName}}"; Filename: "{uninstallexe}"; Parameters: "/SILENT"; IconFilename: "{sys}\shell32.dll"; IconIndex: 31; Tasks: startmenuicon
+; Desktop shortcut (optional task)
+Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExeName}"; Tasks: desktopicon
+
+
+[Code]
+const
+  GWL_EXSTYLE = -20;
+  WS_EX_APPWINDOW = $00040000;
+  GWL_HWNDPARENT = -8;
+  APP_URL = '{#AppURL}';
+
+function GetWindowLong(hWnd: HWND; nIndex: Integer): Longint;
+  external 'GetWindowLongW@user32.dll stdcall';
+function SetWindowLong(hWnd: HWND; nIndex: Integer; dwNewLong: Longint): Longint;
+  external 'SetWindowLongW@user32.dll stdcall';
+function SetWindowLongPtr(hWnd: HWND; nIndex: Integer; dwNewLong: Longint): Longint;
+  external 'SetWindowLongW@user32.dll stdcall';
+function SetForegroundWindow(hWnd: HWND): Boolean;
+  external 'SetForegroundWindow@user32.dll stdcall';
+function BringWindowToTop(hWnd: HWND): Boolean;
+  external 'BringWindowToTop@user32.dll stdcall';
+function GetSystemMenu(hWnd: HWND; bRevert: Boolean): LongWord;
+  external 'GetSystemMenu@user32.dll stdcall';
+function DeleteMenu(hMenu: LongWord; uPosition: UINT; uFlags: UINT): Boolean;
+  external 'DeleteMenu@user32.dll stdcall';
+function GetMenuItemCount(hMenu: LongWord): Integer;
+  external 'GetMenuItemCount@user32.dll stdcall';
+
+var
+  ShouldCleanup: Boolean;
+  CleanupCheckBox: TNewCheckBox;
+  SchedulerNote1, SchedulerNote2, SchedulerNote3: TNewStaticText;
+
+procedure CleanupLabelClick(Sender: TObject);
+begin
+  CleanupCheckBox.Checked := not CleanupCheckBox.Checked;
+end;
+
+// Open official website in default browser when URL label is clicked
+procedure URLLabelClick(Sender: TObject);
+var
+  ErrorCode: Integer;
+begin
+  ShellExec('open', APP_URL, '', '', SW_SHOWNORMAL, ewNoWait, ErrorCode);
+end;
+
+// Insert clickable website link at the bottom of all installation pages
+procedure InitializeWizard();
+var
+  URLLabel: TNewStaticText;
+begin
+  // Force window to foreground to resolve potential focus loss after UAC elevation
+  WizardForm.BringToFront;
+  SetForegroundWindow(WizardForm.Handle);
+
+  // Insert link label in the area below the wizard bottom bevel (separator)
+  URLLabel := TNewStaticText.Create(WizardForm);
+  URLLabel.Parent := WizardForm;
+  // Align horizontally to the left button area
+  URLLabel.Left := WizardForm.ClientWidth div 20;
+  // Vertical position: align with bottom button row (CancelButton.Top is button row Top)
+  URLLabel.Top := WizardForm.CancelButton.Top + (WizardForm.CancelButton.Height - URLLabel.Height) div 2;
+  URLLabel.Caption := APP_URL;
+  URLLabel.Font.Color := $C06020;   // Orange-brown color, noticeable but not harsh
+  URLLabel.Font.Style := [fsUnderline];
+  URLLabel.Cursor := crHand;
+  URLLabel.OnClick := @URLLabelClick;
+
+  // Create supplementary note labels for scheduler task (only shown on select tasks page)
+  SchedulerNote1 := TNewStaticText.Create(WizardForm);
+  SchedulerNote1.Parent := WizardForm.SelectTasksPage;
+  SchedulerNote1.Caption := CustomMessage('SchedulerTaskNote1');
+  SchedulerNote1.Left := ScaleX(24); // Continue aligning to the left
+  SchedulerNote1.Top := ScaleY(95);  // Fine-tune position again, reduce spacing
+  SchedulerNote1.Font.Color := clGray;
+
+  SchedulerNote2 := TNewStaticText.Create(WizardForm);
+  SchedulerNote2.Parent := WizardForm.SelectTasksPage;
+  SchedulerNote2.Caption := CustomMessage('SchedulerTaskNote2');
+  SchedulerNote2.Left := SchedulerNote1.Left;
+  SchedulerNote2.Top := SchedulerNote1.Top + ScaleY(18);
+  SchedulerNote2.Font.Color := clGray;
+
+  SchedulerNote3 := TNewStaticText.Create(WizardForm);
+  SchedulerNote3.Parent := WizardForm.SelectTasksPage;
+  SchedulerNote3.Caption := CustomMessage('SchedulerTaskNote3');
+  SchedulerNote3.Left := SchedulerNote1.Left;
+  SchedulerNote3.Top := SchedulerNote2.Top + ScaleY(18);
+  SchedulerNote3.Width := WizardForm.SelectTasksPage.Width - SchedulerNote3.Left - ScaleX(20);
+  SchedulerNote3.WordWrap := True;
+  SchedulerNote3.Font.Color := clGray;
+end;
+
+// Remove redundant items from system menu
+procedure CleanSystemMenu();
+var
+  hMenu: LongWord;
+  nCount: Integer;
+begin
+  hMenu := GetSystemMenu(WizardForm.Handle, False);
+  if hMenu <> 0 then
+  begin
+    // Remove standard system menu items (using MF_BYCOMMAND = $0)
+    DeleteMenu(hMenu, $F120, $0); // SC_RESTORE
+    DeleteMenu(hMenu, $F000, $0); // SC_SIZE
+    DeleteMenu(hMenu, $F030, $0); // SC_MAXIMIZE
+
+    // Remove Inno Setup injected "About" item
+    nCount := GetMenuItemCount(hMenu);
+    if nCount > 0 then
+    begin
+      // $400 is MF_BYPOSITION
+      // Remove last item (About) and second-to-last item (Separator)
+      DeleteMenu(hMenu, nCount - 1, $400);
+      DeleteMenu(hMenu, nCount - 2, $400);
+    end;
+  end;
+end;
+
+procedure CurPageChanged(CurPageID: Integer);
+begin
+  if CurPageID = wpWelcome then
+  begin
+    CleanSystemMenu();
+  end;
+end;
+
+// Modify registry after installation to add /SILENT parameter to uninstall command and skip default popup
+procedure CurStepChanged(CurStep: TSetupStep);
+var
+  UninstallKey, UninstallString: String;
+  ResultCode: Integer;
+begin
+  if CurStep = ssPostInstall then
+  begin
+    // Execute initialization if installing in admin mode and user checked create scheduler task
+    if IsAdminInstallMode and WizardIsTaskSelected('createscheduler') then
+    begin
+      if not Exec(ExpandConstant('{app}\{#AppExeName}'), '/initialize', '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
+      begin
+        Log('Failed to execute initialization: ' + IntToStr(ResultCode));
+      end;
+    end;
+
+    UninstallKey := 'Software\Microsoft\Windows\CurrentVersion\Uninstall\' + '{#AppId}' + '_is1';
+    if IsAdminInstallMode then
+    begin
+      if RegQueryStringValue(HKEY_LOCAL_MACHINE, UninstallKey, 'UninstallString', UninstallString) then
+      begin
+        if Pos('/SILENT', UpperCase(UninstallString)) = 0 then
+        begin
+          RegWriteStringValue(HKEY_LOCAL_MACHINE, UninstallKey, 'UninstallString', UninstallString + ' /SILENT');
+          RegWriteStringValue(HKEY_LOCAL_MACHINE, UninstallKey, 'QuietUninstallString', UninstallString + ' /SILENT');
+        end;
+      end;
+    end
+    else
+    begin
+      if RegQueryStringValue(HKEY_CURRENT_USER, UninstallKey, 'UninstallString', UninstallString) then
+      begin
+        if Pos('/SILENT', UpperCase(UninstallString)) = 0 then
+        begin
+          RegWriteStringValue(HKEY_CURRENT_USER, UninstallKey, 'UninstallString', UninstallString + ' /SILENT');
+          RegWriteStringValue(HKEY_CURRENT_USER, UninstallKey, 'QuietUninstallString', UninstallString + ' /SILENT');
+        end;
+      end;
+    end;
+  end;
+end;
+
+function HasCmdLineParam(Param: String): Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+  for I := 1 to ParamCount do
+  begin
+    if CompareText(ParamStr(I), Param) = 0 then
+    begin
+      Result := True;
+      Break;
+    end;
+  end;
+end;
+
+function GetCmdLineParamValue(Param: String): String;
+var
+  I: Integer;
+  Arg: String;
+begin
+  Result := '';
+  for I := 1 to ParamCount do
+  begin
+    Arg := UpperCase(ParamStr(I));
+    if Pos(UpperCase(Param) + '=', Arg) = 1 then
+    begin
+      Result := Copy(ParamStr(I), Length(Param) + 2, Length(ParamStr(I)));
+      Break;
+    end;
+  end;
+end;
+
+// Uninstall logic: take over all entry points to ensure only one custom popup appears
+function InitializeUninstall(): Boolean;
+var
+  UninstallForm: TForm;
+  ConfirmLabel, CleanupLabel: TLabel;
+  YesButton, NoButton: TNewButton;
+  ResultCode: Integer;
+  ExecParams: String;
+begin
+  Result := False; 
+
+  // If this is a silent uninstall pass-through process initiated by us, directly read parameters and allow
+  if HasCmdLineParam('/PASSTHROUGH') then
+  begin
+    ShouldCleanup := (GetCmdLineParamValue('/CLEANUP') = '1');
+    Result := True;
+    Exit;
+  end;
+  
+  // Create custom window
+  UninstallForm := TForm.Create(nil);
+  // Adjust to a smaller size
+  UninstallForm.ClientWidth := ScaleX(400);
+  UninstallForm.ClientHeight := ScaleY(180);
+  UninstallForm.Caption := FmtMessage(CustomMessage('UninstallerName'), ['{#AppName}']);
+  UninstallForm.Position := poScreenCenter;
+  
+  // Set taskbar visibility
+  SetWindowLong(UninstallForm.Handle, GWL_EXSTYLE, GetWindowLong(UninstallForm.Handle, GWL_EXSTYLE) or WS_EX_APPWINDOW);
+  SetWindowLongPtr(UninstallForm.Handle, GWL_HWNDPARENT, 0);
+  
+  ConfirmLabel := TLabel.Create(UninstallForm);
+  ConfirmLabel.Parent := UninstallForm;
+  ConfirmLabel.AutoSize := False;
+  ConfirmLabel.Left := ScaleX(20);
+  ConfirmLabel.Top := ScaleY(15);
+  ConfirmLabel.Width := UninstallForm.ClientWidth - ScaleX(40);
+  ConfirmLabel.Height := ScaleY(45);
+  ConfirmLabel.WordWrap := True;
+  ConfirmLabel.Font.Size := 10;
+  ConfirmLabel.Caption := FmtMessage(SetupMessage(msgConfirmUninstall), ['{#AppName}']);
+  
+  CleanupCheckBox := TNewCheckBox.Create(UninstallForm);
+  CleanupCheckBox.Parent := UninstallForm;
+  CleanupCheckBox.Left := ConfirmLabel.Left;
+  CleanupCheckBox.Top := ConfirmLabel.Top + ConfirmLabel.Height + ScaleY(5);
+  CleanupCheckBox.Width := ScaleX(16);
+  CleanupCheckBox.Height := ScaleY(16);
+  CleanupCheckBox.Caption := '';
+  CleanupCheckBox.Checked := False;
+
+  CleanupLabel := TLabel.Create(UninstallForm);
+  CleanupLabel.Parent := UninstallForm;
+  CleanupLabel.AutoSize := False;
+  CleanupLabel.WordWrap := True;
+  CleanupLabel.Left := CleanupCheckBox.Left + ScaleX(20);
+  CleanupLabel.Top := CleanupCheckBox.Top + ScaleY(2);
+  CleanupLabel.Width := UninstallForm.ClientWidth - CleanupLabel.Left - ScaleX(20);
+  CleanupLabel.Height := ScaleY(45);
+  CleanupLabel.Caption := CustomMessage('CleanupData');
+  CleanupLabel.OnClick := @CleanupLabelClick;
+  
+  YesButton := TNewButton.Create(UninstallForm);
+  YesButton.Parent := UninstallForm;
+  YesButton.Caption := SetupMessage(msgButtonYes);
+  YesButton.ModalResult := mrYes;
+  YesButton.Width := ScaleX(80);
+  YesButton.Height := ScaleY(30);
+  YesButton.Left := UninstallForm.ClientWidth - ScaleX(180);
+  YesButton.Top := UninstallForm.ClientHeight - ScaleY(45);
+  
+  NoButton := TNewButton.Create(UninstallForm);
+  NoButton.Parent := UninstallForm;
+  NoButton.Caption := SetupMessage(msgButtonNo);
+  NoButton.ModalResult := mrNo;
+  NoButton.Width := ScaleX(80);
+  NoButton.Height := ScaleY(30);
+  NoButton.Left := UninstallForm.ClientWidth - ScaleX(90);
+  NoButton.Top := YesButton.Top;
+  NoButton.Default := True;
+
+  if UninstallForm.ShowModal = mrYes then
+  begin
+    ShouldCleanup := CleanupCheckBox.Checked;
+    
+    // If already in silent mode (e.g., launched from Control Panel or Start Menu shortcut), allow directly
+    if HasCmdLineParam('/SILENT') or HasCmdLineParam('/VERYSILENT') then
+    begin
+      Result := True;
+    end
+    else
+    begin
+      // Otherwise (e.g., user double-clicks unins000.exe directly), to skip Inno's built-in confirmation popup,
+      // we relaunch the uninstaller with /SILENT and our pass-through parameters
+      if ShouldCleanup then
+        ExecParams := '/SILENT /PASSTHROUGH /CLEANUP=1'
+      else
+        ExecParams := '/SILENT /PASSTHROUGH /CLEANUP=0';
+        
+      Exec(ExpandConstant('{uninstallexe}'), ExecParams, '', SW_SHOW, ewNoWait, ResultCode);
+      Result := False; // Abort current non-silent uninstall
+    end;
+  end;
+end;
+
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+var
+  AppPath: String;
+  Params: String;
+  ResultCode: Integer;
+begin
+  // Execute cleanup logic at the start of uninstall (before file deletion)
+  if CurUninstallStep = usUninstall then
+  begin
+    // System-level cleanup (scheduler tasks, registry, etc.) should always execute regardless of user's cleanup choice
+    Params := '/clean';
+    if ShouldCleanup then
+      Params := Params + ' /all';
+
+    // Call the program's own cleanup logic
+    if not Exec(ExpandConstant('{app}\{#AppExeName}'), Params, '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
+    begin
+      Log('Failed to execute cleanup command: ' + Params);
+    end;
+  end;
+
+  if CurUninstallStep = usPostUninstall then
+  begin
+    // Force cleanup of installation directory and any logs/temp files that may have been created
+    // Note: Config directory .wsldashboard is already handled by the /clean /all logic in the previous step, no need to repeat
+    AppPath := ExpandConstant('{app}');
+    if DirExists(AppPath) then
+    begin
+      Log('Force cleaning up app directory: ' + AppPath);
+      DelTree(AppPath, True, True, True);
+    end;
+  end;
+end;
+
+// Check if process is running before installation
+function InitializeSetup(): Boolean;
+begin
+  Result := True;
+end;

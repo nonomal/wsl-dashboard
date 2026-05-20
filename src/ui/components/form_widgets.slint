@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 import { Theme, AppI18n, LayoutConstants } from "../theme.slint";
 import { CustomScrollbar } from "./scrollbar.slint";
 
@@ -268,6 +271,7 @@ export component CustomRadioButton inherits Rectangle {
     in property <string> text;
     in property <bool> enabled: true;
     callback clicked;
+    height: 32px;
     background: transparent;
     opacity: root.enabled ? 1.0 : 0.5;
 
@@ -354,6 +358,7 @@ export component CustomButton inherits Rectangle {
     in property <bool> enabled: true;
     in property <bool> show_shield: false;
     callback clicked;
+    height: 32px;
     border-radius: 4px;
     background: root.primary ? Theme.accent : (root.danger ? (Theme.dark_mode ? #2d1a1a : #fdeaea) : (touch.pressed ? Theme.selected_bg : (touch.has-hover ? Theme.hover_bg : Theme.input_bg)));
     border-width: root.primary ? 0 : 1px;

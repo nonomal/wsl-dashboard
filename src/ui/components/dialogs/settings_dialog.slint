@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 import {
     Theme,
     Information,
@@ -21,6 +24,7 @@ export component SettingsDialog inherits Rectangle {
     in property <string> startup_script_error: "";
     in property <string> default_error: "";
     in-out property <bool> terminal_proxy: true;
+
     callback close;
     callback save;
     callback open-url(string);
@@ -35,55 +39,36 @@ export component SettingsDialog inherits Rectangle {
     // Dialog Box
     Rectangle {
         width: 500px;
-        height: 360px;
+        height: layout.preferred-height;
         background: Theme.card_bg;
         border-radius: 8px;
         border-width: 1px;
         border-color: Theme.border_color;
         TouchArea { /* prevent click through */ }
 
-        VerticalLayout {
+        layout := VerticalLayout {
             padding: 24px;
-            spacing: 0px;
+            spacing: 8px; // matches information_dialog
             
-            // Header
-            HorizontalLayout {
-                padding-bottom: 16px;
-                if (AppI18n.is-rtl): TouchArea {
-                    width: 24px;
-                    height: 24px;
-                    clicked => {
-                        root.close();
-                    }
-                    Rectangle {
-                        background: parent.has-hover ? Theme.hover_bg : transparent;
-                        border-radius: 4px;
-                        Text {
-                            text: "\u{E8BB}";
-                            font-family: Theme.icon_font;
-                            font-size: 14px;
-                            color: Theme.text_primary;
-                            horizontal-alignment: center;
-                            vertical-alignment: center;
-                        }
-                    }
-                }
+            // Header: title + close button
+            Rectangle {
+                height: 24px;
                 Text {
+                    x: AppI18n.is-rtl ? 32px : 0;
+                    width: parent.width - 32px;
                     text: AppI18n.t("dialog.settings_title", [root.distro_name, AppI18n.version]);
                     font-size: 18px * LayoutConstants.font-scale;
                     font-family: Theme.default_font;
                     font-weight: 500;
                     color: Theme.text_primary;
                     horizontal-alignment: AppI18n.is-rtl ? right : left;
-                    horizontal-stretch: 1;
+                    vertical-alignment: center;
                 }
-
-                if (!AppI18n.is-rtl): TouchArea {
+                TouchArea {
+                    x: AppI18n.is-rtl ? 0 : parent.width - self.width;
                     width: 24px;
                     height: 24px;
-                    clicked => {
-                        root.close();
-                    }
+                    clicked => { root.close(); }
                     Rectangle {
                         background: parent.has-hover ? Theme.hover_bg : transparent;
                         border-radius: 4px;
@@ -99,18 +84,15 @@ export component SettingsDialog inherits Rectangle {
                 }
             }
 
+            // Divider
             Rectangle {
                 height: 1px;
                 background: Theme.border_color;
             }
 
-            Rectangle {
-                height: 16px;
-            } // Spacer
-
             // Content Container with Scrolling
             Rectangle {
-                vertical-stretch: 1;
+                height: min(220px, flick.viewport-height);
                 clip: true;
                 flick := Flickable {
                     viewport-height: content-layout.preferred-height;
@@ -269,86 +251,11 @@ export component SettingsDialog inherits Rectangle {
                 }
             }
 
-            Rectangle {
-                height: 16px;
-            } // Spacer
-
             // Footer
             HorizontalLayout {
                 alignment: AppI18n.is-rtl ? start : end;
-                spacing: 12px;
                 
-                // RTL order: Save then Cancel (visual order reversed)
-                if (AppI18n.is-rtl): Rectangle {
-                    width: 90px;
-                    height: 32px;
-                    background: Theme.accent;
-                    border-radius: 6px;
-                    TouchArea {
-                        clicked => {
-                            root.save();
-                        }
-                    }
-
-                    HorizontalLayout {
-                        spacing: 4px;
-                        alignment: center;
-                        if (root.autostart && !root.is_task_exists): Rectangle {
-                            width: 14px;
-                            height: 14px;
-                            y: (parent.height - self.height) / 2;
-                            Image {
-                                source: @image-url("../../../../assets/feat/microsoft-shield.png");
-                                width: 12px;
-                                height: 12px;
-                                image-fit: contain;
-                                horizontal-alignment: center;
-                                vertical-alignment: center;
-                            }
-                        }
-                        Text {
-                            text: AppI18n.t("dialog.save", [AppI18n.version]);
-                            color: white;
-                            font-size: 13px * LayoutConstants.font-scale;
-                            font-family: Theme.default_font;
-                            font-weight: 500;
-                            horizontal-alignment: center;
-                            vertical-alignment: center;
-                        }
-                    }
-                }
-
-                // Cancel Button
                 Rectangle {
-                    width: 90px;
-                    height: 32px;
-                    background: transparent;
-                    border-radius: 6px;
-                    border-width: 1px;
-                    border-color: Theme.border_color;
-                    TouchArea {
-                        clicked => {
-                            root.close();
-                        }
-                        Rectangle {
-                            background: parent.has-hover ? Theme.hover_bg : transparent;
-                            border-radius: 6px;
-                        }
-                    }
-
-                    Text {
-                        text: AppI18n.t("dialog.cancel", [AppI18n.version]);
-                        color: Theme.text_primary;
-                        font-size: 13px * LayoutConstants.font-scale;
-                        font-family: Theme.default_font;
-                        font-weight: 500;
-                        horizontal-alignment: center;
-                        vertical-alignment: center;
-                    }
-                }
-                
-                // LTR order: Cancel then Save
-                if (!AppI18n.is-rtl): Rectangle {
                     width: 90px;
                     height: 32px;
                     background: Theme.accent;

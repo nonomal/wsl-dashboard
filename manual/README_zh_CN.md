@@ -4,7 +4,7 @@
   <img src="../assets/logo/logo.png" width="128" height="128" alt="WSL Dashboard Logo" />
 </p>
 
-一款现代、高性能且轻量级的 WSL (Windows Subsystem for Linux) 实例管理面板。基于 Rust 和 Slint 构建，提供高级的原生体验。
+一款现代、高性能、轻量级且低内存占用的 WSL (Windows Subsystem for Linux) 实例管理仪表板。基于 Rust 和 Slint 构建，提供顶级的原生体验。
 
 ---
 
@@ -199,7 +199,7 @@ I18N :  [English](../README.md) | 简体中文 | [繁體中文](./README_zh_TW.m
      > 构建脚本需要 `x86_64-pc-windows-msvc` 工具链。
 
      ```powershell
-     .\build\scripts\build.ps1
+     .\build\portable\build.ps1
      ```
 
 
@@ -239,6 +239,7 @@ A big thank you to the following communities for their support:
 - [Tokio - An asynchronous Rust runtime](https://tokio.rs) - For the efficient async runtime
 - [Windows Developer Community](https://developer.microsoft.com/en-us/windows/community) - For continuous platform improvements
 - [Reddit](https://www.reddit.com) - For global community discussions and support
+- [Hacker News](https://news.ycombinator.com) - For global community discussions and support
 - [Linux.do](https://linux.do) - For popular community for IT professionals
 - [V2EX](https://www.v2ex.com) - For Chinese tech community discussions
 

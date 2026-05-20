@@ -4,7 +4,7 @@
   <img src="../assets/logo/logo.png" width="128" height="128" alt="WSL Dashboard Logo" />
 </p>
 
-WSL (Windows Subsystem for Linux) इंस्टेंस प्रबंधन के लिए एक आधुनिक, उच्च-प्रदर्शन और हल्का डैशबोर्ड। प्रीमियम नेटिव अनुभव के लिए Rust और Slint के साथ निर्मित।
+एक आधुनिक, उच्च-प्रदर्शन, हल्का और कम-मेमोरी वाला WSL (लिनक्स के लिए विंडोज़ सबसिस्टम) इंस्टेंस प्रबंधन डैशबोर्ड। प्रीमियम नेटिव अनुभव के लिए Rust और Slint के साथ बनाया गया।
 
 ---
 
@@ -199,7 +199,7 @@ I18N :  [English](../README.md) | [简体中文](./README_zh_CN.md) | [繁體中
      > बिल्ड स्क्रिप्ट के लिए `x86_64-pc-windows-msvc` टूलचेन की आवश्यकता होती है।
 
      ```powershell
-     .\build\scripts\build.ps1
+     .\build\portable\build.ps1
      ```
 
 
@@ -239,6 +239,7 @@ A big thank you to the following communities for their support:
 - [Tokio - An asynchronous Rust runtime](https://tokio.rs) - For the efficient async runtime
 - [Windows Developer Community](https://developer.microsoft.com/en-us/windows/community) - For continuous platform improvements
 - [Reddit](https://www.reddit.com) - For global community discussions and support
+- [Hacker News](https://news.ycombinator.com) - For global community discussions and support
 - [Linux.do](https://linux.do) - For popular community for IT professionals
 - [V2EX](https://www.v2ex.com) - For Chinese tech community discussions
 

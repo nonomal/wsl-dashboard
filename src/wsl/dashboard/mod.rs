@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use std::sync::Arc;
 use std::sync::atomic::Ordering;
 use std::collections::HashMap;
@@ -180,6 +183,37 @@ impl WslDashboard {
     pub async fn get_active_op(&self, distro_name: &str) -> Option<String> {
         let ops = self.active_ops.lock().await;
         ops.get(distro_name).cloned()
+    }
+
+    pub async fn mark_distro_stopped(&self, name: &str) {
+        let mut distros_lock = self.distros.lock().await;
+        let mut changed = false;
+        for distro in distros_lock.iter_mut() {
+            if distro.name == name && !matches!(distro.status, WslStatus::Stopped) {
+                distro.status = WslStatus::Stopped;
+                changed = true;
+                break;
+            }
+        }
+        if changed {
+            tracing::debug!("Artificially marked distro '{}' as Stopped", name);
+            self.state_changed.notify_one();
+        }
+    }
+
+    pub async fn mark_all_distros_stopped(&self) {
+        let mut distros_lock = self.distros.lock().await;
+        let mut changed = false;
+        for distro in distros_lock.iter_mut() {
+            if !matches!(distro.status, WslStatus::Stopped) {
+                distro.status = WslStatus::Stopped;
+                changed = true;
+            }
+        }
+        if changed {
+            tracing::debug!("Artificially marked all distros as Stopped");
+            self.state_changed.notify_one();
+        }
     }
 }
 

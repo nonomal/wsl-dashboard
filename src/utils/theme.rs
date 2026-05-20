@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use windows::UI::ViewManagement::{UISettings, UIColorType};
 use windows::Foundation::TypedEventHandler;
 use slint::ComponentHandle;
@@ -53,7 +56,7 @@ impl ThemeWatcher {
         })
     }
 
-    /// Get current theme using WinRT first, fallback to Registry
+    // Get current theme using WinRT first, fallback to Registry
     pub fn get_current_theme() -> Theme {
         // Priority 1: WinRT UISettings
         if let Ok(settings) = UISettings::new() {

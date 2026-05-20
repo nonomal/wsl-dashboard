@@ -1,9 +1,11 @@
-name: Release
+name: GitHub Release
+run-name: GitHub:${{ github.ref_name }}
 
 permissions:
   contents: write
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - 'v[0-9].[0-9].[0-9]*'
@@ -32,47 +34,34 @@ jobs:
         with:
           toolchain: stable-x86_64-pc-windows-msvc
 
-#       - name: Install UPX
-#         uses: crazy-max/ghaction-upx@v3
-#         with:
-#           install-only: true
-
       - name: Build Release
         run: cargo build --release
 
       - name: Get Version
-        if: startsWith(github.ref, 'refs/tags/')
         id: get_version
         shell: pwsh
         run: |
-          $version = $env:GITHUB_REF -replace "refs/tags/v", ""
+          if ("${{ github.ref }}" -like "refs/tags/*") {
+            $version = $env:GITHUB_REF -replace "refs/tags/v", ""
+          } else {
+            # If manually triggered without a tag, fallback to Cargo.toml version (simplified handling)
+            $version = (Get-Content Cargo.toml | Select-String "^version =" | ForEach-Object { $_.ToString().Split('"')[1] })
+          }
           echo "VERSION=$version" >> $env:GITHUB_OUTPUT
           Write-Host "Version: $version"
 
       - name: Prepare Assets
-        if: startsWith(github.ref, 'refs/tags/')
         shell: pwsh
         run: |
-           $version = "${{ steps.get_version.outputs.VERSION }}"
-           $raw_exe = "target/release/wsldashboard.exe"
-           $versioned_exe = "target/release/wsldashboard.v$version.exe"
-           # $upx_exe = "target/release/wsldashboard.v$version.upx.exe"
-           
-           # Rename original to versioned name (Uncompressed)
-           Move-Item $raw_exe $versioned_exe
-           
-           # # Copy versioned to UPX target name
-           # Copy-Item $versioned_exe $upx_exe
-
-#       - name: Compress with UPX
-#         if: startsWith(github.ref, 'refs/tags/')
-#         run: upx --best --lzma target/release/wsldashboard.v${{ steps.get_version.outputs.VERSION }}.upx.exe
+          .\build\actions\github_release_prepare.ps1 -Version "${{ steps.get_version.outputs.VERSION }}"
 
       - name: Release
-        if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            target/release/wsldashboard.v${{ steps.get_version.outputs.VERSION }}.exe
-            # target/release/wsldashboard.v${{ steps.get_version.outputs.VERSION }}.upx.exe
+            target/release/WSLDashboard.${{ steps.get_version.outputs.VERSION }}.Portable.x64.zip
+            build/releases/WSLDashboard.${{ steps.get_version.outputs.VERSION }}.Setup.x64.zip
+            build/releases/WSLDashboard.${{ steps.get_version.outputs.VERSION }}.Setup.x64.exe
           generate_release_notes: true
+

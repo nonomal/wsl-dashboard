@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tracing::debug;
@@ -124,4 +127,36 @@ pub async fn handle_app_exit(app: &AppWindow, app_state: &Arc<Mutex<AppState>>) 
         manager.shutdown_wsl().await;
         debug!("WSL shut down completed");
     }
+}
+
+// Listen for wakeup requests from secondary instances (Named Pipe IPC)
+pub fn spawn_wakeup_listener(app_handle: slint::Weak<AppWindow>) {
+    #[cfg(target_os = "windows")]
+    tokio::spawn(async move {
+        use tokio::net::windows::named_pipe::ServerOptions;
+        let pipe_name = r"\\.\pipe\wsldashboard_wakeup_pipe_v0.3";
+        loop {
+            let server = match ServerOptions::new().create(pipe_name) {
+                Ok(s) => s,
+                Err(e) => {
+                    tracing::error!("Failed to create named pipe server: {}", e);
+                    tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+                    continue;
+                }
+            };
+
+            if match server.connect().await {
+                Ok(_) => true,
+                Err(_) => false,
+            } {
+                tracing::info!("Received wakeup request via Named Pipe");
+                let ah = app_handle.clone();
+                let _ = slint::invoke_from_event_loop(move || {
+                    if let Some(app) = ah.upgrade() {
+                        crate::app::window::show_and_center(&app, false);
+                    }
+                });
+            }
+        }
+    });
 }

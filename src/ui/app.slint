@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 import {
     Theme,
     Distro,
@@ -11,6 +14,7 @@ import {
     SettingsStrings,
     AboutStrings,
 } from "theme.slint";
+import { AppConstants } from "constants.slint";
 import { TitleBar } from "components/title_bar.slint";
 import { Sidebar } from "components/sidebar.slint";
 import { ModalManager } from "components/modal_manager.slint";
@@ -50,6 +54,7 @@ export component AppWindow inherits Window {
     in property <bool> is_exporting: false;
     in property <bool> is_cloning: false;
     in property <bool> is_moving: false;
+    in property <bool> is_compressing: false;
     in-out property <bool> is_window_visible: true;
     in property <string> install_status: "";
     in property <bool> install_success: false;
@@ -64,6 +69,7 @@ export component AppWindow inherits Window {
     in-out property <int> selected_source_idx: 0;
     in-out property <string> install_file_path: "";
     in-out property <bool> show_delete_confirmation: false;
+    in-out property <bool> show_stop_wsl_confirm: false;
     in-out property <string> distro_to_delete: "";
     in-out property <bool> show_export_dialog: false;
     in-out property <bool> export_compress: true;
@@ -93,6 +99,9 @@ export component AppWindow inherits Window {
     in-out property <bool> show_update_dialog: false;
     in-out property <bool> show_install_warn_dialog: false;
     in-out property <bool> show_expire_dialog: false;
+    in-out property <string> expire_latest_version: "";
+    in-out property <string> expire_release_date: "";
+    in-out property <string> expire_download_url: "";
     in-out property <bool> show_rootfs_help: false;
     in-out property <bool> show_vscode_startup: false;
     in-out property <string> ui_language: "auto";
@@ -103,14 +112,17 @@ export component AppWindow inherits Window {
     in-out property <int> log_days: 7;
     in-out property <int> check_update_interval: 7;
     in-out property <bool> sidebar_add: true;
+    in-out property <bool> sidebar_toggle: true;
     in-out property <bool> sidebar_usb: true;
     in-out property <bool> sidebar_network: true;
     in-out property <bool> sidebar_about: true;
+    in-out property <bool> sparse_vhd: false;
     in-out property <bool> system_color <=> Theme.system_color;
+    in-out property <bool> colorful_icons <=> Theme.colorful_icons;
     in property <string> task_status_text: "";
     in property <bool> task_status_visible: false;
     in property <Information> information;
-    in property <[RootFSHelpItem]> rootfs_help_list: [{ name: "Ubuntu", url: "https://cdimages.ubuntu.com/ubuntu-wsl/" }];
+    in property <[RootFSHelpItem]> rootfs_help_list: [{ name: "Ubuntu", url: AppConstants.ubuntu_wsl_images }];
     in property <SettingsStrings> settings_strings;
     in property <AboutStrings> about_strings;
     in property <image> about_group_pic;
@@ -132,6 +144,8 @@ export component AppWindow inherits Window {
     in-out property <string> settings_default_error: "";
     in-out property <bool> settings_is_task_exists: true;
     in-out property <bool> settings_terminal_proxy: true;
+    in-out property <bool> settings_enable_sparse: false;
+    in-out property <bool> settings_sparse_fixed: false;
 
     // WSL Config properties
     in-out property <bool> show_wsl_config: false;
@@ -186,6 +200,20 @@ export component AppWindow inherits Window {
     in-out property <string> network_add_target_port: "";
     in-out property <bool> network_add_enable_fw: true;
     in property <string> network_add_error: "";
+
+    // --- Compress properties ---
+    in-out property <bool> show_compress_dialog: false;
+    in-out property <string> compress_distro_name: "";
+    in-out property <string> compress_vhdx_size: "---";
+    in-out property <string> compress_free_space: "---";
+    in-out property <bool> compress_space_sufficient: false;
+    in-out property <string> compress_backup_path: "";
+    in-out property <string> compress_script_url: "";
+    in property <bool> compress_is_wsl2: true;
+    in property <bool> compress_is_sparse: false;
+    in-out property <bool> compress_enable_sparse: false;
+    in-out property <bool> compress_cleanup: true;
+    in-out property <bool> compress_backup: true;
     
     // --- USB Properties ---
     in property <[UsbDevice]> usb_devices: [];
@@ -239,12 +267,15 @@ export component AppWindow inherits Window {
     callback close_expire_dialog();
     callback group_clicked();
     callback reinit_tray();
-    callback save_settings();
+    callback save_general_settings();
+    callback save_advanced_settings();
+    callback save_interface_settings();
     callback save_sidebar_state();
     callback select_distro_folder();
     callback select_logs_folder();
     callback toggle_theme();
     callback open_wsl_settings();
+    callback confirm_stop_wsl();
     callback clone_name_changed(string);
     callback distro_selected(string);
     callback show_rootfs_help_clicked();
@@ -275,6 +306,10 @@ export component AppWindow inherits Window {
     callback usb_detach(string);
     callback usb_toggle_auto_attach(string);
     callback usb_copy_info(UsbDevice);
+
+    // Compress callbacks
+    callback open_compress_dialog(string);
+    callback confirm_compress(string, bool, bool, bool, string);
 
     // Dynamic Font Selection to optimize memory usage
     // Helper function to map language to font (No recursion here)
@@ -359,6 +394,7 @@ export component AppWindow inherits Window {
                     settings_text: AppI18n.t("sidebar.settings", [AppI18n.version]);
                     about_text: AppI18n.t("sidebar.about", [AppI18n.version]);
                     show_add: root.sidebar_add;
+                    show_toggle: root.sidebar_toggle;
                     show_usb: root.sidebar_usb;
                     show_network: root.sidebar_network;
                     show_about: root.sidebar_about;
@@ -437,6 +473,9 @@ export component AppWindow inherits Window {
                                 }
                                 delete_clicked(n) => {
                                     root.delete_clicked(n);
+                                }
+                                compress_clicked(n) => {
+                                    root.open_compress_dialog(n);
                                 }
                             }
 
@@ -585,6 +624,7 @@ export component AppWindow inherits Window {
                                 strings: root.settings_strings;
                                 auto_shutdown <=> root.auto_shutdown;
                                 system_color <=> root.system_color;
+                                colorful_icons <=> root.colorful_icons;
                                 ui_language <=> root.ui_language;
                                 distro_location <=> root.distro_location;
                                 logs_location <=> root.logs_location;
@@ -595,11 +635,19 @@ export component AppWindow inherits Window {
                                 tray_start_minimized <=> root.tray_start_minimized;
                                 tray_close_to_tray <=> root.tray_close_to_tray;
                                 sidebar_add <=> root.sidebar_add;
+                                sidebar_toggle <=> root.sidebar_toggle;
                                 sidebar_usb <=> root.sidebar_usb;
                                 sidebar_network <=> root.sidebar_network;
                                 sidebar_about <=> root.sidebar_about;
-                                save-settings => {
-                                    root.save_settings();
+                                sparse_vhd <=> root.sparse_vhd;
+                                save_general_settings => {
+                                    root.save_general_settings();
+                                }
+                                save_advanced_settings => {
+                                    root.save_advanced_settings();
+                                }
+                                save_interface_settings => {
+                                    root.save_interface_settings();
                                 }
                                 select-distro-folder => {
                                     root.select_distro_folder();
@@ -609,6 +657,9 @@ export component AppWindow inherits Window {
                                 }
                                 open-wsl-settings => {
                                     root.open_wsl_settings();
+                                }
+                                stop-wsl => {
+                                    root.show_stop_wsl_confirm = true;
                                 }
                             }
 
@@ -643,6 +694,7 @@ export component AppWindow inherits Window {
                         visible: root.task_status_visible;
                         text: root.task_status_text;
                         is_shown: root.task_status_visible;
+                        max_container_width: parent.width - 40px;
                         x: (parent.width - self.width) / 2;
                         y: parent.height - self.height - 14px;
                         close => {
@@ -665,6 +717,14 @@ export component AppWindow inherits Window {
         }
         cancel_delete => {
             root.show_delete_confirmation = false;
+        }
+        show_stop_wsl_confirm: root.show_stop_wsl_confirm;
+        confirm_stop_wsl => {
+            root.show_stop_wsl_confirm = false;
+            root.confirm_stop_wsl();
+        }
+        cancel_stop_wsl => {
+            root.show_stop_wsl_confirm = false;
         }
         show_export: root.show_export_dialog;
         export_target_name: root.export_distro_name;
@@ -753,6 +813,9 @@ export component AppWindow inherits Window {
             root.show_install_warn_dialog = false;
         }
         show_expire: root.show_expire_dialog;
+        expire_latest_version: root.expire_latest_version;
+        expire_release_date: root.expire_release_date;
+        expire_download_url: root.expire_download_url;
         close_expire => {
             root.close_expire_dialog();
         }
@@ -848,6 +911,26 @@ export component AppWindow inherits Window {
         show_network_proxy_help <=> root.show_network_proxy_help;
         check_proxy_connection(url) => {
             root.check_proxy_connection(url);
+        }
+
+        // Compress
+        show_compress: root.show_compress_dialog;
+        compress_target_name: root.compress_distro_name;
+        compress_vhdx_size: root.compress_vhdx_size;
+        compress_free_space: root.compress_free_space;
+        compress_space_sufficient: root.compress_space_sufficient;
+        compress_backup_path: root.compress_backup_path;
+        compress_script_url: root.compress_script_url;
+        compress_is_wsl2: root.compress_is_wsl2;
+        compress_is_sparse: root.compress_is_sparse;
+        compress_enable_sparse <=> root.compress_enable_sparse;
+        compress_cleanup <=> root.compress_cleanup;
+        compress_backup <=> root.compress_backup;
+        confirm_compress(n, c, b, s, u) => {
+            root.confirm_compress(n, c, b, s, u);
+        }
+        cancel_compress => {
+            root.show_compress_dialog = false;
         }
     }
 

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 import {
     Theme,
     Information,
@@ -95,7 +98,7 @@ export component InformationDialog inherits Rectangle {
 
         VerticalLayout {
             padding: 24px;
-            spacing: 12px;
+            spacing: 8px;
             
             // Header
             Rectangle {
@@ -141,7 +144,7 @@ export component InformationDialog inherits Rectangle {
 
             // Content
             VerticalLayout {
-                spacing: 8px;
+                spacing: 4px;
                 alignment: start;
                 InfoRow {
                     label: AppI18n.t("dialog.wsl_version", [AppI18n.version]);
@@ -154,6 +157,11 @@ export component InformationDialog inherits Rectangle {
                         ? (AppI18n.t("distro.running", [AppI18n.version]) + (root.info.ip != "" ? " (IP: " + root.info.ip + " )" : "")) 
                         : AppI18n.t("distro.stopped", [AppI18n.version]);
                     value_color: root.info.status == "Running" ? #28a745 : Theme.text_primary;
+                }
+
+                InfoRow {
+                    label: AppI18n.t("dialog.sparse_vhd", [AppI18n.version]);
+                    value: root.info.is_sparse ? "true" : "false";
                 }
 
                 InfoRow {

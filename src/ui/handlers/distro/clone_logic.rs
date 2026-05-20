@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tracing::{info};
@@ -12,6 +15,11 @@ pub async fn perform_clone(
     target_name: String,
     target_path: String,
 ) {
+    let _guard = crate::ui::data::BusyGuard::new();
+    {
+        let state = as_ptr.lock().await;
+        state.wsl_dashboard.mark_distro_stopped(&source_name).await;
+    }
     // Synchronously upgrade and set initial status to prevent UI lag
     if let Some(app) = ah_clone.upgrade() {
         app.set_is_cloning(true);
@@ -30,7 +38,10 @@ pub async fn perform_clone(
     let old_install_location = executor.get_distro_install_location(&source_name).await.data;
 
     let is_wsl2 = distro_info.success && distro_info.data.as_ref().map_or(false, |info| info.wsl_version == "WSL2");
+    let is_sparse = distro_info.success && distro_info.data.as_ref().map_or(false, |info| info.is_sparse);
     let vhdx_path = distro_info.data.as_ref().map(|info| info.vhdx_path.clone()).unwrap_or_default();
+
+    info!("Source distro: {}, is_wsl2: {}, is_sparse: {}", source_name, is_wsl2, is_sparse);
 
     // Lock manual operation to prevent status bar from being hidden by auto-refresh
     dashboard.increment_manual_operation();
@@ -173,6 +184,17 @@ pub async fn perform_clone(
                 tokio::time::sleep(std::time::Duration::from_millis(500)).await;
             }
 
+            // Restore sparse mode if source was sparse or global config has it enabled
+            if is_sparse || crate::utils::wsl_config::get_sparse_vhd() {
+                let ah_sparse = ah_clone.clone();
+                let _ = slint::invoke_from_event_loop(move || {
+                    if let Some(app) = ah_sparse.upgrade() {
+                        app.set_task_status_text(i18n::t("operation.enabling_sparse").into());
+                    }
+                });
+                crate::wsl::ops::sparse::apply_sparse_vhdx(&executor, &target_name, true, false).await;
+            }
+
             // 1. Set Success Message
             let ah_inner = ah_clone.clone();
             let source = source_name.clone();
@@ -296,6 +318,21 @@ pub async fn perform_clone(
         let _ = std::fs::remove_file(&temp_file_str);
 
         if import_result.success {
+            // Restore sparse mode if source was sparse or global config has it enabled, and target is WSL2
+            if is_sparse || crate::utils::wsl_config::get_sparse_vhd() {
+                // Check if the newly imported distro is WSL2 (required for sparse)
+                let new_info = crate::wsl::ops::info::get_distro_information(&executor, &target_name).await;
+                if new_info.success && new_info.data.as_ref().map_or(false, |d| d.wsl_version == "WSL2") {
+                    let ah_sparse = ah_clone.clone();
+                    let _ = slint::invoke_from_event_loop(move || {
+                        if let Some(app) = ah_sparse.upgrade() {
+                            app.set_task_status_text(i18n::t("operation.enabling_sparse").into());
+                        }
+                    });
+                    crate::wsl::ops::sparse::apply_sparse_vhdx(&executor, &target_name, true, false).await;
+                }
+            }
+
             // Success Path
             let ah_inner = ah_clone.clone();
             let source = source_name.clone();

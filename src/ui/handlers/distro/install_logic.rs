@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use std::path::PathBuf;
@@ -16,6 +19,7 @@ pub async fn perform_install(
     install_path: String,
     file_path: String,
 ) {
+    let _guard = crate::ui::data::BusyGuard::new();
     info!("perform_install started: source={}, name={}, friendly={}, internal_id={}, path={}", 
           source_idx, name, friendly_name, internal_id, install_path);
 
@@ -625,6 +629,36 @@ pub async fn perform_install(
         },
         _ => {
             error_msg = i18n::t("install.unknown_source");
+        }
+    }
+
+    if success {
+        // Handle Sparse VHD auto-enable if configured in .wslconfig
+        if crate::utils::wsl_config::get_sparse_vhd() {
+            let ah_ui = ah.clone();
+            let _ = slint::invoke_from_event_loop(move || {
+                if let Some(app) = ah_ui.upgrade() {
+                    let mut output = app.get_terminal_output().to_string();
+                    output.push_str(&format!("\n[System] {}\n", i18n::t("install.enabling_sparse")));
+                    app.set_terminal_output(output.into());
+                    app.set_install_status(i18n::t("install.enabling_sparse").into());
+                }
+            });
+
+            info!("Sparse VHD is enabled in .wslconfig, checking new distro '{}'...", final_name);
+            let info_res = crate::wsl::ops::info::get_distro_information(&executor, &final_name).await;
+            if info_res.success {
+                if let Some(distro_info) = info_res.data {
+                    if distro_info.wsl_version == "WSL2" {
+                        if !distro_info.is_sparse {
+                            info!("Distro '{}' is WSL2 but not sparse. Applying sparse mode...", final_name);
+                            crate::wsl::ops::sparse::apply_sparse_vhdx(&executor, &final_name, true, false).await;
+                        } else {
+                            info!("Distro '{}' is already sparse.", final_name);
+                        }
+                    }
+                }
+            }
         }
     }
 

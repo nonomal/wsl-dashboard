@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 import { Theme, AppI18n, LayoutConstants } from "../../theme.slint";
 import { CustomScrollbar } from "../scrollbar.slint";
 import { CustomLineEdit, CustomCheckBox } from "../form_widgets.slint";
@@ -18,14 +21,6 @@ component SectionHeader inherits Rectangle {
             color: Theme.text_primary;
             vertical-alignment: center;
         }
-        Text {
-            text: root.icon;
-            font-family: Theme.icon_font;
-            font-size: 14px * LayoutConstants.font-scale;
-            color: Theme.accent;
-            vertical-alignment: center;
-        }
-
         if (!AppI18n.is-rtl): Text {
             text: root.title;
             font-size: 14px * LayoutConstants.font-scale;
@@ -126,7 +121,7 @@ export component WslConfigDialog inherits Rectangle {
     // Dialog Box
     Rectangle {
         width: 500px;
-        height: 520px;
+        height: 440px;
         background: Theme.card_bg;
         border-radius: 8px;
         border-width: 1px;
@@ -135,22 +130,36 @@ export component WslConfigDialog inherits Rectangle {
 
         VerticalLayout {
             padding: 24px;
-            spacing: 0px;
+            spacing: 8px; // matches information_dialog
 
             // Header
-            HorizontalLayout {
-                padding-bottom: 16px;
-                // Group Close and Preview icons on the left in RTL
-                if (AppI18n.is-rtl): HorizontalLayout {
+            Rectangle {
+                height: 24px;
+                
+                Text {
+                    x: AppI18n.is-rtl ? 64px : 0;
+                    width: parent.width - 64px;
+                    text: AppI18n.t("wsl_conf.dialog_title", [root.distro_name, AppI18n.version]);
+                    font-size: 18px * LayoutConstants.font-scale;
+                    font-family: Theme.default_font;
+                    font-weight: 500;
+                    color: Theme.text_primary;
+                    horizontal-alignment: AppI18n.is-rtl ? right : left;
+                    vertical-alignment: center;
+                }
+
+                // Group Preview and Close icons
+                HorizontalLayout {
+                    x: AppI18n.is-rtl ? 0 : parent.width - self.width;
+                    width: 56px;
+                    height: 24px;
                     spacing: 4px;
-                    alignment: start;
-                    // Close button (Leftmost in RTL)
-                    TouchArea {
+                    alignment: AppI18n.is-rtl ? start : end;
+                    
+                    if (AppI18n.is-rtl): TouchArea {
                         width: 24px;
                         height: 24px;
-                        clicked => {
-                            root.close();
-                        }
+                        clicked => { root.close(); }
                         Rectangle {
                             background: parent.has-hover ? Theme.hover_bg : transparent;
                             border-radius: 4px;
@@ -164,74 +173,51 @@ export component WslConfigDialog inherits Rectangle {
                             }
                         }
                     }
-                    // Preview toggle (Next to Close in RTL)
-                    TouchArea {
+                    if (AppI18n.is-rtl): TouchArea {
                         width: 28px;
-                        height: 28px;
-                        clicked => {
-                            if (!root.show_preview) {
-                                root.request_preview();
-                            }
-                            root.show_preview = !root.show_preview;
-                        }
-                        Rectangle {
-                            background: parent.has-hover ? Theme.hover_bg : transparent;
-                            border-radius: 4px;
-                            Text {
-                                text: "\u{E8A1}";
-                                font-family: Theme.icon_font;
-                                font-size: 14px * LayoutConstants.font-scale;
-                                color: root.show_preview ? Theme.accent : Theme.text_primary;
-                                horizontal-alignment: center;
-                                vertical-alignment: center;
-                            }
-                        }
-                    }
-                }
-                Text {
-                    text: AppI18n.t("wsl_conf.dialog_title", [root.distro_name, AppI18n.version]);
-                    font-size: 18px * LayoutConstants.font-scale;
-                    font-family: Theme.default_font;
-                    font-weight: 500;
-                    color: Theme.text_primary;
-                    horizontal-alignment: AppI18n.is-rtl ? right : left;
-                    horizontal-stretch: 1;
-                }
-
-                // Group Preview and Close icons on the right in LTR
-                if (!AppI18n.is-rtl): HorizontalLayout {
-                    spacing: 4px;
-                    alignment: end;
-                    // Preview toggle
-                    TouchArea {
-                        width: 28px;
-                        height: 28px;
-                        clicked => {
-                            if (!root.show_preview) {
-                                root.request_preview();
-                            }
-                            root.show_preview = !root.show_preview;
-                        }
-                        Rectangle {
-                            background: parent.has-hover ? Theme.hover_bg : transparent;
-                            border-radius: 4px;
-                            Text {
-                                text: "\u{E8A1}";
-                                font-family: Theme.icon_font;
-                                font-size: 14px * LayoutConstants.font-scale;
-                                color: root.show_preview ? Theme.accent : Theme.text_primary;
-                                horizontal-alignment: center;
-                                vertical-alignment: center;
-                            }
-                        }
-                    }
-                    // Close button
-                    TouchArea {
-                        width: 24px;
                         height: 24px;
                         clicked => {
-                            root.close();
+                            if (!root.show_preview) { root.request_preview(); }
+                            root.show_preview = !root.show_preview;
                         }
+                        Rectangle {
+                            background: parent.has-hover ? Theme.hover_bg : transparent;
+                            border-radius: 4px;
+                            Text {
+                                text: "\u{E8A1}";
+                                font-family: Theme.icon_font;
+                                font-size: 14px * LayoutConstants.font-scale;
+                                color: root.show_preview ? Theme.accent : Theme.text_primary;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+
+                    if (!AppI18n.is-rtl): TouchArea {
+                        width: 28px;
+                        height: 24px;
+                        clicked => {
+                            if (!root.show_preview) { root.request_preview(); }
+                            root.show_preview = !root.show_preview;
+                        }
+                        Rectangle {
+                            background: parent.has-hover ? Theme.hover_bg : transparent;
+                            border-radius: 4px;
+                            Text {
+                                text: "\u{E8A1}";
+                                font-family: Theme.icon_font;
+                                font-size: 14px * LayoutConstants.font-scale;
+                                color: root.show_preview ? Theme.accent : Theme.text_primary;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+                    if (!AppI18n.is-rtl): TouchArea {
+                        width: 24px;
+                        height: 24px;
+                        clicked => { root.close(); }
                         Rectangle {
                             background: parent.has-hover ? Theme.hover_bg : transparent;
                             border-radius: 4px;
@@ -248,6 +234,7 @@ export component WslConfigDialog inherits Rectangle {
                 }
             }
 
+            // Divider
             Rectangle {
                 height: 1px;
                 background: Theme.border_color;
@@ -282,10 +269,6 @@ export component WslConfigDialog inherits Rectangle {
                     }
                 }
             }
-            Rectangle {
-                height: 12px;
-            }
-
             // Content area
             Rectangle {
                 vertical-stretch: 1;
@@ -614,10 +597,6 @@ export component WslConfigDialog inherits Rectangle {
                 }
             }
 
-            Rectangle {
-                height: 16px;
-            }
-
             // Footer buttons
             HorizontalLayout {
                 alignment: AppI18n.is-rtl ? start : end;
@@ -668,60 +647,8 @@ export component WslConfigDialog inherits Rectangle {
                 // LTR / Always present Cancel Button (will be last in LTR, first in RTL layout if not handled carefully)
                 // Actually to reverse order completely for RTL, we should use conditional blocks for all.
                 
-                if (AppI18n.is-rtl): cancel-btn-rtl := Rectangle {
-                    width: 90px;
-                    height: 32px;
-                    background: transparent;
-                    border-radius: 6px;
-                    border-width: 1px;
-                    border-color: Theme.border_color;
-                    TouchArea {
-                        clicked => {
-                            root.close();
-                        }
-                        Rectangle {
-                            background: parent.has-hover ? Theme.hover_bg : transparent;
-                            border-radius: 6px;
-                        }
-                    }
 
-                    Text {
-                        text: AppI18n.t("wsl_conf.cancel", [AppI18n.version]);
-                        color: Theme.text_primary;
-                        font-size: 13px * LayoutConstants.font-scale;
-                        font-family: Theme.default_font;
-                        font-weight: 500;
-                        horizontal-alignment: center;
-                        vertical-alignment: center;
-                    }
-                }
-                if (!AppI18n.is-rtl): Rectangle {
-                    width: 90px;
-                    height: 32px;
-                    background: transparent;
-                    border-radius: 6px;
-                    border-width: 1px;
-                    border-color: Theme.border_color;
-                    TouchArea {
-                        clicked => {
-                            root.close();
-                        }
-                        Rectangle {
-                            background: parent.has-hover ? Theme.hover_bg : transparent;
-                            border-radius: 6px;
-                        }
-                    }
 
-                    Text {
-                        text: AppI18n.t("wsl_conf.cancel", [AppI18n.version]);
-                        color: Theme.text_primary;
-                        font-size: 13px * LayoutConstants.font-scale;
-                        font-family: Theme.default_font;
-                        font-weight: 500;
-                        horizontal-alignment: center;
-                        vertical-alignment: center;
-                    }
-                }
                 if (!AppI18n.is-rtl): Rectangle {
                     width: 90px;
                     height: 32px;

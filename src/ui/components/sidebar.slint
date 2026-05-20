@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 import { Theme, AppI18n } from "../theme.slint";
 import { SidebarItem } from "common.slint";
 
@@ -16,6 +19,7 @@ export component Sidebar inherits Rectangle {
     in property <bool> show_usb: true;
     in property <bool> show_network: true;
     in property <bool> show_about: true;
+    in property <bool> show_toggle: true;
     
     // Callbacks to bubble up
     callback tab_selected(int);
@@ -41,7 +45,7 @@ export component Sidebar inherits Rectangle {
         }
 
         // Hamburger menu button
-        Rectangle {
+        if (root.show_toggle): Rectangle {
             height: 36px;
             border-radius: 4px;
             background: touch_menu.has-hover ? Theme.hover_bg : transparent;
@@ -53,7 +57,7 @@ export component Sidebar inherits Rectangle {
                     text: "\u{E700}";
                     font-size: 16px;
                     font-family: Theme.icon_font;
-                    color: touch_menu.has-hover ? Theme.accent : Theme.text_secondary;
+                    color: touch_menu.has-hover ? Theme.accent : Theme.icon_color_slate;
                     vertical-alignment: center;
                     horizontal-alignment: center;
                     width: 20px;
@@ -70,6 +74,7 @@ export component Sidebar inherits Rectangle {
 
         SidebarItem {
             icon: "\u{E80F}";
+            icon_type: "emerald";
             text: root.home_text;
             selected: selected_tab == 0;
             collapsed: root.collapsed;
@@ -81,6 +86,7 @@ export component Sidebar inherits Rectangle {
 
         if (root.show_add): SidebarItem {
             icon: "\u{E710}";
+            icon_type: "sky";
             text: root.add_text;
             selected: selected_tab == 1;
             collapsed: root.collapsed;
@@ -90,6 +96,7 @@ export component Sidebar inherits Rectangle {
         }
         if (root.show_usb): SidebarItem {
             icon: "\u{E88E}";
+            icon_type: "amber";
             text: root.usb_text;
             selected: selected_tab == 2;
             collapsed: root.collapsed;
@@ -99,6 +106,7 @@ export component Sidebar inherits Rectangle {
         }
         if (root.show_network): SidebarItem {
             icon: "\u{EE77}"; // Network icon
+            icon_type: "violet";
             text: root.network_text;
             selected: selected_tab == 3;
             collapsed: root.collapsed;
@@ -128,6 +136,7 @@ export component Sidebar inherits Rectangle {
 
         SidebarItem {
             icon: "\u{E713}";
+            icon_type: "indigo";
             text: root.settings_text;
             selected: selected_tab == 5;
             collapsed: root.collapsed;
@@ -138,6 +147,7 @@ export component Sidebar inherits Rectangle {
 
         if (root.show_about): SidebarItem {
             icon: "\u{E9ce}";
+            icon_type: "cyan";
             text: root.about_text;
             selected: selected_tab == 6;
             collapsed: root.collapsed;

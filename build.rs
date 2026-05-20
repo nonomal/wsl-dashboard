@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 #[path = "src/app/constants.rs"]
 mod constants;
 
@@ -106,7 +109,7 @@ BEGIN
             VALUE "FileVersion", "{major}.{minor}.{patch}.0"
             VALUE "InternalName", "{app_id}"
             VALUE "LegalCopyright", "{copyright}"
-            VALUE "LegalTrademarks", "{github_url}"
+            VALUE "LegalTrademarks", "{project_repository}"
             VALUE "OriginalFilename", "{original_filename}"
             VALUE "ProductName", "{app_name}"
             VALUE "ProductVersion", "{major}.{minor}.{patch}.0"
@@ -122,7 +125,7 @@ END
     file_description = file_description,
     app_id = constants::APP_ID,
     copyright = constants::LEGAL_COPYRIGHT,
-    github_url = constants::GITHUB_URL,
+    project_repository = constants::PROJECT_REPOSITORY,
     original_filename = original_filename,
     app_name = constants::APP_NAME,
     major = major,
@@ -211,3 +214,4 @@ fn flatten_keys(prefix: &str, value: &Value, keys: &mut HashSet<String>) {
         }
     }
 }
+

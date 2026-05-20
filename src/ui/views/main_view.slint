@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 import { CustomScrollbar } from "../components/scrollbar.slint";
 import { Theme, Distro, AppI18n } from "../theme.slint";
 import { DistroCard } from "../components/distro_card.slint";
@@ -22,6 +25,9 @@ component DistroList inherits VerticalLayout {
     callback delete_clicked(string);
     callback settings_clicked(string);
     callback configs_clicked(string);
+    callback compress_clicked(string);
+    callback sparse_clicked(string);
+
     padding-top: 0px;
     padding-bottom: 0px;
     padding-left: AppI18n.is-rtl ? 16px : 4px;
@@ -81,6 +87,9 @@ component DistroList inherits VerticalLayout {
         configs_clicked => {
             root.configs_clicked(d.name);
         }
+        compress_clicked => {
+            root.compress_clicked(d.name);
+        }
     }
 }
 
@@ -101,6 +110,8 @@ export component MainView inherits VerticalLayout {
     callback delete_clicked(string);
     callback settings_clicked(string);
     callback configs_clicked(string);
+    callback compress_clicked(string);
+
     in-out property <string> distro_to_delete;
     in-out property <bool> show_delete_confirmation;
     private property <string> expanded_distro: "";
@@ -160,6 +171,9 @@ export component MainView inherits VerticalLayout {
                 }
                 configs_clicked(n) => {
                     root.configs_clicked(n);
+                }
+                compress_clicked(n) => {
+                    root.compress_clicked(n);
                 }
             }
         }

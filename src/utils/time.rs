@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use std::time::Duration;
 use ureq;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -30,9 +33,9 @@ const WEB_URLS_FREE: &[WebSite] = &[
 ];
 
 
-pub fn standard_time(timezone: &str) -> i64 {
+pub fn internet_standard_time(timezone: &str) -> i64 {
     // Select URL list based on timezone
-    let urls = if timezone == crate::app::ZH_TIMEZONE {
+    let urls = if timezone == "UTC+08:00" {
         WEB_URLS
     } else {
         WEB_URLS_FREE

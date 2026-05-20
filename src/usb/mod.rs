@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use serde::{Deserialize, Serialize};
 use std::process::Command;
 use tracing::{info, debug};
@@ -43,7 +46,7 @@ pub struct UsbStateResponse {
 
 pub struct UsbManager;
 impl UsbManager {
-    /// Get the usbipd-win version
+    // Get the usbipd-win version
     pub async fn get_version() -> Result<String, String> {
         let mut cmd = Command::new("usbipd");
         cmd.arg("--version");
@@ -76,7 +79,7 @@ impl UsbManager {
         Ok(version)
     }
 
-    /// Get the device list using 'usbipd state' (JSON)
+    // Get the device list using 'usbipd state' (JSON)
     pub async fn list_devices() -> Result<Vec<UsbDeviceModel>, String> {
         let mut cmd = Command::new("usbipd");
         cmd.arg("state");
@@ -120,20 +123,20 @@ impl UsbManager {
         Err("program not found: No valid JSON output from 'usbipd state'".to_string())
     }
 
-    /// Perform the bind operation (directly with elevation as it always requires it)
+    // Perform the bind operation (directly with elevation as it always requires it)
     pub async fn bind(bus_id: &str) -> Result<(), String> {
         info!("Binding device with elevation: {}", bus_id);
         crate::utils::system::run_command_with_elevation("usbipd", vec!["bind".to_string(), "--busid".to_string(), bus_id.to_string()])
     }
 
-    /// Perform the unbind operation (directly with elevation as it always requires it)
+    // Perform the unbind operation (directly with elevation as it always requires it)
     pub async fn unbind(bus_id: &str) -> Result<(), String> {
         info!("Unbinding device with elevation: {}", bus_id);
         crate::utils::system::run_command_with_elevation("usbipd", vec!["unbind".to_string(), "--busid".to_string(), bus_id.to_string()])
     }
 
-    /// Perform the attach operation (directly with elevation)
-    /// This now includes an implicit 'bind' step to support "Not Shared" -> "Attached" in one click.
+    // Perform the attach operation (directly with elevation)
+    // This now includes an implicit 'bind' step to support "Not Shared" -> "Attached" in one click.
     pub async fn attach(bus_id: &str, distro: &str) -> Result<(), String> {
         info!("Attaching device {} to distro {} (with implicit bind check)", bus_id, distro);
 
@@ -179,7 +182,7 @@ impl UsbManager {
         crate::utils::system::run_command_with_elevation("cmd", vec!["/c".to_string(), cmd_args])
     }
 
-    /// Perform the detach operation
+    // Perform the detach operation
     pub async fn detach(bus_id: &str) -> Result<(), String> {
         info!("Attempting to detach device: {}", bus_id);
         

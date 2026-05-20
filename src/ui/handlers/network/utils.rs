@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use crate::{AppState, AppWindow};
@@ -5,7 +8,7 @@ use crate::network;
 use slint::{ModelRc, SharedString, VecModel};
 use crate::PortProxyRuleUI;
 
-/// Refreshes all network view data (distros, interfaces, rules, etc.)
+// Refreshes all network view data (distros, interfaces, rules, etc.)
 pub async fn refresh_network_view_data(app: slint::Weak<AppWindow>, app_state: Arc<Mutex<AppState>>) {
     let (distros, interfaces, net_config) = {
         let state = app_state.lock().await;
@@ -87,7 +90,7 @@ pub async fn refresh_network_view_data(app: slint::Weak<AppWindow>, app_state: A
     });
 }
 
-/// Helper to show a task status toast with a 3-second auto-hide timer
+// Helper to show a task status toast with a 3-second auto-hide timer
 pub fn show_toast(app: slint::Weak<AppWindow>, text: String) {
     let _ = slint::invoke_from_event_loop(move || {
         if let Some(app_instance) = app.upgrade() {

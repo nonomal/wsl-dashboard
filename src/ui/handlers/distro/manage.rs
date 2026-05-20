@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tracing::info;
@@ -184,15 +187,24 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, app_state: Arc
                         }
                     });
                 } else {
-                    let ext_info = {
+                    let mut ext_info = {
                         let state = as_ptr.lock().await;
                         state.vscode_extension.clone()
                     };
 
+                    if ext_info.is_none() {
+                        instance::refresh_vscode_extension(as_ptr.clone()).await;
+                        ext_info = {
+                            let state = as_ptr.lock().await;
+                            state.vscode_extension.clone()
+                        };
+                    }
+
                     let (ext_name, ext_url) = if let Some(info) = ext_info {
                         (info.name, info.url)
                     } else {
-                        ("WSL".to_string(), "https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-wsl".to_string())
+                        let default = crate::app::VSCodeExtensionData::default();
+                        (default.name, default.url)
                     };
 
                     if let Some(app) = ah.upgrade() {
@@ -299,6 +311,7 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, app_state: Arc
                             slint_data.vhdx_size = data.vhdx_size.into();
                             slint_data.actual_used = data.actual_used.into();
                             slint_data.ip = data.ip.into();
+                            slint_data.is_sparse = data.is_sparse;
                             app.set_information(slint_data);
                             app.set_show_information(true);
                         }
@@ -369,12 +382,36 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, app_state: Arc
                     app.set_settings_vscode_dir_error("".into());
                     app.set_settings_startup_script_error("".into());
                     app.set_settings_default_error("".into());
+                    app.set_settings_enable_sparse(false);
+                    app.set_settings_sparse_fixed(false);
                     app.set_show_settings(true);
 
-                    let ah_fetch = ah.clone();
+                    let name_for_sparse = name.clone();
+                    let ah_sparse = ah.clone();
+                    tokio::spawn(async move {
+                        let distros_reg = crate::utils::registry::get_wsl_distros_from_reg();
+                        if let Some(reg_info) = distros_reg.into_iter().find(|d| d.name == name_for_sparse) {
+                            if reg_info.version == 2 {
+                                if let Some(p) = crate::wsl::ops::info::get_vhdx_path(&reg_info.base_path) {
+                                    let is_sparse = crate::utils::system::is_sparse_file(&p.to_string_lossy());
+                                    let _ = slint::invoke_from_event_loop(move || {
+                                        if let Some(app) = ah_sparse.upgrade() {
+                                            app.set_settings_enable_sparse(is_sparse);
+                                            app.set_settings_sparse_fixed(is_sparse);
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    });
+
                     let as_fetch = as_ptr.clone();
                     tokio::spawn(async move {
-                        instance::fetch_latest_instance_data(ah_fetch, as_fetch).await;
+                        instance::refresh_vscode_extension(as_fetch).await;
+                    });
+                    let ah_fetch2 = ah.clone();
+                    tokio::spawn(async move {
+                        instance::refresh_startup_script(ah_fetch2).await;
                     });
                 }
             });

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use crate::wsl::executor::WslCommandExecutor;
 use crate::wsl::models::WslCommandResult;
 

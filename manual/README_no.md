@@ -4,7 +4,7 @@
   <img src="../assets/logo/logo.png" width="128" height="128" alt="WSL Dashboard Logo" />
 </p>
 
-Et moderne, høyytelses og lettvektig kontrollpanel for administrasjon av WSL-instanser (Windows Subsystem for Linux). Bygget med Rust og Slint for en førsteklasses nativ opplevelse.
+Et moderne, høyytelses, lettvekts og minneeffektivt kontrollpanel for administrasjon av WSL-instanser (Windows Subsystem for Linux). Bygget med Rust og Slint for en førsteklasses opplevelse.
 
 ---
 
@@ -199,7 +199,7 @@ Sørg for at du har Rust-verktøykjeden (Rust 1.92+ eller nyere) installert.
      > Byggskriptet krever verktøykjeden `x86_64-pc-windows-msvc`.
 
      ```powershell
-     .\build\scripts\build.ps1
+     .\build\portable\build.ps1
      ```
 
 
@@ -239,6 +239,7 @@ A big thank you to the following communities for their support:
 - [Tokio - An asynchronous Rust runtime](https://tokio.rs) - For the efficient async runtime
 - [Windows Developer Community](https://developer.microsoft.com/en-us/windows/community) - For continuous platform improvements
 - [Reddit](https://www.reddit.com) - For global community discussions and support
+- [Hacker News](https://news.ycombinator.com) - For global community discussions and support
 - [Linux.do](https://linux.do) - For popular community for IT professionals
 - [V2EX](https://www.v2ex.com) - For Chinese tech community discussions
 

@@ -4,7 +4,7 @@
   <img src="../assets/logo/logo.png" width="128" height="128" alt="WSL Dashboard Logo" />
 </p>
 
-Moderní, vysoce výkonný a lehký ovládací panel pro správu instancí WSL (Windows Subsystem for Linux). Postaveno na jazyce Rust a frameworku Slint pro prvotřídní nativní zážitek.
+Moderní, vysoce výkonný, lehký a na paměť nenáročný panel pro správu instancí WSL (Windows Subsystem for Linux). Postavený s Rust a Slint pro prémiový nativní zážitek.
 
 ---
 
@@ -198,7 +198,7 @@ Ujistěte se, že máte nainstalovanou sadu nástrojů Rust (Rust 1.92+ nebo nov
      > Sestavovací skript vyžaduje sadu nástrojů `x86_64-pc-windows-msvc`.
 
      ```powershell
-     .\build\scripts\build.ps1
+     .\build\portable\build.ps1
      ```
 
 
@@ -238,6 +238,7 @@ A big thank you to the following communities for their support:
 - [Tokio - An asynchronous Rust runtime](https://tokio.rs) - For the efficient async runtime
 - [Windows Developer Community](https://developer.microsoft.com/en-us/windows/community) - For continuous platform improvements
 - [Reddit](https://www.reddit.com) - For global community discussions and support
+- [Hacker News](https://news.ycombinator.com) - For global community discussions and support
 - [Linux.do](https://linux.do) - For popular community for IT professionals
 - [V2EX](https://www.v2ex.com) - For Chinese tech community discussions
 

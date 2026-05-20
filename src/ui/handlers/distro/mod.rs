@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use rand::{Rng, distr::Alphanumeric};
@@ -16,6 +19,7 @@ pub mod move_distro;
 pub mod move_logic;
 pub mod settings_logic;
 pub mod config_logic;
+pub mod compress;
 
 pub fn sanitize_instance_name(name: &str) -> String {
     let mut sanitized: String = name.chars()
@@ -44,6 +48,7 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, app_state: Arc
     clone::setup(app, app_handle.clone(), app_state.clone());
     install::setup(app, app_handle.clone(), app_state.clone());
     move_distro::setup(app, app_handle.clone(), app_state.clone());
+    compress::setup(app, app_handle.clone(), app_state.clone());
 }
 
 pub fn spawn_file_size_monitor(

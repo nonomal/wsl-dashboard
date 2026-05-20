@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use ini::Ini;
 use tracing::{info, warn, error};
 use std::sync::Mutex;
@@ -8,7 +11,7 @@ static VERSION_CACHE: Lazy<Mutex<Option<WslVersionMeta>>> = Lazy::new(|| Mutex::
 
 // ===== Data Models =====
 
-/// Represents the full /etc/wsl.conf configuration
+// Represents the full /etc/wsl.conf configuration
 #[derive(Debug, Clone, Default)]
 pub struct WslConf {
     pub automount: AutomountSection,
@@ -121,7 +124,7 @@ impl Default for TimeSection {
     }
 }
 
-/// Version metadata returned to the frontend for UI display
+// Version metadata returned to the frontend for UI display
 #[derive(Debug, Clone)]
 pub struct WslVersionMeta {
     pub version_string: String,
@@ -143,7 +146,7 @@ impl Default for WslVersionMeta {
     }
 }
 
-/// Result of validation
+// Result of validation
 #[derive(Debug, Clone)]
 pub struct ValidationResult {
     pub success: bool,
@@ -165,7 +168,7 @@ fn parse_string_opt(ini: &Ini, section: &str, key: &str) -> Option<String> {
         .map(|v| v.to_string())
 }
 
-/// Parse /etc/wsl.conf content into WslConf struct
+// Parse /etc/wsl.conf content into WslConf struct
 pub fn parse_wsl_conf(content: &str) -> WslConf {
     let ini = match Ini::load_from_str(content) {
         Ok(ini) => ini,
@@ -214,7 +217,7 @@ fn bool_to_ini(val: bool) -> &'static str {
     if val { "true" } else { "false" }
 }
 
-/// Serialize WslConf to INI string, optionally filtering unsupported sections
+// Serialize WslConf to INI string, optionally filtering unsupported sections
 pub fn serialize_wsl_conf(conf: &WslConf, version_meta: &WslVersionMeta) -> String {
     let mut ini = Ini::new();
 
@@ -305,7 +308,7 @@ pub fn serialize_wsl_conf(conf: &WslConf, version_meta: &WslVersionMeta) -> Stri
 
 // ===== Core Operations =====
 
-/// Read /etc/wsl.conf from a distribution
+// Read /etc/wsl.conf from a distribution
 pub async fn get_wsl_conf(executor: &WslCommandExecutor, distro_name: &str) -> WslConf {
     info!("Reading wsl.conf for '{}'", distro_name);
     let result = executor.execute_command(&["-d", distro_name, "-e", "cat", "/etc/wsl.conf"]).await;
@@ -318,7 +321,7 @@ pub async fn get_wsl_conf(executor: &WslCommandExecutor, distro_name: &str) -> W
     }
 }
 
-/// Validate the wsl.conf configuration
+// Validate the wsl.conf configuration
 pub async fn validate_wsl_conf(
     executor: &WslCommandExecutor,
     distro_name: &str,
@@ -369,7 +372,7 @@ pub async fn validate_wsl_conf(
     result
 }
 
-/// Detect WSL version and determine feature support
+// Detect WSL version and determine feature support
 pub async fn check_wsl_version_support(executor: &WslCommandExecutor) -> WslVersionMeta {
     {
         let cache = VERSION_CACHE.lock().unwrap();
@@ -480,7 +483,7 @@ pub async fn check_wsl_version_support(executor: &WslCommandExecutor) -> WslVers
     meta
 }
 
-/// Save wsl.conf to a distribution
+// Save wsl.conf to a distribution
 pub async fn save_wsl_conf(
     executor: &WslCommandExecutor,
     distro_name: &str,

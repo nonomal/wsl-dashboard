@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use slint::{Image, SharedPixelBuffer, Rgba8Pixel};
 use tracing::trace;
 #[allow(unused_imports)]

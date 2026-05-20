@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 import { ActionIcon } from "common.slint";
 import { Theme, Distro, AppI18n, LayoutConstants } from "../theme.slint";
 
@@ -98,6 +101,7 @@ component StartStopButton inherits VerticalLayout {
 
     ActionIcon {
         icon: (distro.status == "Running") ? "\u{E769}" : "\u{E768}";
+        icon_type: (distro.status == "Running") ? "danger" : "success";
         is_font_icon: true;
         tooltip: (distro.status == "Running") ? AppI18n.t("distro.stop", [AppI18n.version]) : AppI18n.t("distro.start", [AppI18n.version]);
         clicked => {
@@ -125,6 +129,7 @@ component QuickActionIcons inherits VerticalLayout {
         // In RTL, the collapse icon is at the front (visually leftmost)
         if (AppI18n.is-rtl): ActionIcon {
             icon: expanded ? "\u{E70E}" : "\u{E70D}";
+            icon_type: "slate";
             is_font_icon: true;
             tooltip: expanded ? AppI18n.t("distro.collapse", [AppI18n.version]) : AppI18n.t("distro.expand", [AppI18n.version]);
             clicked => {
@@ -133,6 +138,7 @@ component QuickActionIcons inherits VerticalLayout {
         }
         ActionIcon {
             icon: "\u{E756}";
+            icon_type: "lime";
             is_font_icon: true;
             tooltip: AppI18n.t("distro.terminal", [AppI18n.version]);
             clicked => {
@@ -142,6 +148,7 @@ component QuickActionIcons inherits VerticalLayout {
 
         ActionIcon {
             icon: "\u{E70B}";
+            icon_type: "cobalt";
             is_font_icon: true;
             tooltip: AppI18n.t("distro.vscode", [AppI18n.version]);
             clicked => {
@@ -151,6 +158,7 @@ component QuickActionIcons inherits VerticalLayout {
 
         ActionIcon {
             icon: "\u{E8B7}";
+            icon_type: "orange";
             is_font_icon: true;
             tooltip: AppI18n.t("distro.explorer", [AppI18n.version]);
             clicked => {
@@ -161,6 +169,7 @@ component QuickActionIcons inherits VerticalLayout {
         // In LTR, the collapse icon is at the back (visually rightmost)
         if (!AppI18n.is-rtl): ActionIcon {
             icon: expanded ? "\u{E70E}" : "\u{E70D}";
+            icon_type: "slate";
             is_font_icon: true;
             tooltip: expanded ? AppI18n.t("distro.collapse", [AppI18n.version]) : AppI18n.t("distro.expand", [AppI18n.version]);
             clicked => {
@@ -174,6 +183,7 @@ component QuickActionIcons inherits VerticalLayout {
 component ExpandedActionIcons inherits VerticalLayout {
     callback information();
     callback restart();
+    callback compress();
     callback export_distro();
     callback clone();
     callback move_distro();
@@ -185,7 +195,9 @@ component ExpandedActionIcons inherits VerticalLayout {
     HorizontalLayout {
         spacing: 16px;
         ActionIcon {
-            icon: "\u{E890}";
+            icon: "\u{E946}";
+            icon_type: "info";
+            icon_size: 16px;
             is_font_icon: true;
             tooltip: AppI18n.t("distro.information", [AppI18n.version]);
             clicked => {
@@ -195,6 +207,7 @@ component ExpandedActionIcons inherits VerticalLayout {
 
         ActionIcon {
             icon: "\u{E777}";
+            icon_type: "warning";
             is_font_icon: true;
             tooltip: AppI18n.t("distro.restart", [AppI18n.version]);
             clicked => {
@@ -203,7 +216,19 @@ component ExpandedActionIcons inherits VerticalLayout {
         }
 
         ActionIcon {
+            icon: "\u{E927}";
+            icon_type: "fuchsia";
+            icon_size: 18px;
+            is_font_icon: true;
+            tooltip: AppI18n.t("distro.compress", [AppI18n.version]);
+            clicked => {
+                root.compress();
+            }
+        }
+
+        ActionIcon {
             icon: "\u{E78C}";
+            icon_type: "amber";
             is_font_icon: true;
             tooltip: AppI18n.t("distro.export", [AppI18n.version]);
             clicked => {
@@ -213,6 +238,7 @@ component ExpandedActionIcons inherits VerticalLayout {
 
         ActionIcon {
             icon: "\u{E8DE}";
+            icon_type: "purple";
             is_font_icon: true;
             tooltip: AppI18n.t("distro.move", [AppI18n.version]);
             clicked => {
@@ -222,6 +248,8 @@ component ExpandedActionIcons inherits VerticalLayout {
 
         ActionIcon {
             icon: "\u{E8C8}";
+            icon_type: "mint";
+            icon_size: 16px;
             is_font_icon: true;
             tooltip: AppI18n.t("distro.clone", [AppI18n.version]);
             clicked => {
@@ -231,6 +259,7 @@ component ExpandedActionIcons inherits VerticalLayout {
 
         ActionIcon {
             icon: "\u{E74D}";
+            icon_type: "rose";
             is_font_icon: true;
             tooltip: AppI18n.t("distro.delete", [AppI18n.version]);
             clicked => {
@@ -240,6 +269,7 @@ component ExpandedActionIcons inherits VerticalLayout {
 
         ActionIcon {
             icon: "\u{E713}";
+            icon_type: "navigation";
             is_font_icon: true;
             tooltip: AppI18n.t("distro.settings", [AppI18n.version]);
             clicked => {
@@ -249,6 +279,7 @@ component ExpandedActionIcons inherits VerticalLayout {
 
         ActionIcon {
             icon: "\u{E835}";
+            icon_type: "cyan";
             is_font_icon: true;
             tooltip: AppI18n.t("distro.configs", [AppI18n.version]);
             clicked => {
@@ -276,6 +307,7 @@ export component DistroCard inherits Rectangle {
     callback move_clicked;
     callback information_clicked;
     callback configs_clicked;
+    callback compress_clicked;
     callback expand_clicked;
     height: expanded ? 96px : 48px;
     background: (distro.is_default && !sole_distro) ? (Theme.dark_mode ? #2b3c4e : #e6f4ff98) : Theme.card_bg;
@@ -296,7 +328,7 @@ export component DistroCard inherits Rectangle {
                 padding-left: 12px;
                 padding-right: 12px;
                 spacing: 0px; // Use Spacer to control spacing
-
+ 
                 // --- RTL branch: Icons on left, text on right ---
                 if (AppI18n.is-rtl): QuickActionIcons {
                     expanded: root.expanded;
@@ -322,11 +354,11 @@ export component DistroCard inherits Rectangle {
                         distro: root.distro;
                         is-rtl: true;
                     }
-
+ 
                     DistroBadge {
                         distro: root.distro;
                     }
-
+ 
                     StartStopButton {
                         distro: root.distro;
                         start => {
@@ -337,7 +369,7 @@ export component DistroCard inherits Rectangle {
                         }
                     }
                 }
-
+ 
                 // --- LTR branch: Text on left, icons on right ---
                 if (!AppI18n.is-rtl): HorizontalLayout {
                     spacing: 8px;
@@ -350,11 +382,11 @@ export component DistroCard inherits Rectangle {
                             root.stop_clicked();
                         }
                     }
-
+ 
                     DistroBadge {
                         distro: root.distro;
                     }
-
+ 
                     DistroInfo {
                         distro: root.distro;
                         is-rtl: false;
@@ -380,7 +412,7 @@ export component DistroCard inherits Rectangle {
                 }
             }
         }
-
+ 
         // Expansion area
         Rectangle {
             opacity: root.expanded ? 1 : 0;
@@ -406,6 +438,9 @@ export component DistroCard inherits Rectangle {
                         }
                         restart => {
                             root.restart_clicked();
+                        }
+                        compress => {
+                            root.compress_clicked();
                         }
                         export_distro => {
                             root.export_clicked();
@@ -437,6 +472,9 @@ export component DistroCard inherits Rectangle {
                         }
                         restart => {
                             root.restart_clicked();
+                        }
+                        compress => {
+                            root.compress_clicked();
                         }
                         export_distro => {
                             root.export_clicked();

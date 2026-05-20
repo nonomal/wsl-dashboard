@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tracing::info;
@@ -128,6 +131,11 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, app_state: Arc
                     let target_path_inner = target_path.to_string();
 
                     let _ = slint::spawn_local(async move {
+                        let _guard = crate::ui::data::BusyGuard::new();
+                        {
+                            let state = as_ptr.lock().await;
+                            state.wsl_dashboard.mark_distro_stopped(&distro_source_inner).await;
+                        }
                         let stop_signal = Arc::new(std::sync::atomic::AtomicBool::new(false));
                         if let Some(app) = ah_clone.upgrade() {
                             let initial_msg = i18n::tr("operation.exporting_msg", &[distro_source_inner.clone(), "0 MB".to_string()]);

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use tokio::time::{Duration, Instant};
 use tracing::{info, warn, debug};
 use crate::wsl::models::{WslCommandResult, WslStatus};
@@ -96,6 +99,7 @@ impl WslDashboard {
     }
 
     pub async fn shutdown_wsl(&self) -> WslCommandResult<String> {
+        self.mark_all_distros_stopped().await;
         let _heavy_lock = self.heavy_op_lock.lock().await;
         self.increment_manual_operation();
         info!("Initiating WSL system shutdown");
@@ -108,6 +112,7 @@ impl WslDashboard {
     }
 
     pub async fn delete_distro(&self, config_manager: &crate::config::ConfigManager, name: &str) -> WslCommandResult<String> {
+        self.mark_distro_stopped(name).await;
         let _guard = DistroOpGuard::create(self.clone(), name.to_string(), "Deleting".to_string()).await;
         let _heavy_lock = self.heavy_op_lock.lock().await;
         self.increment_manual_operation();

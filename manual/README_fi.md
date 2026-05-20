@@ -4,7 +4,7 @@
   <img src="../assets/logo/logo.png" width="128" height="128" alt="WSL Dashboard Logo" />
 </p>
 
-Moderni, suorituskykyinen ja kevyt hallintapaneeli WSL (Windows Subsystem for Linux) -instanssien hallintaan. Rakennettu Rustilla ja Slintillä ensiluokkaista natiivikokemusta varten.
+Moderni, suorituskykyinen, kevyt ja vähän muistia vievä WSL-instanssien (Windows Subsystem for Linux) hallintapaneeli. Rakennettu Rustilla ja Slintillä ensiluokkaista natiivikokemusta varten.
 
 ---
 
@@ -199,7 +199,7 @@ Varmista, että sinulla on Rust-työkalukehys (Rust 1.92+ tai uudempi) asennettu
      > Rakennusskripti vaatii `x86_64-pc-windows-msvc` -työkalukehyksen.
 
      ```powershell
-     .\build\scripts\build.ps1
+     .\build\portable\build.ps1
      ```
 
 
@@ -239,6 +239,7 @@ A big thank you to the following communities for their support:
 - [Tokio - An asynchronous Rust runtime](https://tokio.rs) - For the efficient async runtime
 - [Windows Developer Community](https://developer.microsoft.com/en-us/windows/community) - For continuous platform improvements
 - [Reddit](https://www.reddit.com) - For global community discussions and support
+- [Hacker News](https://news.ycombinator.com) - For global community discussions and support
 - [Linux.do](https://linux.do) - For popular community for IT professionals
 - [V2EX](https://www.v2ex.com) - For Chinese tech community discussions
 

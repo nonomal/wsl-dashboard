@@ -1,4 +1,8 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 import { CustomScrollbar } from "../components/scrollbar.slint";
+import { AppConstants } from "../constants.slint";
 import { Theme, UsbDevice, AppI18n, LayoutConstants } from "../theme.slint";
 import { ActionIcon } from "../components/common.slint";
 import { UsbDeviceCard } from "../components/usb_card.slint";
@@ -86,8 +90,8 @@ export component UsbView inherits VerticalLayout {
                 Text {
                     text: "\u{EA39}";
                     font-family: Theme.icon_font;
-                    font-size: 48px * LayoutConstants.font-scale;
-                    color: Theme.text_secondary;
+                    font-size: 48px;
+                    color: Theme.icon_color_danger;
                     horizontal-alignment: center;
                 }
 
@@ -114,7 +118,7 @@ export component UsbView inherits VerticalLayout {
                         download_touch := TouchArea {
                             mouse-cursor: pointer;
                             clicked => {
-                                root.open_url("https://github.com/dorssel/usbipd-win/releases");
+                                root.open_url(AppConstants.usbipd_releases);
                             }
                         }
 
@@ -126,7 +130,7 @@ export component UsbView inherits VerticalLayout {
                             Text {
                                 text: "\u{E896}"; // Download icon
                                 font-family: Theme.icon_font;
-                                font-size: 14px * LayoutConstants.font-scale;
+                                font-size: 14px;
                                 color: Theme.accent;
                                 vertical-alignment: center;
                             }
@@ -152,8 +156,8 @@ export component UsbView inherits VerticalLayout {
                 Text {
                     text: "\u{E88E}";
                     font-family: Theme.icon_font;
-                    font-size: 48px * LayoutConstants.font-scale;
-                    color: Theme.text_secondary;
+                    font-size: 48px;
+                    color: Theme.icon_color_amber;
                     horizontal-alignment: center;
                 }
 

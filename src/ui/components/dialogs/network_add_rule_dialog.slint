@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 import {
     Theme,
     AppI18n,
@@ -29,57 +32,36 @@ export component NetworkAddRuleDialog inherits Rectangle {
     // Dialog Box
     Rectangle {
         width: 500px;
-        height: 380px;
+        height: layout.preferred-height;
         background: Theme.card_bg;
         border-radius: 8px;
         border-width: 1px;
         border-color: Theme.border_color;
         TouchArea { /* prevent click through */ }
 
-        VerticalLayout {
+        layout := VerticalLayout {
             padding: 24px;
-            spacing: 0px;
+            spacing: 8px; // matches information_dialog
             
-            // Header
-            HorizontalLayout {
-                padding-bottom: 16px;
-                
-                if (AppI18n.is-rtl): TouchArea {
-                    width: 24px;
-                    height: 24px;
-                    clicked => {
-                        root.close();
-                    }
-                    Rectangle {
-                        background: parent.has-hover ? Theme.hover_bg : transparent;
-                        border-radius: 4px;
-                        Text {
-                            text: "\u{E8BB}";
-                            font-family: Theme.icon_font;
-                            font-size: 14px;
-                            color: Theme.text_primary;
-                            horizontal-alignment: center;
-                            vertical-alignment: center;
-                        }
-                    }
-                }
-
+            // Header: title + close button
+            Rectangle {
+                height: 24px;
                 Text {
+                    x: AppI18n.is-rtl ? 32px : 0;
+                    width: parent.width - 32px;
                     text: AppI18n.t("dialog.add_network_rule_title", [AppI18n.version]);
                     font-size: 18px * LayoutConstants.font-scale;
                     font-family: Theme.default_font;
                     font-weight: 500;
                     color: Theme.text_primary;
                     horizontal-alignment: AppI18n.is-rtl ? right : left;
-                    horizontal-stretch: 1;
+                    vertical-alignment: center;
                 }
-
-                if (!AppI18n.is-rtl): TouchArea {
+                TouchArea {
+                    x: AppI18n.is-rtl ? 0 : parent.width - self.width;
                     width: 24px;
                     height: 24px;
-                    clicked => {
-                        root.close();
-                    }
+                    clicked => { root.close(); }
                     Rectangle {
                         background: parent.has-hover ? Theme.hover_bg : transparent;
                         border-radius: 4px;
@@ -95,14 +77,11 @@ export component NetworkAddRuleDialog inherits Rectangle {
                 }
             }
 
+            // Divider
             Rectangle {
                 height: 1px;
                 background: Theme.border_color;
             }
-
-            Rectangle {
-                height: 24px;
-            } // Spacer
 
             // Content
             VerticalLayout {
@@ -245,9 +224,6 @@ export component NetworkAddRuleDialog inherits Rectangle {
                 }
             }
 
-            Rectangle {
-                vertical-stretch: 1;
-            } // Spacer
 
             // Error Message
             if root.error_msg != "": HorizontalLayout {
@@ -264,115 +240,8 @@ export component NetworkAddRuleDialog inherits Rectangle {
             // Footer
             HorizontalLayout {
                 alignment: AppI18n.is-rtl ? start : end;
-                spacing: 12px;
                 
-                // RTL: Submit first (outer), then Cancel
-                if (AppI18n.is-rtl): Rectangle {
-                    width: 90px;
-                    height: 32px;
-                    background: Theme.accent;
-                    border-radius: 6px;
-                    TouchArea {
-                        clicked => {
-                            if (root.listen_port != "" && root.target_port != "" && root.distro_names.length > 0 && root.local_ips.length > 0) {
-                                root.add(
-                                    root.distro_names[root.distro_idx],
-                                    root.local_ips[root.ip_idx],
-                                    root.listen_port,
-                                    root.target_port,
-                                    root.enable_fw
-                                );
-                            }
-                        }
-                    }
-
-                    HorizontalLayout {
-                        padding-left: 10px;
-                        padding-right: 10px;
-                        spacing: 6px;
-                        alignment: center;
-                        
-                        Text {
-                            text: AppI18n.t("dialog.add", [AppI18n.version]);
-                            color: white;
-                            font-size: 13px * LayoutConstants.font-scale;
-                            font-family: Theme.default_font;
-                            font-weight: 500;
-                            vertical-alignment: center;
-                        }
-
-                        Rectangle {
-                            width: 14px;
-                            height: 14px;
-                            y: (parent.height - self.height) / 2;
-                            Image {
-                                source: @image-url("../../../../assets/feat/microsoft-shield.png");
-                                width: 12px;
-                                height: 12px;
-                                image-fit: contain;
-                            }
-                        }
-                    }
-                }
-
-                if (AppI18n.is-rtl): Rectangle {
-                    width: 90px;
-                    height: 32px;
-                    background: transparent;
-                    border-radius: 6px;
-                    border-width: 1px;
-                    border-color: Theme.border_color;
-                    TouchArea {
-                        clicked => {
-                            root.close();
-                        }
-                        Rectangle {
-                            background: parent.has-hover ? Theme.hover_bg : transparent;
-                            border-radius: 6px;
-                        }
-                    }
-
-                    Text {
-                        text: AppI18n.t("dialog.cancel", [AppI18n.version]);
-                        color: Theme.text_primary;
-                        font-size: 13px * LayoutConstants.font-scale;
-                        font-family: Theme.default_font;
-                        font-weight: 500;
-                        horizontal-alignment: center;
-                        vertical-alignment: center;
-                    }
-                }
-
-                // LTR: Cancel first, then Submit
-                if (!AppI18n.is-rtl): Rectangle {
-                    width: 90px;
-                    height: 32px;
-                    background: transparent;
-                    border-radius: 6px;
-                    border-width: 1px;
-                    border-color: Theme.border_color;
-                    TouchArea {
-                        clicked => {
-                            root.close();
-                        }
-                        Rectangle {
-                            background: parent.has-hover ? Theme.hover_bg : transparent;
-                            border-radius: 6px;
-                        }
-                    }
-
-                    Text {
-                        text: AppI18n.t("dialog.cancel", [AppI18n.version]);
-                        color: Theme.text_primary;
-                        font-size: 13px * LayoutConstants.font-scale;
-                        font-family: Theme.default_font;
-                        font-weight: 500;
-                        horizontal-alignment: center;
-                        vertical-alignment: center;
-                    }
-                }
-                
-                if (!AppI18n.is-rtl): Rectangle {
+                Rectangle {
                     width: 90px;
                     height: 32px;
                     background: Theme.accent;

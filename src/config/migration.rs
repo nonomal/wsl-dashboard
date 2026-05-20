@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use tracing::info;
 use super::{Config, SETTINGS_VERSION};
 
@@ -64,9 +67,17 @@ pub fn migrate_config(config: &mut Config) {
         info!("Upgrading to v5: adding [settings] system-color");
         config.settings.system_color = false;
     }
+    
+    // v5 -> v6 logic
+    if old_version < 6 {
+        info!("Upgrading to v6: adding [application] project_website,[settings] colorful-icons,[sidebar] toggle");
+        config.application.project_website = crate::app::PROJECT_WEBSITE.to_string();
+        config.settings.colorful_icons = true;
+        config.sidebar.toggle = true;
+    }
 
     config.application.setting_version = SETTINGS_VERSION as u8;
-    info!("✅ Configuration migration complete, current version: v{}", SETTINGS_VERSION);
+    info!("Configuration migration complete, current version: v{}", SETTINGS_VERSION);
 }
 
 pub fn migrate_instances_config(container: &mut super::InstancesContainer) {
@@ -83,5 +94,5 @@ pub fn migrate_instances_config(container: &mut super::InstancesContainer) {
     }
     
     container.common.setting_version = super::INSTANCES_VERSION;
-    info!("✅ Instances configuration migration complete, current version: v{}", super::INSTANCES_VERSION);
+    info!("Instances configuration migration complete, current version: v{}", super::INSTANCES_VERSION);
 }

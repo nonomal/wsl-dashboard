@@ -1,3 +1,8 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
+import { AppConstants } from "constants.slint";
+
 export struct Information {
     distro_name: string,
     wsl_version: string,
@@ -7,6 +12,7 @@ export struct Information {
     vhdx_size: string,
     actual_used: string,
     ip: string,
+    is_sparse: bool,
 }
 
 export struct Distro {
@@ -73,6 +79,13 @@ export struct SettingsStrings {
     save: string,
     wsl_settings: string,
     sidebar_features: string,
+    tab_general: string,
+    tab_advanced: string,
+    tab_interface: string,
+    sparse_vhd: string,
+    sparse_vhd_desc: string,
+    colorful_icons: string,
+    stop_wsl: string,
 }
 
 export struct AboutStrings {
@@ -82,9 +95,12 @@ export struct AboutStrings {
     updates: string,
     check_update: string,
     website: string,
+    repository: string,
     group: string,
     issues: string,
-    discussions: string,
+    announcements: string,
+    talk: string,
+    documents: string,
     star: string,
     love: string,
     github: string,
@@ -116,6 +132,33 @@ export global Theme {
     out property <color> input_bg: dark_mode ? #252526 : #FFFFFF;
     out property <color> input_border: dark_mode ? #3E3E42 : #D9D9D9;
 
+    // Icon style
+    in property <bool> colorful_icons: true;
+    out property <color> icon_color_navigation: colorful_icons ? (dark_mode ? #38bdf8 : #0284c7) : text_secondary;
+    out property <color> icon_color_action: colorful_icons ? (dark_mode ? #94a3b8 : #475569) : text_secondary;
+    out property <color> icon_color_success: colorful_icons ? (dark_mode ? #4ade80 : #16a34a) : text_secondary;
+    out property <color> icon_color_danger: colorful_icons ? (dark_mode ? #f87171 : #dc2626) : text_secondary;
+    out property <color> icon_color_warning: colorful_icons ? (dark_mode ? #fb923c : #ea580c) : text_secondary;
+    out property <color> icon_color_info: colorful_icons ? (dark_mode ? #60a5fa : #2563eb) : text_secondary;
+    out property <color> icon_color_purple: colorful_icons ? (dark_mode ? #a78bfa : #7c3aed) : text_secondary;
+    out property <color> icon_color_gold: colorful_icons ? (dark_mode ? #facc15 : #f3c409ff) : text_secondary;
+    out property <color> icon_color_cyan: colorful_icons ? (dark_mode ? #22d3ee : #0891b2) : text_secondary;
+    out property <color> icon_color_pink: colorful_icons ? (dark_mode ? #f472b6 : #db2777) : text_secondary;
+    out property <color> icon_color_teal: colorful_icons ? (dark_mode ? #2dd4bf : #0d9488) : text_secondary;
+    out property <color> icon_color_indigo: colorful_icons ? (dark_mode ? #818cf8 : #4f46e5) : text_secondary;
+    out property <color> icon_color_lime: colorful_icons ? (dark_mode ? #a3e635 : #65a30d) : text_secondary;
+    out property <color> icon_color_orange: colorful_icons ? (dark_mode ? #fb923c : #f97316) : text_secondary;
+    out property <color> icon_color_rose: colorful_icons ? (dark_mode ? #fb7185 : #e11d48) : text_secondary;
+    out property <color> icon_color_violet: colorful_icons ? (dark_mode ? #a78bfa : #7c3aed) : text_secondary;
+    out property <color> icon_color_emerald: colorful_icons ? (dark_mode ? #34d399 : #059669) : text_secondary;
+    out property <color> icon_color_amber: colorful_icons ? (dark_mode ? #fbbf24 : #d97706) : text_secondary;
+    out property <color> icon_color_sky: colorful_icons ? (dark_mode ? #38bdf8 : #0284c7) : text_secondary;
+    out property <color> icon_color_fuchsia: colorful_icons ? (dark_mode ? #f0abfc : #c026d3) : text_secondary;
+    out property <color> icon_color_cobalt: colorful_icons ? (dark_mode ? #60a5fa : #1d4ed8) : text_secondary;
+    out property <color> icon_color_mint: colorful_icons ? (dark_mode ? #5eead4 : #0d9488) : text_secondary;
+    out property <color> icon_color_slate: colorful_icons ? (dark_mode ? #94a3b8 : #475569) : text_secondary;
+    out property <color> icon_color_system: text_secondary;
+
     // Compatibility of Chinese and Japanese character display on Western language operating systems
     // Font style
     in-out property <string> default_font: "Microsoft YaHei UI";
@@ -127,10 +170,16 @@ export global AppInfo {
     in property <bool> checking_update: false;
     in property <bool> has_update: false;
     in-out property <string> latest_version: "";
-    in property <string> homepage: "https://github.com/owu/wsl-dashboard";
-    in property <string> issues_url: homepage + "/issues";
-    in property <string> release_url: homepage + "/releases";
-    in property <string> discussions_url: homepage + "/discussions";
+    in-out property <string> latest_release_date: "";
+    in-out property <string> update_download_url: "";
+    in property <string> project_repository: AppConstants.project_repository;
+    in property <string> project_website: AppConstants.project_website;
+    in property <string> license_url: project_repository + AppConstants.license_url;
+    in property <string> issues_url: project_repository + "/issues";
+    in property <string> release_url: project_repository + "/releases";
+    in property <string> announcements_url: project_repository + "/discussions";
+    in property <string> talk_url: "";
+    in property <string> documents_url: "";
 }
 
 export global AppI18n {

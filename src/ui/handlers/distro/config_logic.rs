@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -167,6 +170,7 @@ pub async fn handle_save_wsl_config(
     as_ptr: Arc<Mutex<AppState>>,
     restart: bool,
 ) {
+    let _guard = crate::ui::data::BusyGuard::new();
     // 1. Collect all necessary data from UI thread first
     let (tx, rx) = tokio::sync::oneshot::channel();
     let _ = slint::invoke_from_event_loop({

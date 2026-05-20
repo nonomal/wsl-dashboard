@@ -2,7 +2,7 @@ $ErrorActionPreference = "Stop"
 
 $SCRIPT_DIR = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $JS_SCRIPT = Join-Path $SCRIPT_DIR "..\..\assets\font\subset_font.js"
-# Resolve project root (two levels up from build/scripts)
+# Resolve project root (two levels up from build/font)
 $PROJECT_ROOT = Resolve-Path (Join-Path $SCRIPT_DIR "..\..")
 
 Write-Host "Starting font subsetting process..." -ForegroundColor Cyan

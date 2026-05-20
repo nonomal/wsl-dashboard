@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 import { Theme, AppI18n, PortProxyRuleUI } from "../../theme.slint";
 import { NetworkTab } from "components.slint";
 import { PortForwardingView } from "port_forwarding.slint";
@@ -45,6 +48,8 @@ export component NetworkView inherits Rectangle {
         // Tab Bar
         HorizontalLayout {
             height: 40px;
+            padding-top: 8px;
+            padding-bottom: 0px;
             padding-left: 4px;
             padding-right: 8px;
             spacing: 4px;
@@ -72,6 +77,16 @@ export component NetworkView inherits Rectangle {
                 text: AppI18n.t("network.tab_http_proxy", [AppI18n.version]);
                 active: root.active_tab == 1;
                 clicked => { root.active_tab = 1; }
+            }
+        }
+
+        // Divider
+        HorizontalLayout {
+            padding-left: AppI18n.is-rtl ? 16px : 4px;
+            padding-right: AppI18n.is-rtl ? 4px : 16px;
+            Rectangle {
+                height: 1px;
+                background: Theme.border_color;
             }
         }
 

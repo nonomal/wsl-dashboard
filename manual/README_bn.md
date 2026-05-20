@@ -4,7 +4,7 @@
   <img src="../assets/logo/logo.png" width="128" height="128" alt="WSL Dashboard Logo" />
 </p>
 
-WSL (Windows Subsystem for Linux) ইনস্ট্যান্স পরিচালনা করার জন্য একটি আধুনিক, উচ্চ-ক্ষমতাসম্পন্ন এবং হালকা ড্যাশবোর্ড। প্রিমিয়াম নেটিভ অভিজ্ঞতার জন্য Rust এবং Slint দিয়ে তৈরি।
+একটি আধুনিক, উচ্চ-কর্মক্ষমতাসম্পন্ন, হালকা এবং কম-মেমরি যুক্ত WSL (উইন্ডোজ সাবসিস্টেম ফর লিনাক্স) ইনস্ট্যান্স ম্যানেজমেন্ট ড্যাশবোর্ড। প্রিমিয়াম নেটিভ অভিজ্ঞতার জন্য Rust এবং Slint দিয়ে তৈরি।
 
 ---
 
@@ -199,7 +199,7 @@ I18N :  [English](../README.md) | [简体中文](./README_zh_CN.md) | [繁體中
      > বিল্ড স্ক্রিপ্টের জন্য `x86_64-pc-windows-msvc` টুলচেইন প্রয়োজন।
 
      ```powershell
-     .\build\scripts\build.ps1
+     .\build\portable\build.ps1
      ```
 
 
@@ -239,6 +239,7 @@ A big thank you to the following communities for their support:
 - [Tokio - An asynchronous Rust runtime](https://tokio.rs) - For the efficient async runtime
 - [Windows Developer Community](https://developer.microsoft.com/en-us/windows/community) - For continuous platform improvements
 - [Reddit](https://www.reddit.com) - For global community discussions and support
+- [Hacker News](https://news.ycombinator.com) - For global community discussions and support
 - [Linux.do](https://linux.do) - For popular community for IT professionals
 - [V2EX](https://www.v2ex.com) - For Chinese tech community discussions
 

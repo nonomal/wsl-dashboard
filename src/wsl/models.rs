@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use serde::{Deserialize, Serialize};
 
 // WSL subsystem version
@@ -34,6 +37,7 @@ pub struct WslInformation {
     pub vhdx_size: String,
     pub actual_used: String,
     pub ip: String,
+    pub is_sparse: bool,
     pub package_family_name: String,
 }
 
@@ -82,6 +86,18 @@ impl<T> WslCommandResult<T> {
             output,
             error: Some(error),
             data: None,
+        }
+    }
+
+    pub fn map<U, F>(self, f: F) -> WslCommandResult<U>
+    where
+        F: FnOnce(T) -> U,
+    {
+        WslCommandResult {
+            success: self.success,
+            output: self.output,
+            error: self.error,
+            data: self.data.map(f),
         }
     }
 }

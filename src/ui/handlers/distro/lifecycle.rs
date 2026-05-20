@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tracing::info;
@@ -155,6 +158,7 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, app_state: Arc
             let as_ptr = as_outer.clone();
             
             tokio::spawn(async move {
+                let _guard = crate::ui::data::BusyGuard::new();
                 let (dashboard, config_manager) = {
                     let app_state = as_ptr.lock().await;
                     (app_state.wsl_dashboard.clone(), app_state.config_manager.clone())

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use tracing::info;
 use std::process::Command;
 use std::os::windows::process::CommandExt;
@@ -6,21 +9,21 @@ use std::fs;
 
 const CREATE_NO_WINDOW: u32 = 0x08000000;
 
-/// Define the elevated task name
+// Define the elevated task name
 pub const TASK_NAME: &str = r#"\WSLDashboard\WSLDashboardTask"#;
 
-/// Get the script storage directory (~/.wsldashboard/scripts)
+// Get the script storage directory (~/.wsldashboard/scripts)
 pub fn get_scripts_dir() -> PathBuf {
     let home_dir = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
     home_dir.join(".wsldashboard").join("scripts")
 }
 
-/// Get the path for the scheduled task intermediary script
+// Get the path for the scheduled task intermediary script
 pub fn get_script_path() -> PathBuf {
     get_scripts_dir().join("task_scheduler.ps1")
 }
 
-/// Ensure the scheduled task intermediary script exists and its content is correct
+// Ensure the scheduled task intermediary script exists and its content is correct
 pub fn ensure_task_script_exists() -> Result<PathBuf, String> {
     let scripts_dir = get_scripts_dir();
     if !scripts_dir.exists() {
@@ -42,10 +45,10 @@ pub fn ensure_task_script_exists() -> Result<PathBuf, String> {
     Ok(script_path)
 }
 
-/// Request UAC authorization to create an elevated scheduled task (RL HIGHEST)
-///
-/// Uses the verified ShellExecuteEx + run_invisible_elevated_command channel to execute schtasks.
-/// /TR points to the .ps1 script so that the path can be silently updated later by modifying the script with normal privileges.
+// Request UAC authorization to create an elevated scheduled task (RL HIGHEST)
+//
+// Uses the verified ShellExecuteEx + run_invisible_elevated_command channel to execute schtasks.
+// /TR points to the .ps1 script so that the path can be silently updated later by modifying the script with normal privileges.
 pub fn register_task_with_elevation() -> Result<(), String> {
     let script_path = ensure_task_script_exists()?;
     let script_str = script_path.to_string_lossy();
@@ -64,7 +67,7 @@ pub fn register_task_with_elevation() -> Result<(), String> {
     crate::utils::system::run_invisible_elevated_command(&schtasks_cmd)
 }
 
-/// Check if the elevated task exists
+// Check if the elevated task exists
 pub fn check_task_exists() -> bool {
     tracing::debug!("Checking if task exists: {}", TASK_NAME);
     let output = Command::new("schtasks")

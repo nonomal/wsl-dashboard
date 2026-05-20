@@ -51,20 +51,21 @@ if (-not (Test-Path $releaseDir)) {
 # Copy and rename executable
 # Use default release directory (determined by system default toolchain x86_64-pc-windows-msvc)
 $sourcePath = "./target/release/wsldashboard.exe"
-$destinationPath = "$releaseDir/wsldashboard.v$version.exe"
+$destinationPath = "$releaseDir/WSLDashboard.$version.Portable.x64.exe"
+$zipPath = "$releaseDir/WSLDashboard.$version.Portable.x64.zip"
 
-# Backup existing target file
-if (Test-Path $destinationPath) {
-    $timestamp = Get-Date -Format "yyyyMMddHHmmss"
-    $backupPath = "$releaseDir/wsldashboard.v$version.$timestamp.exe"
-    Copy-Item -Path $destinationPath -Destination $backupPath
-    Write-Host "Backed up existing file to: $backupPath" -ForegroundColor Yellow
-}
-
+Write-Host "Packaging..." -ForegroundColor Yellow
+# Copy .exe
 Copy-Item -Path $sourcePath -Destination $destinationPath -Force
 
+# Create .zip
+if (Test-Path $zipPath) {
+    Remove-Item $zipPath -Force
+}
+Compress-Archive -Path $sourcePath -DestinationPath $zipPath -CompressionLevel Optimal
 
 Pop-Location
 
-Write-Host "Build completed!" -ForegroundColor Green
-Write-Host "Windows executable created at: $destinationPath" -ForegroundColor Cyan
+Write-Host "--- Build completed! ---" -ForegroundColor Green
+Write-Host "Executable: $destinationPath" -ForegroundColor Cyan
+Write-Host "Archive:    $zipPath" -ForegroundColor Cyan

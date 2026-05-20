@@ -4,7 +4,7 @@
   <img src="../assets/logo/logo.png" width="128" height="128" alt="WSL Dashboard Logo" />
 </p>
 
-モダンで高性能、かつ軽量な WSL (Windows Subsystem for Linux) インスタンス管理ダッシュボードです。Rust と Slint で構築され、プレミアムなネイティブ体験を提供します。
+モダンで高性能、軽量、かつ低メモリの WSL (Windows Subsystem for Linux) インスタンス管理ダッシュボード。プレミアムなネイティブ体験のために Rust と Slint で構築されています。
 
 ---
 
@@ -199,7 +199,7 @@ Rust ツールチェーン (Rust 1.92+ 以降) がインストールされてい
      > ビルドスクリプトには `x86_64-pc-windows-msvc` ツールチェーンが必要です。
 
      ```powershell
-     .\build\scripts\build.ps1
+     .\build\portable\build.ps1
      ```
 
 
@@ -239,6 +239,7 @@ A big thank you to the following communities for their support:
 - [Tokio - An asynchronous Rust runtime](https://tokio.rs) - For the efficient async runtime
 - [Windows Developer Community](https://developer.microsoft.com/en-us/windows/community) - For continuous platform improvements
 - [Reddit](https://www.reddit.com) - For global community discussions and support
+- [Hacker News](https://news.ycombinator.com) - For global community discussions and support
 - [Linux.do](https://linux.do) - For popular community for IT professionals
 - [V2EX](https://www.v2ex.com) - For Chinese tech community discussions
 

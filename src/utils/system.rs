@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use windows::Win32::Storage::FileSystem::GetDiskFreeSpaceExW;
 use windows::core::HSTRING;
 
@@ -54,7 +57,7 @@ pub fn copy_to_clipboard(text: &str) -> Result<(), String> {
     }
 }
 
-/// Execute a command with UAC elevation using ShellExecuteExW
+// Execute a command with UAC elevation using ShellExecuteExW
 pub fn run_command_with_elevation(program_name: &str, args: Vec<String>) -> Result<(), String> {
     use windows::core::{HSTRING, PCWSTR};
     use windows::Win32::UI::Shell::{ShellExecuteExW, SHELLEXECUTEINFOW, SEE_MASK_NOCLOSEPROCESS, SEE_MASK_NOASYNC};
@@ -100,7 +103,7 @@ pub fn run_command_with_elevation(program_name: &str, args: Vec<String>) -> Resu
     }
 }
 
-/// Execute a command completely invisibly with elevation.
+// Execute a command completely invisibly with elevation.
 pub fn run_invisible_elevated_commands(commands: Vec<String>) -> Result<(), String> {
     use tracing::info;
     
@@ -118,7 +121,7 @@ pub fn run_invisible_elevated_command(command: &str) -> Result<(), String> {
     run_invisible_elevated_commands(vec![command.to_string()])
 }
 
-/// Asynchronously clean up legacy VBS startup script (shell:startup)
+// Asynchronously clean up legacy VBS startup script (shell:startup)
 pub fn cleanup_legacy_vbs_startup() {
     std::thread::spawn(|| {
         use tracing::{info, warn, error};
@@ -157,4 +160,26 @@ pub fn cleanup_legacy_vbs_startup() {
             }
         }
     });
+}
+
+// Try to attach to parent process console (used to display log output when running in command line)
+pub fn attach_console() {
+    #[cfg(windows)]
+    unsafe {
+        use windows::Win32::System::Console::{AttachConsole, ATTACH_PARENT_PROCESS};
+        let _ = AttachConsole(ATTACH_PARENT_PROCESS);
+    }
+}
+
+pub fn is_sparse_file(path: &str) -> bool {
+    #[cfg(windows)]
+    {
+        use std::os::windows::fs::MetadataExt;
+        if let Ok(metadata) = std::fs::metadata(path) {
+            let attributes = metadata.file_attributes();
+            // FILE_ATTRIBUTE_SPARSE_FILE = 0x200
+            return (attributes & 0x200) != 0;
+        }
+    }
+    false
 }

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tracing::{info, warn};
@@ -6,8 +9,7 @@ use crate::{AppWindow, AppState, AppInfo};
 
 pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, _app_state: Arc<Mutex<AppState>>) {
     let ah = app_handle.clone();
-    let as_check = _app_state.clone();
-    let as_download = _app_state.clone();
+    let _as_download = _app_state.clone();
     
     app.on_check_update(move || {
         info!("Manual check update triggered from UI");
@@ -17,7 +19,6 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, _app_state: Ar
         // This eliminates the need to call ah.upgrade() on a background thread.
         let current_v = env!("CARGO_PKG_VERSION").to_string();
         
-        let as_ptr = as_check.clone();
         tokio::spawn(async move {
             info!("Starting manual check for version: {}", current_v);
 
@@ -31,15 +32,11 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, _app_state: Ar
                 }
             });
 
-            let timezone = {
-                let state = as_ptr.lock().await;
-                state.config_manager.get_config().system.timezone.clone()
-            };
-
-            match crate::app::updater::check_update(&current_v, &timezone).await {
+            match crate::app::updater::check_update(&current_v).await {
                 Ok(result) => {
                     let has_update = result.has_update;
                     let latest_version = result.latest_version.clone();
+                    let release_date = result.release_date.clone();
                     
                     let _ = slint::invoke_from_event_loop({
                         let ah = ah.clone();
@@ -48,12 +45,14 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, _app_state: Ar
                                 info!("Update check result: has_update={}", has_update);
                                 app.global::<AppInfo>().set_checking_update(false);
                                 app.global::<AppInfo>().set_has_update(has_update);
-                                app.global::<AppInfo>().set_latest_version(latest_version.into());
+                                app.global::<AppInfo>().set_latest_version(latest_version.clone().into());
+                                app.global::<AppInfo>().set_latest_release_date(release_date.clone().into());
+                                app.global::<AppInfo>().set_update_download_url(result.download_url.clone().into());
                                 
                                 if has_update {
                                     app.set_show_update_dialog(true);
                                 } else {
-                                    app.set_current_message(crate::i18n::t("dialog.update_latest").into());
+                                    app.set_current_message(crate::i18n::tr("dialog.update_latest", &[latest_version.clone(), release_date.clone()]).into());
                                     app.set_show_message_dialog(true);
                                 }
                             }
@@ -81,26 +80,29 @@ pub fn setup(app: &AppWindow, app_handle: slint::Weak<AppWindow>, _app_state: Ar
         });
     });
 
+    let ah_download = app_handle.clone();
     app.on_download_update(move || {
-        let as_ptr = as_download.clone();
+        let ah = ah_download.clone();
         slint::spawn_local(async move {
-            let timezone = {
-                let state = as_ptr.lock().await;
-                state.config_manager.get_config().system.timezone.clone()
-            };
-
-            let base_github_url = if timezone == crate::app::ZH_TIMEZONE {
-                crate::app::GITEE_URL
-            } else {
-                crate::app::GITHUB_URL
-            };
-            let _ = open::that(format!("{}{}", base_github_url, crate::app::GITHUB_RELEASES));
+            if let Some(app) = ah.upgrade() {
+                let expire_url = app.get_expire_download_url().to_string();
+                let update_url = app.global::<AppInfo>().get_update_download_url().to_string();
+                if app.get_show_expire_dialog() && !expire_url.is_empty() {
+                    info!("Downloading update from expire_download_url: {}", expire_url);
+                    let _ = open::that(expire_url);
+                } else if !update_url.is_empty() {
+                    info!("Downloading update from update_download_url: {}", update_url);
+                    let _ = open::that(update_url);
+                } else {
+                    let _ = open::that(format!("{}{}", crate::app::PROJECT_REPOSITORY, crate::app::GITHUB_RELEASES));
+                }
+            }
         }).unwrap();
     });
 
-    let ah = app_handle.clone();
+    let ah_close = app_handle.clone();
     app.on_close_expire_dialog(move || {
-        if let Some(app) = ah.upgrade() {
+        if let Some(app) = ah_close.upgrade() {
             app.set_show_expire_dialog(false);
         }
     });

@@ -1,9 +1,13 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 import { Theme, AppI18n, LayoutConstants } from "../theme.slint";
 import "../../../assets/font/icons.ttf";
 
 export component SidebarItem inherits Rectangle {
     in property <string> icon;
     in property <string> text;
+    in property <string> icon_type: "action"; 
     in property <bool> selected: false;
     in property <bool> collapsed: false;
     callback clicked;
@@ -12,6 +16,33 @@ export component SidebarItem inherits Rectangle {
     border-radius: 4px;
     background: selected ? Theme.selected_bg : (touch.has-hover ? Theme.hover_bg : transparent);
     
+    property <color> icon_color: selected ? Theme.accent : 
+                                 touch.has-hover ? Theme.accent :
+                                 !Theme.colorful_icons ? Theme.text_secondary :
+                                 icon_type == "navigation" ? Theme.icon_color_navigation :
+                                 icon_type == "success" ? Theme.icon_color_success :
+                                 icon_type == "danger" ? Theme.icon_color_danger :
+                                 icon_type == "warning" ? Theme.icon_color_warning :
+                                 icon_type == "info" ? Theme.icon_color_info :
+                                 icon_type == "purple" ? Theme.icon_color_purple :
+                                 icon_type == "gold" ? Theme.icon_color_gold :
+                                 icon_type == "cyan" ? Theme.icon_color_cyan :
+                                 icon_type == "pink" ? Theme.icon_color_pink :
+                                 icon_type == "teal" ? Theme.icon_color_teal :
+                                 icon_type == "indigo" ? Theme.icon_color_indigo :
+                                 icon_type == "lime" ? Theme.icon_color_lime :
+                                 icon_type == "orange" ? Theme.icon_color_orange :
+                                 icon_type == "rose" ? Theme.icon_color_rose :
+                                 icon_type == "violet" ? Theme.icon_color_violet :
+                                 icon_type == "emerald" ? Theme.icon_color_emerald :
+                                 icon_type == "amber" ? Theme.icon_color_amber :
+                                 icon_type == "sky" ? Theme.icon_color_sky :
+                                 icon_type == "fuchsia" ? Theme.icon_color_fuchsia :
+                                 icon_type == "cobalt" ? Theme.icon_color_cobalt :
+                                 icon_type == "mint" ? Theme.icon_color_mint :
+                                 icon_type == "slate" ? Theme.icon_color_slate :
+                                 Theme.icon_color_action;
+
     // Tooltip
     Rectangle {
         visible: collapsed && touch.has-hover;
@@ -64,7 +95,7 @@ export component SidebarItem inherits Rectangle {
                 font-size: (!AppI18n.is-rtl) ? 16px : (14px * LayoutConstants.font-scale);
                 font-family: (!AppI18n.is-rtl) ? Theme.icon_font : Theme.default_font;
                 font-weight: selected ? 500 : 400;
-                color: (selected || touch.has-hover) ? ((!AppI18n.is-rtl) ? Theme.accent : Theme.text_primary) : Theme.text_secondary;
+                color: (!AppI18n.is-rtl) ? root.icon_color : ((selected || touch.has-hover) ? Theme.text_primary : Theme.text_secondary);
                 vertical-alignment: center;
                 horizontal-alignment: (!AppI18n.is-rtl) ? center : right; // Text aligns right in RTL
                 overflow: elide;
@@ -90,7 +121,7 @@ export component SidebarItem inherits Rectangle {
                 font-size: (AppI18n.is-rtl) ? 16px : (14px * LayoutConstants.font-scale);
                 font-family: (AppI18n.is-rtl) ? Theme.icon_font : Theme.default_font;
                 font-weight: selected ? 500 : 400;
-                color: (selected || touch.has-hover) ? ((AppI18n.is-rtl) ? Theme.accent : Theme.text_primary) : Theme.text_secondary;
+                color: (AppI18n.is-rtl) ? root.icon_color : ((selected || touch.has-hover) ? Theme.text_primary : Theme.text_secondary);
                 vertical-alignment: center;
                 horizontal-alignment: (AppI18n.is-rtl) ? center : left; // Text aligns left in LTR
                 overflow: elide;
@@ -118,13 +149,72 @@ export component SidebarItem inherits Rectangle {
     }
 }
 
+export component ThemedIcon inherits Text {
+    in property <string> icon_code;
+    in property <string> icon_type: "action"; // "action", "navigation", "success", "danger", "warning", "info", "purple", "gold", "cyan", "pink", "teal", "indigo", "lime", "system"
+    font-family: Theme.icon_font;
+    color: !Theme.colorful_icons ? Theme.icon_color_action : 
+           icon_type == "navigation" ? Theme.icon_color_navigation :
+           icon_type == "success" ? Theme.icon_color_success :
+           icon_type == "danger" ? Theme.icon_color_danger :
+           icon_type == "warning" ? Theme.icon_color_warning :
+           icon_type == "info" ? Theme.icon_color_info :
+           icon_type == "purple" ? Theme.icon_color_purple :
+           icon_type == "gold" ? Theme.icon_color_gold :
+           icon_type == "cyan" ? Theme.icon_color_cyan :
+           icon_type == "pink" ? Theme.icon_color_pink :
+           icon_type == "teal" ? Theme.icon_color_teal :
+           icon_type == "indigo" ? Theme.icon_color_indigo :
+           icon_type == "lime" ? Theme.icon_color_lime :
+           icon_type == "orange" ? Theme.icon_color_orange :
+           icon_type == "rose" ? Theme.icon_color_rose :
+           icon_type == "violet" ? Theme.icon_color_violet :
+           icon_type == "emerald" ? Theme.icon_color_emerald :
+           icon_type == "amber" ? Theme.icon_color_amber :
+           icon_type == "sky" ? Theme.icon_color_sky :
+           icon_type == "fuchsia" ? Theme.icon_color_fuchsia :
+           icon_type == "cobalt" ? Theme.icon_color_cobalt :
+           icon_type == "mint" ? Theme.icon_color_mint :
+           icon_type == "slate" ? Theme.icon_color_slate :
+           icon_type == "system" ? Theme.icon_color_system :
+           Theme.icon_color_action;
+    text: icon_code;
+}
+
 export component ActionIcon inherits Rectangle {
     in property <string> icon;
+    in property <string> icon_type: "action";
+    in property <bool> active: false;
     in property <image> icon_image;
-    in property <bool> is_font_icon: false;
+    in property <bool> is_font_icon: true;
     in property <bool> show_shield: false;
     in property <string> tooltip: "";
-    in property <brush> icon_color: Theme.text_primary;
+    in property <brush> icon_color: !Theme.colorful_icons ? Theme.icon_color_action :
+                                   active ? Theme.accent :
+                                   icon_type == "navigation" ? Theme.icon_color_navigation :
+                                   icon_type == "success" ? Theme.icon_color_success :
+                                   icon_type == "danger" ? Theme.icon_color_danger :
+                                   icon_type == "warning" ? Theme.icon_color_warning :
+                                   icon_type == "info" ? Theme.icon_color_info :
+                                   icon_type == "purple" ? Theme.icon_color_purple :
+                                   icon_type == "gold" ? Theme.icon_color_gold :
+                                   icon_type == "cyan" ? Theme.icon_color_cyan :
+                                   icon_type == "pink" ? Theme.icon_color_pink :
+                                   icon_type == "teal" ? Theme.icon_color_teal :
+                                   icon_type == "indigo" ? Theme.icon_color_indigo :
+                                   icon_type == "lime" ? Theme.icon_color_lime :
+                                   icon_type == "orange" ? Theme.icon_color_orange :
+                                   icon_type == "rose" ? Theme.icon_color_rose :
+                                   icon_type == "violet" ? Theme.icon_color_violet :
+                                   icon_type == "emerald" ? Theme.icon_color_emerald :
+                                   icon_type == "amber" ? Theme.icon_color_amber :
+                                   icon_type == "sky" ? Theme.icon_color_sky :
+                                   icon_type == "fuchsia" ? Theme.icon_color_fuchsia :
+                                   icon_type == "cobalt" ? Theme.icon_color_cobalt :
+                                   icon_type == "mint" ? Theme.icon_color_mint :
+                                   icon_type == "slate" ? Theme.icon_color_slate :
+                                   Theme.icon_color_action;
+    in property <length> icon_size: 14px;
     callback clicked;
     width: 28px;
     height: 28px;
@@ -143,7 +233,7 @@ export component ActionIcon inherits Rectangle {
         
         // Dynamic Positioning - Reverted to static history behavior
         x: (parent.width - self.width) / 2;
-        y: -10px;
+        y: -30px;
         width: tt_text.width + 12px;
         height: tt_text.height + 6px;
         tt_text := Text {
@@ -159,7 +249,7 @@ export component ActionIcon inherits Rectangle {
     Text {
         visible: is_font_icon;
         text: icon;
-        font-size: 14px * LayoutConstants.font-scale;
+        font-size: root.icon_size;
         font-family: Theme.icon_font;
         color: root.icon_color;
         horizontal-alignment: center;
@@ -208,7 +298,7 @@ export component WindowControlButton inherits Rectangle {
     background: touch.has-hover ? hover-color : transparent;
     Text {
         text: text;
-        font-size: 10px * LayoutConstants.font-scale;
+        font-size: 10px;
         font-family: Theme.icon_font;
         color: touch.has_hover ? (text == "\u{E8BB}" ? white : Theme.text_primary) : icon_color;
         horizontal-alignment: center;

@@ -4,7 +4,7 @@
   <img src="assets/logo/logo.png" width="128" height="128" alt="WSL Dashboard Logo" />
 </p>
 
-A modern, high-performance, and lightweight WSL (Windows Subsystem for Linux) instance management dashboard. Built with Rust and Slint for a premium native experience.
+A modern, high-performance, lightweight, and low-memory WSL (Windows Subsystem for Linux) instance management dashboard. Built with Rust and Slint for a premium native experience.
 
 ---
 
@@ -199,7 +199,7 @@ Ensure you have the Rust toolchain (Rust 1.92+ or newer) installed.
      > The build script requires the `x86_64-pc-windows-msvc` toolchain.
 
      ```powershell
-     .\build\scripts\build.ps1
+     .\build\portable\build.ps1
      ```
 
 
@@ -240,6 +240,7 @@ A big thank you to the following communities for their support:
 - [Tokio - An asynchronous Rust runtime](https://tokio.rs) - For the efficient async runtime
 - [Windows Developer Community](https://developer.microsoft.com/en-us/windows/community) - For continuous platform improvements
 - [Reddit](https://www.reddit.com) - For global community discussions and support
+- [Hacker News](https://news.ycombinator.com) - For global community discussions and support
 - [Linux.do](https://linux.do) - For popular community for IT professionals
 - [V2EX](https://www.v2ex.com) - For Chinese tech community discussions
 

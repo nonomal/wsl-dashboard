@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 use std::process::Stdio;
 use tokio::io::AsyncReadExt;
 // use tokio::task; // Removed
@@ -142,7 +145,7 @@ impl WslCommandExecutor {
         // Detect heavy operations that need much longer timeouts (e.g., multi-GiB disk transfers)
         let is_heavy_op = args_owned.iter().any(|arg| {
             let lower = arg.to_lowercase();
-            lower == "--import" || lower == "--export" || lower == "--install"
+            lower == "--import" || lower == "--export" || lower == "--install" || lower == "--move" || lower == "--update"
         });
 
         let timeout_duration = if is_heavy_op {
@@ -334,15 +337,21 @@ impl WslCommandExecutor {
         
         // Also respect semaphore for consistency
         let permit_timeout = std::time::Duration::from_secs(10);
+        debug!("Acquiring WSL semaphore permit (Available: {}/16) for streaming command: {}", self.semaphore.available_permits(), command_str);
         let _permit = match tokio::time::timeout(permit_timeout, self.semaphore.acquire()).await {
             Ok(Ok(p)) => p,
-            _ => {
-                warn!("Streaming WSL command started without semaphore slot (too busy): {}", command_str);
-                // We proceed anyway but with a warning, or we could return error. 
-                // For install, it's better to fail early if WSL is totally unresponsive.
-                return WslCommandResult::error(String::new(), "WSL service busy, please try again later".to_string());
+            Ok(Err(_)) => {
+                let err = "Failed to acquire semaphore permit (closed)".to_string();
+                error!("{}", err);
+                return WslCommandResult::error(String::new(), err);
+            }
+            Err(_) => {
+                let err = format!("Streaming WSL command pending timeout after {}s (Queue full): {}", permit_timeout.as_secs(), command_str);
+                warn!("{}", err);
+                return WslCommandResult::error(String::new(), err);
             }
         };
+        debug!("WSL semaphore permit acquired for streaming command: {}", command_str);
 
         match tokio::time::timeout(timeout_duration, future).await {
             Ok(Ok((full_output, status))) => {

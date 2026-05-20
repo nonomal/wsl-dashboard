@@ -1,18 +1,21 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 owu <wqh@live.com>
+// SPDX-License-Identifier: GPL-3.0-only
+
 import { Button } from "std-widgets.slint";
 import { Theme, AppI18n, LayoutConstants } from "../../theme.slint";
 
 export component ConfirmationDialog inherits Rectangle {
     in property <string> title_text: AppI18n.t("dialog.delete_title", [AppI18n.version]);
     in property <string> message;
-    in property <length> dialog_height: 160px;
+    in property <length> dialog_height: 200px;
     callback confirm;
     callback cancel;
-    
-    // Background mask covering the whole window
+
+    // Background mask
     background: #00000080;
-    
-    // Trap clicks
-    TouchArea { }
+    TouchArea {
+        clicked => { root.cancel(); }
+    }
 
     // Dialog Box
     Rectangle {
@@ -22,32 +25,68 @@ export component ConfirmationDialog inherits Rectangle {
         border-radius: 8px;
         border-width: 1px;
         border-color: Theme.border_color;
+        TouchArea { /* prevent click through */ }
         VerticalLayout {
             padding: 24px;
-            spacing: 16px;
-            alignment: space-between;
-            Text {
-                text: root.title_text;
-                font-size: 18px * LayoutConstants.font-scale;
-                font-family: Theme.default_font;
-                font-weight: 500;
-                color: Theme.text_primary;
-                horizontal-alignment: AppI18n.is-rtl ? right : left;
+            spacing: 8px; // matches information_dialog
+
+            // Header: title + close button
+            Rectangle {
+                height: 24px;
+                Text {
+                    x: AppI18n.is-rtl ? 32px : 0;
+                    width: parent.width - 32px;
+                    text: root.title_text;
+                    font-size: 18px * LayoutConstants.font-scale;
+                    font-family: Theme.default_font;
+                    font-weight: 500;
+                    color: Theme.text_primary;
+                    horizontal-alignment: AppI18n.is-rtl ? right : left;
+                    vertical-alignment: center;
+                }
+                TouchArea {
+                    x: AppI18n.is-rtl ? 0 : parent.width - self.width;
+                    width: 24px;
+                    height: 24px;
+                    clicked => { root.cancel(); }
+                    Rectangle {
+                        background: parent.has-hover ? Theme.hover_bg : transparent;
+                        border-radius: 4px;
+                        Text {
+                            text: "\u{E8BB}";
+                            font-family: Theme.icon_font;
+                            font-size: 14px;
+                            color: Theme.text_primary;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
             }
 
+            // Divider
+            Rectangle {
+                height: 1px;
+                background: Theme.border_color;
+            }
+
+            // Message (stretch to fill remaining space)
             Text {
                 text: root.message;
                 font-size: 14px * LayoutConstants.font-scale;
                 font-family: Theme.default_font;
                 color: Theme.text_primary;
                 wrap: word-wrap;
+                vertical-stretch: 1;
+                vertical-alignment: center;
                 horizontal-alignment: AppI18n.is-rtl ? right : left;
             }
 
+            // Footer: confirm (red) button only
             HorizontalLayout {
                 alignment: AppI18n.is-rtl ? start : end;
-                spacing: 12px;
-                if (AppI18n.is-rtl): confirm-btn := Rectangle {
+
+                if (AppI18n.is-rtl): Rectangle {
                     width: 80px;
                     height: 32px;
                     border-radius: 4px;
@@ -60,35 +99,8 @@ export component ConfirmationDialog inherits Rectangle {
                         horizontal-alignment: center;
                         vertical-alignment: center;
                     }
-
                     touch_confirm_rtl := TouchArea {
-                        clicked => {
-                            root.confirm();
-                        }
-                    }
-                }
-
-                // Cancel button
-                Rectangle {
-                    width: 80px;
-                    height: 32px;
-                    border-radius: 4px;
-                    background: touch_cancel.has-hover ? Theme.hover_bg : transparent;
-                    border-width: 1px;
-                    border-color: Theme.border_color;
-                    Text {
-                        text: AppI18n.t("dialog.cancel", [AppI18n.version]);
-                        font-size: 13px * LayoutConstants.font-scale;
-                        font-family: Theme.default_font;
-                        color: Theme.text_primary;
-                        horizontal-alignment: center;
-                        vertical-alignment: center;
-                    }
-
-                    touch_cancel := TouchArea {
-                        clicked => {
-                            root.cancel();
-                        }
+                        clicked => { root.confirm(); }
                     }
                 }
 
@@ -105,11 +117,8 @@ export component ConfirmationDialog inherits Rectangle {
                         horizontal-alignment: center;
                         vertical-alignment: center;
                     }
-
                     touch_confirm := TouchArea {
-                        clicked => {
-                            root.confirm();
-                        }
+                        clicked => { root.confirm(); }
                     }
                 }
             }

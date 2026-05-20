@@ -3,3 +3,7 @@
 !/.github/
 
 **/*.exe
+
+**/*.zip
+
+!.gitattributes
