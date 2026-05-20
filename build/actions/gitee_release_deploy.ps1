@@ -45,7 +45,7 @@ try {
 }
 
 # 2. Upload Assets
-$UploadUrl = "$ApiBase/repos/$RepoOwner/$RepoName/releases/$ReleaseId/attach_files?access_token=$GiteeToken"
+$UploadUrl = "$ApiBase/repos/$RepoOwner/$RepoName/releases/$ReleaseId/assets?access_token=$GiteeToken"
 
 $filesToUpload = @(
     "WSLDashboard.$Version.Portable.x64.zip",
